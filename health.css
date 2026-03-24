@@ -1,0 +1,122 @@
+/* ══════════════════════════════════════
+   DAILY OPTIMAL HEALTH — Shared Styles
+   ══════════════════════════════════════ */
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  font-family: Georgia, serif;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,0.07) 1px, transparent 0),
+    linear-gradient(135deg, #083d1e, #1a7a45, #0d5c30, #2dd46e, #083d1e);
+  background-size: 28px 28px, 400% 400%;
+  animation: gradientShift 16s ease infinite;
+  color: #1a3a2a;
+  max-width: 750px;
+  margin: 60px auto;
+  padding: 0 20px 60px;
+}
+
+/* ── KEEP CONTENT ABOVE PATTERN ── */
+.back, h1, .subtitle, table {
+  position: relative;
+  z-index: 2;
+}
+
+/* ── NAV ── */
+.back {
+  display: inline-block;
+  margin-bottom: 30px;
+  color: rgba(255,255,255,0.9);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.4);
+}
+
+.back:hover {
+  color: #a8ffcc;
+  text-decoration: underline;
+}
+
+/* ── HEADER ── */
+h1 {
+  text-align: center;
+  font-size: 3.2rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow:
+    0 2px 20px rgba(0,0,0,0.6),
+    0 0 50px rgba(45,212,110,0.6),
+    0 0 2px rgba(0,0,0,0.8);
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+
+.subtitle {
+  text-align: center;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 36px;
+  font-size: 1rem;
+  font-style: italic;
+}
+
+/* ── TABLE ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow:
+    0 8px 40px rgba(0,0,0,0.35),
+    0 2px 8px rgba(0,0,0,0.2);
+}
+
+th {
+  background: linear-gradient(90deg, #052e16, #0d5c30);
+  color: #4ade80;
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 0.95rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+tr:nth-child(even) {
+  background-color: #f0fdf4;
+}
+
+tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+tr:hover {
+  background-color: #bbf7d0;
+  transition: background-color 0.15s;
+}
+
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #d1fae5;
+  font-size: 0.95rem;
+  vertical-align: top;
+  color: #1a3a2a;
+  line-height: 1.6;
+}
+
+td:first-child {
+  font-weight: bold;
+  white-space: nowrap;
+  color: #166534;
+  width: 110px;
+  font-size: 0.88rem;
+}

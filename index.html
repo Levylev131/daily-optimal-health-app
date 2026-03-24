@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Optimal Health</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --checked: rgba(45,212,110,0.15); --current: rgba(45,212,110,0.2);
+      --r: 14px; --r-sm: 10px;
+      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
+    }
+    body.degen {
+      --acc: #c800ff; --acc2: #7a00aa; --glow: rgba(200,0,255,0.35);
+      --bg1: #060008; --bg2: #180028; --bg3: #060008;
+      --glass: rgba(100,0,160,0.1); --glass-b: rgba(200,0,255,0.18);
+      --glass-h: rgba(100,0,160,0.2);
+      --text: #eedeff; --muted: rgba(220,190,255,0.55);
+      --checked: rgba(200,0,255,0.14); --current: rgba(200,0,255,0.2);
+    }
+
+    html { min-height: 100%; scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    @keyframes gradShift {
+      0%,100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
+    }
+
+    #particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .ptcl {
+      position: absolute; pointer-events: none; user-select: none;
+      animation: floatUp linear forwards;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
+      8%   { opacity: .17; }
+      92%  { opacity: .17; }
+      100% { transform: translateY(-120vh) rotate(520deg); opacity: 0; }
+    }
+
+    #app { position: relative; z-index: 1; }
+    .view { display: none; }
+    .view.active { display: block; animation: fadeIn .3s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── HUB ── */
+    #hub { max-width: 880px; margin: 0 auto; padding: 32px 20px 80px; }
+
+    .mode-toggle { display: flex; justify-content: center; margin-bottom: 28px; }
+    .mode-btn {
+      background: var(--glass); border: 1px solid var(--glass-b); color: var(--muted);
+      padding: 9px 22px; font-size: .84rem; font-weight: 600; letter-spacing: .5px;
+      cursor: pointer; transition: var(--trans); backdrop-filter: blur(8px);
+    }
+    .mode-btn:first-child { border-radius: 22px 0 0 22px; border-right: none; }
+    .mode-btn:last-child  { border-radius: 0 22px 22px 0; }
+    .mode-btn.active { background: var(--acc); color: #000; border-color: var(--acc); box-shadow: 0 0 16px var(--glow); }
+    body.degen .mode-btn.active { color: #fff; }
+
+    .hub-header { text-align: center; margin-bottom: 36px; }
+    .hub-title {
+      font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 900; letter-spacing: 1px;
+      text-shadow: 0 0 50px var(--glow), 0 2px 12px rgba(0,0,0,.4);
+      margin-bottom: 6px;
+    }
+    .hub-sub { color: var(--muted); font-size: .88rem; font-style: italic; margin-bottom: 22px; }
+    .stats-row { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    .stat-pill {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
+      padding: 5px 14px; font-size: .82rem; font-weight: 600; backdrop-filter: blur(8px);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .stat-pill .lbl { color: var(--muted); font-weight: 400; }
+
+    .xp-wrap { max-width: 380px; margin: 10px auto 0; }
+    .xp-meta { display: flex; justify-content: space-between; font-size: .75rem; color: var(--muted); margin-bottom: 5px; }
+    .xp-track { height: 7px; background: var(--glass); border-radius: 4px; overflow: hidden; border: 1px solid var(--glass-b); }
+    .xp-fill  { height: 100%; background: linear-gradient(90deg, var(--acc2), var(--acc)); border-radius: 4px; transition: width .7s ease; box-shadow: 0 0 8px var(--glow); }
+
+    .sec-label { font-size: .72rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; padding-left: 2px; }
+
+    .goal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px,1fr)); gap: 14px; margin-bottom: 36px; }
+
+    .goal-card {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: var(--r);
+      padding: 18px; cursor: pointer; transition: var(--trans); backdrop-filter: blur(12px);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .goal-card:hover {
+      background: var(--glass-h); border-color: var(--acc);
+      transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,.3), 0 0 20px var(--glow);
+    }
+
+    .ring-wrap { flex-shrink: 0; position: relative; width: 54px; height: 54px; }
+    .ring-wrap svg { width: 54px; height: 54px; transform: rotate(-90deg); }
+    .r-track { fill: none; stroke: rgba(255,255,255,.1); stroke-width: 5; }
+    .r-fill  { fill: none; stroke: var(--acc); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset .8s ease; filter: drop-shadow(0 0 3px var(--acc)); }
+    .ring-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+
+    .card-info { flex: 1; min-width: 0; }
+    .card-title { font-size: .96rem; font-weight: 700; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-desc  { font-size: .76rem; color: var(--muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-pct   { font-size: .76rem; font-weight: 700; color: var(--acc); margin-top: 5px; }
+
+    .degen-div { text-align: center; margin: 8px 0 28px; position: relative; }
+    .degen-div::before { content:''; position:absolute; top:50%; left:0; right:0; height:1px; background: linear-gradient(90deg,transparent,var(--glass-b),transparent); }
+    .degen-label {
+      position: relative; display: inline-block; padding: 0 18px;
+      font-size: 1.2rem; font-weight: 900; letter-spacing: 5px; text-transform: uppercase;
+      color: #c800ff; text-shadow: 0 0 8px #c800ff, 0 0 24px #7a00aa;
+      animation: flicker 5s infinite;
+    }
+    body.degen .degen-label { color: var(--acc); text-shadow: 0 0 12px var(--glow); }
+    @keyframes flicker { 0%,95%,100%{opacity:1} 96%{opacity:.6} 97%{opacity:1} 98%{opacity:.3} 99%{opacity:1} }
+
+    /* ── SCHEDULE VIEW ── */
+    #sch-view-inner { max-width: 720px; margin: 0 auto; padding: 28px 20px 80px; }
+
+    .sch-back {
+      display: inline-flex; align-items: center; gap: 6px; background: none; border: none;
+      color: var(--muted); font-size: .88rem; font-weight: 600; cursor: pointer;
+      padding: 6px 0; margin-bottom: 22px; transition: color .2s;
+    }
+    .sch-back:hover { color: var(--acc); }
+
+    .sch-head {
+      display: flex; align-items: flex-start; gap: 20px; margin-bottom: 24px;
+      padding: 22px; background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px);
+    }
+
+    .sch-ring { flex-shrink: 0; position: relative; width: 88px; height: 88px; }
+    .sch-ring svg { width: 88px; height: 88px; transform: rotate(-90deg); }
+    .sch-ring-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+
+    .sch-info { flex: 1; }
+    .sch-title { font-size: clamp(1.4rem,4vw,1.9rem); font-weight: 900; margin-bottom: 4px; text-shadow: 0 0 30px var(--glow); }
+    .sch-subtitle { color: var(--muted); font-size: .82rem; font-style: italic; margin-bottom: 12px; line-height: 1.45; }
+    .sch-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+    .sch-stat { font-size: .8rem; font-weight: 700; color: var(--acc); }
+    .sch-stat span { color: var(--muted); font-weight: 400; }
+
+    .disclaimer {
+      background: var(--glass); border: 1px solid var(--glass-b); border-left: 3px solid var(--acc);
+      border-radius: var(--r-sm); padding: 13px 17px; margin-bottom: 18px;
+      font-size: .86rem; color: var(--muted); line-height: 1.6; backdrop-filter: blur(8px);
+    }
+
+    .task-list { display: flex; flex-direction: column; gap: 7px; }
+
+    .task-card {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: var(--r-sm);
+      padding: 13px 15px; backdrop-filter: blur(8px);
+      display: flex; gap: 12px; align-items: flex-start;
+      position: relative; transition: var(--trans);
+    }
+    .task-card:hover { background: var(--glass-h); border-color: var(--acc); }
+    .task-card.checked { background: var(--checked); border-color: var(--acc); opacity: .7; }
+    .task-card.current {
+      background: var(--current); border-color: var(--acc);
+      box-shadow: 0 0 18px var(--glow);
+    }
+    .task-card.current::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: var(--acc); border-radius: 3px 0 0 3px; box-shadow: 0 0 8px var(--acc);
+    }
+
+    .tcol { flex-shrink: 0; width: 68px; }
+    .t-time { font-size: .76rem; font-weight: 700; color: var(--acc); line-height: 1.2; }
+    .t-now  { font-size: .62rem; font-weight: 700; color: var(--acc); margin-top: 2px; animation: pulse 2s infinite; letter-spacing: .3px; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    .t-body { flex: 1; cursor: pointer; }
+    .t-text { font-size: .88rem; line-height: 1.55; transition: opacity .2s; }
+    .task-card.checked .t-text { text-decoration: line-through; opacity: .6; }
+    .t-why {
+      font-size: .76rem; color: #ff8c3a; font-style: italic; line-height: 1.45;
+      margin-top: 7px; display: none;
+      text-shadow: 0 0 8px rgba(255,120,0,.3);
+    }
+    .task-card.expanded .t-why { display: block; }
+    .t-tap { font-size: .68rem; color: var(--muted); margin-top: 5px; opacity: 0; transition: opacity .2s; }
+    .task-card:hover .t-tap { opacity: 1; }
+
+    .t-check {
+      flex-shrink: 0; width: 23px; height: 23px; border-radius: 50%;
+      border: 2px solid var(--glass-b); background: var(--glass);
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s; cursor: pointer; margin-top: 1px;
+    }
+    .task-card.checked .t-check { background: var(--acc); border-color: var(--acc); box-shadow: 0 0 10px var(--glow); }
+    .chk-icon { color: #000; font-size: .68rem; font-weight: 900; display: none; }
+    .task-card.checked .chk-icon { display: block; }
+    body.degen .chk-icon { color: #fff; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 26px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--acc); color: #000; padding: 9px 20px;
+      border-radius: 22px; font-size: .86rem; font-weight: 700;
+      transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+      z-index: 200; box-shadow: 0 4px 20px var(--glow);
+      pointer-events: none; white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+    body.degen #toast { color: #fff; }
+
+    @media (max-width: 560px) {
+      .goal-grid { grid-template-columns: 1fr 1fr; }
+      .sch-head { flex-direction: column; align-items: center; text-align: center; }
+    }
+    @media (max-width: 360px) {
+      .goal-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── PROFILE BUTTON ── */
+    #profile-btn {
+      position: fixed; top: 16px; right: 16px; z-index: 50;
+      width: 42px; height: 42px; border-radius: 50%;
+      border: 2px solid var(--glass-b); background: var(--glass);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: .82rem; font-weight: 800;
+      backdrop-filter: blur(10px); transition: var(--trans);
+      box-shadow: 0 2px 14px rgba(0,0,0,.35); color: var(--muted);
+      letter-spacing: -.5px;
+    }
+    #profile-btn:hover { border-color: var(--acc); box-shadow: 0 0 16px var(--glow); transform: scale(1.08); }
+
+    /* ── DROPDOWN ── */
+    .p-dropdown {
+      position: fixed; top: 66px; right: 16px; z-index: 51;
+      background: color-mix(in srgb, var(--bg2) 95%, transparent);
+      border: 1px solid var(--glass-b); border-radius: var(--r);
+      padding: 8px; min-width: 188px; backdrop-filter: blur(20px);
+      box-shadow: 0 10px 40px rgba(0,0,0,.55); animation: fadeIn .15s ease;
+    }
+    .p-dd-name {
+      padding: 8px 12px 10px; font-size: .88rem; font-weight: 700;
+      color: var(--text); border-bottom: 1px solid var(--glass-b); margin-bottom: 6px;
+    }
+    .p-dd-item {
+      display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+      border-radius: 8px; cursor: pointer; font-size: .83rem; color: var(--muted);
+      transition: var(--trans);
+    }
+    .p-dd-item:hover { background: var(--glass-h); color: var(--text); }
+    .p-dd-item.danger:hover { color: #ff5a5a; }
+
+    /* ── MODAL OVERLAY ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,.72); backdrop-filter: blur(7px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; animation: fadeIn .2s ease;
+    }
+    .modal {
+      background: linear-gradient(145deg, var(--bg2), var(--bg1));
+      border: 1px solid var(--glass-b); border-radius: 20px;
+      padding: 36px 30px; max-width: 420px; width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,.6), 0 0 40px var(--glow);
+      position: relative; max-height: 90vh; overflow-y: auto;
+    }
+    .modal-close {
+      position: absolute; top: 14px; right: 16px; background: none; border: none;
+      color: var(--muted); font-size: 1.1rem; cursor: pointer; transition: color .2s; padding: 4px;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-icon  { font-size: 2.4rem; text-align: center; margin-bottom: 14px; }
+    .modal-title { font-size: 1.45rem; font-weight: 900; text-align: center; margin-bottom: 6px; }
+    .modal-sub   { font-size: .84rem; color: var(--muted); text-align: center; margin-bottom: 26px; line-height: 1.55; }
+    .modal-input {
+      width: 100%; padding: 12px 15px; background: var(--glass);
+      border: 1px solid var(--glass-b); border-radius: 10px; color: var(--text);
+      font-size: .95rem; outline: none; transition: border-color .2s, box-shadow .2s;
+      margin-bottom: 12px;
+    }
+    .modal-input:focus { border-color: var(--acc); box-shadow: 0 0 0 3px var(--glow); }
+    .modal-input::placeholder { color: var(--muted); }
+    .modal-btn {
+      width: 100%; padding: 13px; background: var(--acc); color: #000;
+      font-size: .94rem; font-weight: 800; border: none; border-radius: 10px;
+      cursor: pointer; transition: var(--trans); box-shadow: 0 4px 18px var(--glow);
+    }
+    .modal-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    body.degen .modal-btn { color: #fff; }
+    .modal-btn-sec {
+      width: 100%; padding: 11px; background: var(--glass); color: var(--text);
+      font-size: .88rem; font-weight: 700; border: 1px solid var(--glass-b);
+      border-radius: 10px; cursor: pointer; transition: var(--trans); margin-top: 8px;
+    }
+    .modal-btn-sec:hover { background: var(--glass-h); border-color: var(--acc); }
+    .modal-divider {
+      display: flex; align-items: center; gap: 12px;
+      color: var(--muted); font-size: .76rem; margin: 18px 0;
+    }
+    .modal-divider::before, .modal-divider::after { content:''; flex:1; height:1px; background:var(--glass-b); }
+    .profile-list { display: flex; flex-direction: column; gap: 8px; }
+    .profile-item {
+      display: flex; align-items: center; gap: 12px; padding: 10px 13px;
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 10px;
+      cursor: pointer; transition: var(--trans);
+    }
+    .profile-item:hover { background: var(--glass-h); border-color: var(--acc); }
+    .profile-item.active-profile { border-color: var(--acc); }
+    .p-avatar {
+      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .82rem; font-weight: 800; color: #000;
+    }
+    .p-item-name { font-size: .88rem; font-weight: 700; }
+    .p-item-meta { font-size: .72rem; color: var(--muted); margin-top: 1px; }
+    .export-code {
+      width: 100%; padding: 11px 13px; background: rgba(0,0,0,.35);
+      border: 1px solid var(--glass-b); border-radius: 8px; color: var(--muted);
+      font-family: monospace; font-size: .7rem; resize: none; height: 88px;
+      outline: none; margin-bottom: 10px; line-break: anywhere;
+    }
+    .export-code:focus { border-color: var(--acc); }
+
+    /* ── PROFILE PAGE ── */
+    #profile-page { max-width: 620px; margin: 0 auto; padding: 28px 20px 80px; }
+
+    .pf-hero {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 32px 24px; margin-bottom: 24px;
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px); text-align: center;
+    }
+    .pf-avatar-wrap { position: relative; margin-bottom: 16px; cursor: pointer; }
+    .pf-avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; font-weight: 900; color: #000;
+      box-shadow: 0 0 24px var(--glow); transition: var(--trans);
+    }
+    .pf-avatar-wrap:hover .pf-avatar { transform: scale(1.06); }
+    .pf-avatar-edit {
+      position: absolute; bottom: 0; right: 0;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--acc); color: #000; font-size: .7rem;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid var(--bg1); font-weight: 900;
+    }
+    .pf-name    { font-size: 1.5rem; font-weight: 900; margin-bottom: 4px; }
+    .pf-since   { font-size: .78rem; color: var(--muted); }
+
+    .pf-color-picker {
+      display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+      margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--glass-b); width: 100%;
+    }
+    .color-swatch {
+      width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+      transition: var(--trans); border: 2px solid transparent;
+    }
+    .color-swatch:hover  { transform: scale(1.2); }
+    .color-swatch.active { border-color: #fff; box-shadow: 0 0 8px rgba(255,255,255,.5); transform: scale(1.15); }
+
+    .pf-section { margin-bottom: 20px; }
+    .pf-section-label {
+      font-size: .7rem; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 10px; padding-left: 2px;
+    }
+    .pf-card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); overflow: hidden; backdrop-filter: blur(10px);
+    }
+    .pf-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 18px; border-bottom: 1px solid var(--glass-b);
+    }
+    .pf-row:last-child { border-bottom: none; }
+    .pf-row-icon  { font-size: 1.1rem; flex-shrink: 0; width: 22px; text-align: center; }
+    .pf-row-label { font-size: .82rem; color: var(--muted); flex-shrink: 0; width: 110px; }
+    .pf-row-input {
+      flex: 1; background: none; border: none; color: var(--text);
+      font-size: .9rem; outline: none; font-family: inherit;
+    }
+    .pf-row-input::placeholder { color: var(--muted); opacity: .6; }
+    .pf-row-select {
+      flex: 1; background: none; border: none; color: var(--text);
+      font-size: .9rem; outline: none; font-family: inherit; cursor: pointer;
+      -webkit-appearance: none; appearance: none;
+    }
+    .pf-row-select option { background: #1a0028; color: #fff; }
+
+    .pf-stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+    .pf-stat-card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); padding: 16px 12px; text-align: center;
+      backdrop-filter: blur(8px);
+    }
+    .pf-stat-val  { font-size: 1.6rem; font-weight: 900; color: var(--acc); line-height: 1; margin-bottom: 4px; }
+    .pf-stat-lbl  { font-size: .72rem; color: var(--muted); letter-spacing: .5px; }
+
+    .pf-save {
+      width: 100%; padding: 14px; background: var(--acc); color: #000;
+      font-size: .95rem; font-weight: 800; border: none; border-radius: 10px;
+      cursor: pointer; transition: var(--trans); box-shadow: 0 4px 18px var(--glow);
+      margin-top: 8px;
+    }
+    .pf-save:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    body.degen .pf-save { color: #fff; }
+
+    /* ── HEATMAP ── */
+    .heatmap-scroll { overflow-x: auto; padding-bottom: 6px; }
+    .heatmap-months { display: flex; gap: 3px; margin-bottom: 5px; }
+    .hm-mlbl { min-width: 12px; font-size: .62rem; color: var(--muted); white-space: nowrap; overflow: visible; }
+    .heatmap-grid { display: flex; gap: 3px; }
+    .hm-week { display: flex; flex-direction: column; gap: 3px; }
+    .hm-day {
+      width: 12px; height: 12px; border-radius: 2px;
+      cursor: default; transition: transform .12s; flex-shrink: 0;
+    }
+    .hm-day:hover { transform: scale(1.5); z-index: 2; position: relative; }
+    .hm-legend { display: flex; align-items: center; gap: 5px; margin-top: 10px; font-size: .7rem; color: var(--muted); }
+    .hm-lswatch { width: 11px; height: 11px; border-radius: 2px; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <div id="particles"></div>
+  <div id="app">
+    <div id="hub-view" class="view active"></div>
+    <div id="sch-view" class="view"></div>
+    <div id="profile-view" class="view"></div>
+  </div>
+  <div id="toast"></div>
+  <button id="profile-btn" onclick="toggleDropdown()" title="Profile"></button>
+  <div id="modal-wrap"></div>
+
+<script>
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+const C_SM = 2 * Math.PI * 22; // hub card ring r=22 in 50x50 viewBox
+const C_LG = 2 * Math.PI * 38; // schedule ring r=38 in 88x88 viewBox
+
+const LEVELS = {
+  health: [
+    {name:'Couch Potato',       min:0},
+    {name:'Weekend Warrior',    min:150},
+    {name:'Health Curious',     min:400},
+    {name:'Health Enthusiast',  min:800},
+    {name:'Optimizer',          min:1400},
+    {name:'Biohacker',          min:2200},
+    {name:'Longevity Legend',   min:3500},
+  ],
+  degen: [
+    {name:'Absolute Degenerate',    min:0},
+    {name:'Slightly Less Bad',      min:150},
+    {name:'Attempting Human',       min:400},
+    {name:'Functioning Adult',      min:800},
+    {name:'Respectable Person',     min:1400},
+    {name:'Reformed',               min:2200},
+    {name:'Devil Is Disappointed',  min:3500},
+  ]
+};
+
+// ─── SCHEDULE DATA ────────────────────────────────────────────────────────────
+const S = {
+  longevity: {
+    id:'longevity', title:'Longevity', icon:'🌿', mode:'health',
+    subtitle:'A full-day schedule for longevity, energy, and well-being',
+    tasks:[
+      {time:'6:00 AM',text:'Wake up — no phone. Get outside or near a window for natural sunlight exposure to reset your circadian rhythm.'},
+      {time:'6:30 AM',text:'Hydrate with 16–20 oz of water. Add a pinch of sea salt or electrolytes to replenish what was lost overnight.'},
+      {time:'7:00 AM',text:'Strength training — compound lifts (squats, deadlifts, pressing). Building muscle is one of the strongest predictors of longevity.'},
+      {time:'7:30 AM',text:'Continue workout — focus on progressive overload and proper form. Aim for 45–60 minutes total exercise.'},
+      {time:'8:00 AM',text:'Cold shower (2–3 minutes). Boosts norepinephrine, reduces inflammation, and improves mood and resilience.'},
+      {time:'8:30 AM',text:'High-protein breakfast — eggs, Greek yogurt, or a protein shake. Aim for 40–50g of protein to support muscle synthesis.'},
+      {time:'9:00 AM',text:'Morning walk outside (15–20 min). Aids digestion, stabilizes blood sugar, and reinforces circadian signaling.'},
+      {time:'9:30 AM',text:'Deep focused work or learning. Cognitive engagement and mental challenge are linked to reduced dementia risk.'},
+      {time:'10:00 AM',text:'Hydrate. Stand up, stretch, or do 10 squats. Prolonged sitting increases cardiovascular and metabolic risk.'},
+      {time:'10:30 AM',text:'Continue focused work. Avoid multitasking — sustained attention reduces cortisol spikes.'},
+      {time:'11:00 AM',text:'5-minute breathing exercise — try box breathing (4 sec in, hold, out, hold). Activates the parasympathetic nervous system.'},
+      {time:'11:30 AM',text:'Light movement break — a short walk or dynamic stretching to keep blood flowing and prevent stiffness.'},
+      {time:'12:00 PM',text:'Lunch — whole foods focused. Leafy greens, lean protein, healthy fats (avocado, olive oil). Minimize ultra-processed foods.'},
+      {time:'12:30 PM',text:'Post-meal walk (10–15 min). Shown to significantly reduce post-meal blood sugar spikes.'},
+      {time:'1:00 PM',text:'Social connection — call a friend, have a meaningful conversation. Strong social ties are one of the most consistent longevity predictors.'},
+      {time:'1:30 PM',text:'Return to focused work or creative tasks. Early afternoon is ideal for analytical thinking.'},
+      {time:'2:00 PM',text:'Hydrate. Step outside briefly for light exposure — helps maintain energy without caffeine.'},
+      {time:'2:30 PM',text:'Optional nap (10–20 min max) or quiet rest. Short naps improve cognitive performance and reduce cardiovascular risk.'},
+      {time:'3:00 PM',text:'Healthy snack if hungry — handful of nuts, fruit, or vegetables with hummus. Avoid sugary snacks that spike insulin.'},
+      {time:'3:30 PM',text:'Zone 2 cardio — brisk walk, cycling, or light jog at a pace where you can hold a conversation. Builds mitochondrial health.'},
+      {time:'4:00 PM',text:'Sauna session (15–20 min at 170–190°F) if available. Linked to reduced cardiovascular mortality and improved detoxification.'},
+      {time:'4:30 PM',text:'Cool down and rehydrate after sauna. Good time for light stretching or mobility work.'},
+      {time:'5:00 PM',text:'Dinner — aim to eat by 6 PM. Early time-restricted eating aligns with circadian biology and improves metabolic health.'},
+      {time:'5:30 PM',text:'Post-dinner walk (15–20 min). One of the single best habits for blood sugar regulation and digestion.'},
+      {time:'6:00 PM',text:'Quality time with family or close friends. Purposeful relationships reduce stress hormones and support immune function.'},
+      {time:'6:30 PM',text:'Relaxing hobby — reading, music, cooking, gardening. Leisure activities reduce all-cause mortality risk.'},
+      {time:'7:00 PM',text:'Begin winding down. Dim the lights and reduce screen brightness — blue light suppresses melatonin production.'},
+      {time:'7:30 PM',text:'Gratitude journaling — write 3 things you\'re grateful for. Shown to lower cortisol and improve sleep quality.'},
+      {time:'8:00 PM',text:'No screens if possible. Read a physical book, meditate, or have calm conversation instead.'},
+      {time:'8:30 PM',text:'Cool the bedroom to 65–68°F. A cooler room significantly improves deep sleep quality.'},
+      {time:'9:00 PM',text:'Gentle stretching or yoga (10–15 min). Releases tension, lowers heart rate, and signals the body it\'s time for sleep.'},
+      {time:'9:30 PM',text:'Sleep hygiene routine — brush teeth, no stimulating content, keep a consistent bedtime. Consistency is key.'},
+      {time:'10:00 PM',text:'Sleep. Aim for 7–9 hours. Sleep is when the body repairs tissue, consolidates memory, and clears brain waste (glymphatic system).'},
+    ]
+  },
+  muscle: {
+    id:'muscle', title:'Muscle Building', icon:'💪', mode:'health',
+    subtitle:'A full-day schedule optimized for maximum muscle growth and recovery',
+    tasks:[
+      {time:'6:00 AM',text:'Wake up. Get sunlight within 30 minutes — morning light spikes cortisol at the right time, aiding alertness and hormonal timing for training.'},
+      {time:'6:30 AM',text:'Pre-workout meal or shake — fast-digesting carbs + protein (banana + whey, or oats + eggs). Fueling before training improves performance and muscle protein synthesis.'},
+      {time:'7:00 AM',text:'Dynamic warm-up — leg swings, arm circles, hip openers, light band work. Prepares joints and activates target muscles to reduce injury risk.'},
+      {time:'7:30 AM',text:'Strength training — primary compound lifts (squat, bench press, deadlift, overhead press). Focus on progressive overload: add weight or reps each week.'},
+      {time:'8:00 AM',text:'Continue training — accessory work targeting weak points (rows, lunges, dips, curls). Aim for 10–20 sets per muscle group per week total.'},
+      {time:'8:30 AM',text:'Cool down — light stretching of trained muscles. Keeps flexibility and reduces next-day soreness.'},
+      {time:'9:00 AM',text:'Post-workout meal — your most important meal. 40–60g protein + ample carbohydrates. Rice, potatoes, or oats with chicken, eggs, or whey.'},
+      {time:'9:30 AM',text:'Short walk (10–15 min). Improves nutrient delivery to muscles and reduces inflammation post-training.'},
+      {time:'10:00 AM',text:'Hydrate — aim for at least 1 oz of water per pound of bodyweight daily. Muscle is ~75% water; even mild dehydration impairs strength and recovery.'},
+      {time:'10:30 AM',text:'Focused work or study. Mental rest from training allows the nervous system to begin recovering.'},
+      {time:'11:00 AM',text:'Mid-morning snack — Greek yogurt, cottage cheese, or almonds with fruit. Keep protein elevated throughout the day (every 3–4 hours).'},
+      {time:'11:30 AM',text:'Light movement — stand up, short walk, or 2–3 sets of bodyweight exercises. Keeps blood flowing to recovering muscles.'},
+      {time:'12:00 PM',text:'Lunch — high protein and carbohydrate. Ground beef + rice + vegetables, or salmon + sweet potato + salad. Aim for 40–50g protein per meal.'},
+      {time:'12:30 PM',text:'Post-meal walk. Stabilizes blood sugar and improves insulin sensitivity, helping shuttle nutrients into muscle cells.'},
+      {time:'1:00 PM',text:'Creatine (5g) if not taken earlier. The most well-researched supplement for muscle growth — increases ATP production in muscle cells.'},
+      {time:'1:30 PM',text:'Continued work. Avoid excessive cardio during recovery hours — too much energy expenditure can blunt muscle growth.'},
+      {time:'2:00 PM',text:'Hydrate. Check urine color — pale yellow means well hydrated. Dark yellow means drink more.'},
+      {time:'2:30 PM',text:'Optional nap (20–30 min). Growth hormone is released during sleep — even short naps can accelerate muscle recovery.'},
+      {time:'3:00 PM',text:'Afternoon snack — protein-focused. Hard-boiled eggs, beef jerky, or a protein shake. Keeping protein elevated prevents muscle breakdown.'},
+      {time:'3:30 PM',text:'Light mobility or foam rolling. Addresses tight spots, improves range of motion, and keeps connective tissue healthy.'},
+      {time:'4:00 PM',text:'Review training log — track weights, sets, and reps from today. Progressive overload requires knowing your numbers.'},
+      {time:'4:30 PM',text:'Prepare or plan tomorrow\'s training. Having a plan reduces decision fatigue and ensures you hit all muscle groups optimally.'},
+      {time:'5:00 PM',text:'Dinner — largest meal of the day. Prioritize protein (50–60g) and carbohydrates. Slow-digesting proteins like casein are ideal at night.'},
+      {time:'5:30 PM',text:'Post-dinner walk (15 min). Aids digestion and keeps metabolism active without burning recovery calories.'},
+      {time:'6:00 PM',text:'Relaxation and social time. Elevated chronic cortisol directly inhibits testosterone and growth hormone production.'},
+      {time:'7:00 PM',text:'Dim lights and reduce screen exposure. Blue light suppresses melatonin, which also suppresses growth hormone release during sleep.'},
+      {time:'7:30 PM',text:'Pre-bed snack — slow-digesting protein. Cottage cheese, casein shake, or Greek yogurt. Increases overnight muscle protein synthesis by up to 22%.'},
+      {time:'8:30 PM',text:'Cool the bedroom to 65–68°F. Cooler temperatures improve deep sleep quality, when the majority of growth hormone is released.'},
+      {time:'10:00 PM',text:'Sleep — 8–9 hours is the target. The majority of tissue repair and growth hormone secretion occurs during deep sleep stages.'},
+    ]
+  },
+  cardio: {
+    id:'cardio', title:'Cardiovascular Health', icon:'❤️', mode:'health',
+    subtitle:'A full-day schedule to strengthen your heart, improve circulation, and boost endurance',
+    tasks:[
+      {time:'6:00 AM',text:'Wake up and get morning sunlight. Light exposure in the morning lowers resting heart rate over time and regulates blood pressure through circadian alignment.'},
+      {time:'6:30 AM',text:'Hydrate with 16–20 oz of water. Dehydration thickens the blood and forces the heart to work harder.'},
+      {time:'7:00 AM',text:'Light warm-up — 5 minutes of walking, then dynamic stretches. Gradually raising heart rate prevents dangerous spikes.'},
+      {time:'7:30 AM',text:'Zone 2 cardio — sustained aerobic exercise at 60–70% max heart rate (you can speak in full sentences). Brisk walk, jog, cycling, rowing, or swimming.'},
+      {time:'8:00 AM',text:'Continue Zone 2 cardio. Aim for 45–60 minutes total. Zone 2 builds mitochondrial density and lowers resting heart rate.'},
+      {time:'8:30 AM',text:'Cool down — slow the pace gradually for 5–10 minutes, then static stretching. Abrupt stops can cause blood pooling.'},
+      {time:'9:00 AM',text:'Heart-healthy breakfast — oats with berries and flaxseed, or eggs with avocado on whole grain toast. Omega-3s, fiber, and antioxidants support cardiovascular function.'},
+      {time:'9:30 AM',text:'Morning walk (10–15 min). Even after a workout, a short walk improves circulation and helps regulate blood pressure.'},
+      {time:'10:00 AM',text:'Hydrate and take heart-supportive supplements — omega-3 fish oil (2–4g EPA/DHA), magnesium, and CoQ10.'},
+      {time:'11:00 AM',text:'Breathing exercise — 5 minutes of slow diaphragmatic breathing (5 sec inhale, 5 sec exhale). Directly lowers blood pressure and activates the vagus nerve.'},
+      {time:'11:30 AM',text:'Stand up and move — a short walk or light stretching. Sitting for long periods raises cardiovascular risk independently of exercise.'},
+      {time:'12:00 PM',text:'Lunch — Mediterranean-style meal. Olive oil, leafy greens, legumes, fatty fish, and whole grains. The strongest evidence-based diet for reducing heart disease risk.'},
+      {time:'12:30 PM',text:'Post-meal walk (15 min). Prevents the blood sugar spike and inflammatory response after eating, which stress the cardiovascular system.'},
+      {time:'1:00 PM',text:'Check in on stress levels. Journal briefly or take 5 slow breaths. Anxiety and hostility are independent risk factors for heart disease.'},
+      {time:'2:00 PM',text:'Hydrate. Aim for half your bodyweight in ounces of water daily. Proper hydration keeps blood viscosity low, reducing heart workload.'},
+      {time:'2:30 PM',text:'Optional rest or short nap (20 min). Regular nappers have a 37% lower risk of heart-related death. Rest reduces cumulative cardiovascular stress.'},
+      {time:'3:00 PM',text:'Heart-healthy snack — a handful of walnuts, dark chocolate (85%+), or an apple. Both walnuts and dark chocolate are among the most studied foods for reducing LDL and blood pressure.'},
+      {time:'3:30 PM',text:'High-intensity interval training (HIIT) — 2–3x per week: 20 minutes of intervals (30 sec sprint / 90 sec walk × 8). HIIT improves VO2 max, the strongest predictor of cardiovascular longevity.'},
+      {time:'4:00 PM',text:'On non-HIIT days: light cycling, swimming, or a brisk walk. Consistent low-intensity movement on rest days accelerates cardiac recovery.'},
+      {time:'4:30 PM',text:'Sauna session (15–20 min) if available. Finnish sauna use 4–7x per week is associated with a 50% reduction in fatal cardiovascular events.'},
+      {time:'5:00 PM',text:'Dinner — early and light. Focus on fish (salmon, sardines, mackerel), vegetables, legumes, and whole grains. A large, late meal forces the heart to work harder during sleep.'},
+      {time:'5:30 PM',text:'Post-dinner walk (15–20 min). One of the most effective daily habits for lowering blood pressure and triglycerides over time.'},
+      {time:'6:00 PM',text:'Social connection and relaxation. Loneliness increases cardiovascular risk as much as smoking 15 cigarettes a day.'},
+      {time:'7:30 PM',text:'Gratitude practice or journaling. Studies show gratitude interventions lower inflammatory biomarkers and improve heart rate variability within weeks.'},
+      {time:'8:00 PM',text:'No alcohol. Even moderate drinking raises blood pressure, triggers atrial fibrillation, and weakens the heart muscle over time.'},
+      {time:'9:00 PM',text:'Gentle yoga or progressive muscle relaxation. Lowers blood pressure, reduces arterial stiffness, and activates the parasympathetic nervous system.'},
+      {time:'10:00 PM',text:'Sleep — 7–9 hours. Poor sleep is one of the strongest modifiable risk factors for heart attack and stroke. During deep sleep, blood pressure drops to its lowest.'},
+    ]
+  },
+  bone: {
+    id:'bone', title:'Bone Health', icon:'🦴', mode:'health',
+    subtitle:'A full-day schedule to build dense, strong bones and prevent osteoporosis',
+    tasks:[
+      {time:'6:00 AM',text:'Wake up and get outside for morning sunlight. UVB light triggers vitamin D synthesis — vitamin D is essential for calcium absorption. Without it, calcium cannot be properly deposited into bone.'},
+      {time:'6:30 AM',text:'Hydrate with 16–20 oz of water. Avoid soda — phosphoric acid in carbonated drinks leaches calcium from bones and is directly linked to lower bone density.'},
+      {time:'7:00 AM',text:'Warm-up — joint circles, hip mobility, and light resistance band work. Preparing joints before load-bearing exercise reduces fracture risk.'},
+      {time:'7:30 AM',text:'Weight-bearing strength training — the most powerful stimulus for bone formation. Squats, deadlifts, and lunges signal osteoblasts (bone-building cells) to lay down new bone tissue.'},
+      {time:'8:00 AM',text:'Continue strength training — include pulling movements (rows, pull-ups) and pressing (overhead press). Upper body loading builds spinal and wrist bone density.'},
+      {time:'8:30 AM',text:'Impact activity — jump rope, box jumps, or jogging. Impact forces are one of the strongest signals for bone remodeling. Even 10–20 jumps per day improves hip bone density.'},
+      {time:'9:00 AM',text:'Calcium-rich breakfast — Greek yogurt, fortified milk, or a smoothie with kale and chia seeds. Aim for 1,000–1,200mg of calcium per day, split across meals.'},
+      {time:'9:30 AM',text:'Take vitamin D3 + K2 supplement with food. D3 increases calcium absorption; K2 directs calcium into bones rather than arteries. The most important supplement stack for bone health.'},
+      {time:'10:00 AM',text:'Spend 15–20 minutes outdoors. Daily sun exposure (arms and face) provides ongoing vitamin D production. Most people are deficient, especially in winter.'},
+      {time:'11:00 AM',text:'Balance training — stand on one foot for 30 seconds each side. Balance and coordination reduce fall risk, the primary cause of osteoporotic fractures in older adults.'},
+      {time:'11:30 AM',text:'Movement break — walk around, do bodyweight squats, or climb stairs. Weight-bearing movement throughout the day sustains bone-building signals.'},
+      {time:'12:00 PM',text:'Lunch — bone-supportive foods. Sardines with bones, leafy greens (kale, bok choy, broccoli), beans, and nuts. These provide calcium, magnesium, phosphorus, and vitamin K1.'},
+      {time:'12:30 PM',text:'Post-meal walk (15 min). Walking is a weight-bearing activity that continuously stimulates bone maintenance, especially in the hips, spine, and legs.'},
+      {time:'1:00 PM',text:'Magnesium check — nearly half of bone mass is magnesium. Nuts, seeds, dark chocolate, and leafy greens are top sources. Aim for 400mg daily.'},
+      {time:'2:00 PM',text:'Hydrate. Avoid excess sodium — a high-sodium diet causes the kidneys to excrete more calcium, which must then be pulled from bone to maintain blood levels.'},
+      {time:'3:00 PM',text:'Afternoon snack — cheese, almonds, or a glass of fortified milk. Spreading calcium intake across 3–4 servings per day improves absorption.'},
+      {time:'3:30 PM',text:'Outdoor activity — hiking, brisk walking, or recreational sports. Any weight-bearing outdoor activity doubles as both bone stimulus and vitamin D production.'},
+      {time:'4:00 PM',text:'Collagen supplement (10g) or bone broth. Collagen makes up 30% of bone by weight. Supplementing with collagen peptides alongside vitamin C increases bone mineral density.'},
+      {time:'4:30 PM',text:'Stretching and posture work — focus on thoracic spine extension and hip flexor stretches. Good posture reduces compressive forces on vertebrae.'},
+      {time:'5:00 PM',text:'Dinner — include omega-3 rich foods (salmon, mackerel, flaxseed). Omega-3 fatty acids reduce osteoclast activity (bone breakdown) and support the anti-inflammatory environment for bone repair.'},
+      {time:'5:30 PM',text:'Post-dinner walk (15 min). Consistent daily walking has been shown to slow bone loss in older adults more reliably than most supplements.'},
+      {time:'6:00 PM',text:'Avoid smoking and limit alcohol. Smoking reduces bone density by impairing blood supply to bone tissue. Alcohol interferes with calcium absorption and vitamin D metabolism.'},
+      {time:'7:30 PM',text:'Review nutrition — did you hit your calcium and protein targets today? Low protein intake is a major but overlooked driver of bone loss. Aim for 0.7–1g per pound of bodyweight.'},
+      {time:'9:00 PM',text:'Gentle stretching — focus on spine, hips, and ankles. Maintaining joint mobility ensures correct force distribution through bone during daily activity.'},
+      {time:'10:00 PM',text:'Sleep — 7–9 hours. Bone remodeling is most active during sleep. Osteoblasts lay down new bone matrix primarily at night.'},
+    ]
+  },
+  brain: {
+    id:'brain', title:'Brain Health', icon:'🧠', mode:'health',
+    subtitle:'A full-day schedule to sharpen cognition, protect memory, and reduce dementia risk',
+    tasks:[
+      {time:'6:00 AM',text:'Wake up without an alarm if possible. The brain consolidates memory and clears metabolic waste via the glymphatic system during the final hours of sleep — abrupt alarms cut this short.'},
+      {time:'6:30 AM',text:'Get morning sunlight immediately. Light hitting the retina triggers a cortisol pulse that sets your circadian clock — directly regulating alertness, mood, and cognitive performance all day.'},
+      {time:'7:00 AM',text:'Hydrate with 16–20 oz of water. The brain is 73% water. Even 1–2% dehydration measurably impairs short-term memory, attention, and reaction time.'},
+      {time:'7:30 AM',text:'Aerobic exercise — 30–45 minutes of moderate cardio. Exercise is the single most powerful tool for brain health: it raises BDNF (brain-derived neurotrophic factor), which grows new neurons in the hippocampus.'},
+      {time:'8:30 AM',text:'Cold shower (2 minutes). Spikes norepinephrine by up to 300%, dramatically improving focus, attention, and mental energy for hours afterward.'},
+      {time:'9:00 AM',text:'Brain-healthy breakfast — fatty fish, eggs (choline for acetylcholine production), blueberries (linked to improved memory), and walnuts. Avoid high-sugar breakfasts.'},
+      {time:'9:30 AM',text:'Deep focused work — your most cognitively demanding tasks go here. The post-exercise BDNF spike combined with morning cortisol makes this the peak window for learning and problem-solving.'},
+      {time:'10:00 AM',text:'No multitasking. Every time you switch tasks the brain uses glucose and takes 15–20 minutes to fully re-engage. This is when the strongest neural connections are formed.'},
+      {time:'10:30 AM',text:'Continue deep work. Aim for 90-minute focus blocks — the brain naturally cycles between high and low alertness every ~90 minutes (ultradian rhythm).'},
+      {time:'11:00 AM',text:'Take a true mental break — step outside, do nothing, or do light movement. Default Mode Network activity during rest consolidates learning and fuels creative insight. Do not scroll your phone.'},
+      {time:'11:30 AM',text:'Learn something new — a language, instrument, or challenging reading. Neuroplasticity requires novelty and challenge. Routine tasks do not build new neural pathways.'},
+      {time:'12:00 PM',text:'Lunch — Mediterranean-style. Olive oil, leafy greens, fatty fish, nuts, and legumes. The MIND diet reduces Alzheimer\'s risk by up to 53% in adherent individuals.'},
+      {time:'12:30 PM',text:'Post-meal walk (15 min). Stabilizes blood sugar — glucose spikes and crashes impair memory consolidation and accelerate neuroinflammation over time.'},
+      {time:'1:00 PM',text:'Social interaction — have a real conversation. Social engagement is one of the strongest known protectors against dementia. It activates prefrontal cortex circuits that keep the brain sharp.'},
+      {time:'2:00 PM',text:'Hydrate. Take omega-3 fish oil (2–3g EPA/DHA). DHA is the primary structural fat in brain cell membranes — essential for neuronal communication and strongly linked to reduced dementia risk.'},
+      {time:'2:30 PM',text:'Nap (20 min max) or eyes-closed rest. NASA research shows a 26-minute nap improves cognitive performance by 34% and alertness by 54%. Keep it under 30 minutes to avoid sleep inertia.'},
+      {time:'3:00 PM',text:'Brain-stimulating activity — chess, crossword, memory games, reading nonfiction, or learning a new skill. Cognitive reserve built through mental challenge is a direct buffer against dementia.'},
+      {time:'3:30 PM',text:'Mindfulness meditation — 10–20 minutes. Shown to increase gray matter density in the prefrontal cortex and hippocampus, reduce cortisol, and improve working memory within 8 weeks.'},
+      {time:'4:00 PM',text:'Light physical activity — a walk, yoga, or mobility work. Physical movement increases cerebral blood flow, delivering oxygen and glucose to active brain regions.'},
+      {time:'5:00 PM',text:'Dinner — include turmeric (curcumin reduces amyloid plaques linked to Alzheimer\'s), dark leafy greens, and berries. Avoid ultra-processed foods — directly linked to accelerated cognitive decline.'},
+      {time:'5:30 PM',text:'Post-dinner walk. Prevents the inflammatory blood sugar response after eating, which over years damages the blood-brain barrier and contributes to neurodegeneration.'},
+      {time:'6:00 PM',text:'Meaningful social time. Conversations that require perspective-taking and empathy activate the prefrontal cortex and build the cognitive reserve that delays dementia by years.'},
+      {time:'6:30 PM',text:'Read a physical book. Reading builds vocabulary, strengthens neural networks across multiple brain regions, and is associated with a 2.5-year delay in cognitive decline.'},
+      {time:'7:00 PM',text:'Dim lights and stop screens. Evening blue light suppresses melatonin and delays the start of the glymphatic system — the brain\'s overnight waste-clearance process that removes amyloid and tau proteins.'},
+      {time:'7:30 PM',text:'Journaling — write about your day, what you learned, or what you\'re grateful for. Writing activates memory consolidation circuits and reduces cortisol-damaging rumination.'},
+      {time:'9:00 PM',text:'Relaxation practice — deep breathing, body scan, or progressive muscle relaxation. Chronically elevated cortisol shrinks the hippocampus, the brain\'s memory center.'},
+      {time:'10:00 PM',text:'Sleep — 7–9 hours. During deep sleep, the glymphatic system flushes the brain of amyloid-beta and tau — the proteins that accumulate into the plaques of Alzheimer\'s disease.'},
+    ]
+  },
+  digestive: {
+    id:'digestive', title:'Digestive Health', icon:'🥦', mode:'health',
+    subtitle:'A full-day schedule to optimize your gut microbiome, digestion, and nutrient absorption',
+    tasks:[
+      {time:'6:00 AM',text:'Wake up and drink 16–20 oz of warm water. Warm water stimulates the gastrocolic reflex — the signal from your stomach to your colon that initiates bowel movement and sets a healthy digestive rhythm.'},
+      {time:'6:30 AM',text:'Optional: add lemon juice to your water. Lemon stimulates bile production in the liver, which is essential for fat digestion and helps flush stagnant digestive juices from overnight.'},
+      {time:'7:00 AM',text:'Morning movement — a brisk 15–20 minute walk. Physical movement directly stimulates peristalsis (the wave-like contractions that move food through the digestive tract).'},
+      {time:'7:30 AM',text:'Breakfast — only if hungry. Do not force an early meal. Eating before you are hungry disrupts the Migrating Motor Complex (MMC), the gut\'s self-cleaning cycle that runs between meals.'},
+      {time:'8:00 AM',text:'Probiotic supplement or fermented food — yogurt with live cultures, kefir, kimchi, sauerkraut, or miso. Probiotics replenish beneficial gut bacteria that regulate digestion, immunity, and mood.'},
+      {time:'8:30 AM',text:'Eat slowly and chew thoroughly — aim for 20–30 chews per bite. Digestion begins in the mouth. Amylase in saliva starts breaking down carbohydrates, reducing the burden on the stomach.'},
+      {time:'9:00 AM',text:'Post-breakfast walk (10–15 min). Walking after meals is one of the most consistently effective habits for reducing bloating and improving gastric emptying.'},
+      {time:'10:00 AM',text:'Hydrate — sip water consistently between meals. Staying hydrated keeps the mucosal lining of the gut intact and softens stool for easier transit. Avoid large amounts during meals.'},
+      {time:'10:30 AM',text:'Prebiotic snack — a green banana, chicory root, garlic, onion, or oats. Prebiotics are the fiber that feeds your beneficial gut bacteria. Without prebiotics, probiotics cannot thrive.'},
+      {time:'11:00 AM',text:'Stress check — take 5 slow deep breaths. The vagus nerve connects the brain directly to the gut. Activating it through deep breathing switches the body into rest-and-digest mode.'},
+      {time:'11:30 AM',text:'Movement break — walk or light stretching. The MMC (gut\'s cleaning wave) activates during fasted, relaxed states between meals. Movement supports this process.'},
+      {time:'12:00 PM',text:'Lunch — the largest meal of the day. Digestive enzyme activity peaks midday. Include diverse plant foods (aim for 30+ different plants per week — the strongest predictor of a healthy microbiome).'},
+      {time:'12:30 PM',text:'Post-lunch walk (15 min). Studies show a 15-minute walk after lunch reduces bloating and accelerates gastric emptying more effectively than any supplement.'},
+      {time:'1:00 PM',text:'Digestive enzyme support if needed — papaya (papain), pineapple (bromelain), or a digestive enzyme supplement. These help break down proteins, fats, and carbohydrates.'},
+      {time:'1:30 PM',text:'Avoid lying down after eating — remain upright for at least 2 hours. Lying down allows stomach acid to reflux and slows gastric emptying significantly.'},
+      {time:'2:00 PM',text:'Hydrate. Herbal teas — ginger, peppermint, or fennel — are excellent between-meal drinks that reduce bloating, relax intestinal smooth muscle, and support bile flow.'},
+      {time:'3:00 PM',text:'Fiber-rich snack — apple with skin, pear, carrots, or hummus with vegetables. Soluble fiber feeds beneficial bacteria; insoluble fiber adds bulk and speeds transit time.'},
+      {time:'3:30 PM',text:'Light exercise — walking, yoga, or cycling. Regular aerobic exercise increases microbial diversity in the gut, one of the strongest markers of overall digestive and immune health.'},
+      {time:'4:30 PM',text:'Abdominal self-massage — 5 minutes of gentle clockwise circular massage. This follows the path of the large intestine and stimulates peristalsis, reducing constipation and gas buildup.'},
+      {time:'5:00 PM',text:'Early dinner — aim to finish eating by 7 PM. The gut\'s digestive efficiency drops significantly in the evening. Late eating is linked to acid reflux, poor sleep, and disrupted gut microbiome rhythm.'},
+      {time:'5:30 PM',text:'Post-dinner walk (15–20 min). The most important post-meal walk of the day — evening digestion is slowest, and walking significantly compensates by stimulating gastric motility.'},
+      {time:'7:00 PM',text:'Stop eating for the night. A 12–16 hour overnight fast allows the MMC to run its full cleaning cycle through the gut, sweeping undigested material and preventing bacterial overgrowth.'},
+      {time:'7:30 PM',text:'Herbal tea — chamomile or ginger. Both reduce intestinal inflammation, calm gut smooth muscle, and support the transition into rest-and-digest mode for overnight repair.'},
+      {time:'9:00 PM',text:'Gentle yoga or stretching — poses like child\'s pose, supine twists, and happy baby compress and release the abdominal organs, stimulating digestion and relieving trapped gas.'},
+      {time:'10:00 PM',text:'Sleep — 7–9 hours. During sleep the gut lining regenerates, the microbiome rebalances, and the MMC completes its final cleaning sweep. Poor sleep is one of the most damaging things you can do to long-term gut health.'},
+    ]
+  },
+  degenerates: {
+    id:'degenerates', title:'Degenerates', icon:'🎮', mode:'degen',
+    subtitle:'For those who sit all day, vape, zyn, and game until midnight — but want to start somewhere',
+    disclaimer:'No judgment here. These are small, realistic steps that fit your actual life. You don\'t have to do all of them — just pick a few and stack wins over time.',
+    tasks:[
+      {time:'9:00 AM',text:'Wake up. Before you grab your vape or phone, drink a full glass of water first. That\'s it. One glass. Your body is dehydrated from sleep and nicotine.',why:'Why it matters: nicotine is a diuretic and dehydrates you overnight. Starting hydrated reduces morning brain fog significantly.'},
+      {time:'9:30 AM',text:'Step outside for 5 minutes. You don\'t have to exercise. Just go outside, look at the sky, get some light on your face. Morning sunlight sets your internal clock and makes it easier to fall asleep at night.',why:'Why it matters: 5 minutes of morning light is enough to start shifting your circadian rhythm and improving sleep quality.'},
+      {time:'10:00 AM',text:'Eat something real before you sit down to work. Eggs, toast, a protein bar, leftover pizza. Anything with some protein. Skipping breakfast while vaping spikes cortisol and kills concentration.',why:'Why it matters: protein in the morning stabilizes blood sugar and reduces cravings for junk throughout the day.'},
+      {time:'10:30 AM',text:'Sit down to work. Keep your vape nearby if you need it — we\'re not taking that away yet. But put a large water bottle on your desk too. Every time you reach for the vape, take a sip of water first.',why:'Why it matters: pairing water with nicotine use gradually reduces intake and keeps you hydrated at the same time.'},
+      {time:'11:00 AM',text:'Stand up. Set a timer — every hour, stand up for 2 minutes. Walk to the kitchen, stretch your arms, look out a window. Sitting for hours compresses your spine and tanks your energy.',why:'Why it matters: breaking up sitting every hour reduces back pain, improves circulation, and boosts afternoon energy more than caffeine.'},
+      {time:'11:30 AM',text:'Keep working. Notice your posture. You don\'t have to fix it perfectly — just sit slightly more upright than you are right now. Slouching restricts your breathing and increases fatigue.',why:'Why it matters: even a small improvement in posture increases oxygen intake and reduces neck and shoulder tension over time.'},
+      {time:'12:00 PM',text:'Lunch — order whatever you want, but add one vegetable or piece of fruit somewhere in the meal. A banana. Some baby carrots. A handful of spinach. One item. That\'s the entire goal.',why:'Why it matters: most people in this lifestyle eat near-zero fiber. One item per meal starts rebuilding gut health without overhauling your diet.'},
+      {time:'12:30 PM',text:'After you eat, take a 10-minute walk outside. Bring your phone — listen to a podcast, a playlist, whatever. You\'re not exercising, you\'re just walking for 10 minutes.',why:'Why it matters: a post-meal walk cuts blood sugar spikes, reduces bloating, boosts afternoon focus, and is the easiest entry point into daily movement.'},
+      {time:'1:00 PM',text:'Back to work. Try to do one focused task without a show in the background — just 20 minutes. Pick the most important thing you need to do and do it with full attention.',why:'Why it matters: 20 minutes of focused work produces more output than 2 hours of split-attention work. Your brain needs this practice to rebuild concentration.'},
+      {time:'1:30 PM',text:'Drink another full glass of water. If you\'ve been vaping all morning, you are more dehydrated than you realize. Dehydration causes fatigue, headaches, and increased nicotine cravings.',why:'Why it matters: many nicotine cravings are actually thirst signals. Staying hydrated can noticeably reduce how often you reach for the vape.'},
+      {time:'2:00 PM',text:'Stand up again — this is your hourly break. This time, do 10 squats or 10 push-ups before you sit back down. Just 10. It takes 30 seconds.',why:'Why it matters: 10 reps per hour adds up to 80–100 reps by end of day. Over weeks this builds a baseline of strength without a single "workout."'},
+      {time:'2:30 PM',text:'Afternoon slump hits hard around now. Instead of vaping more to push through it, try drinking cold water and standing up for a few minutes. The slump is usually dehydration + sitting.',why:'Why it matters: nicotine gives a short alertness boost followed by a deeper crash. Water and movement break the slump without the rebound.'},
+      {time:'3:00 PM',text:'Snack time — grab something with protein. Beef jerky, string cheese, peanut butter on crackers, a handful of nuts. Protein keeps you fuller longer and prevents the junk food spiral.',why:'Why it matters: a protein snack here prevents the intense junk food cravings that typically hit when gaming starts at night.'},
+      {time:'3:30 PM',text:'Try swapping one vape session for a zyn, or one zyn for a piece of gum. You\'re not quitting — just slightly reducing your hit frequency. Small reductions compound over time.',why:'Why it matters: slowly spacing out nicotine use reduces dependency over weeks without the withdrawal that comes from going cold turkey.'},
+      {time:'4:00 PM',text:'Hourly stand-up. This time walk outside for 5 minutes. Fresh air, a little movement, away from the screen. Your eyes, your back, and your lungs all need this.',why:'Why it matters: regular outdoor breaks reduce eye strain, lower cortisol, and improve the quality of focus when you return to work.'},
+      {time:'5:00 PM',text:'Wrap up work. Before you transition to gaming, eat a real dinner. Sit down and eat — not in front of a game. Eating while gaming leads to mindless overeating and no satiety signals.',why:'Why it matters: eating without distraction allows your brain to register fullness, reducing total calorie intake without dieting.'},
+      {time:'5:30 PM',text:'After dinner, take another 10-minute walk. This is the most important one. Evening blood sugar management determines how you feel and sleep tonight.',why:'Why it matters: a post-dinner walk is shown to improve sleep quality — you\'ll game better and feel better tomorrow if you do this consistently.'},
+      {time:'6:00 PM',text:'Gaming time. Enjoy it. But set up your space better: sit up straighter, have a water bottle at your desk, and keep snacks reasonable. Small environmental changes beat willpower every time.',why:'Why it matters: having water visible and accessible means you\'ll drink it without thinking. Environment shapes behavior more than motivation does.'},
+      {time:'7:00 PM',text:'Hydrate. One glass of water per hour of gaming is a reasonable target. Gaming is mentally taxing and dehydrates you faster than you\'d expect.',why:'Why it matters: even mild dehydration (1–2%) slows reaction time and decision-making. Staying hydrated literally makes you play better.'},
+      {time:'8:30 PM',text:'Try to put the vape down for the next hour. Evening is when nicotine most disrupts sleep — it keeps your nervous system elevated and delays the natural wind-down your body needs.',why:'Why it matters: nicotine in the 2–3 hours before sleep measurably reduces REM sleep, when your brain recovers and reaction time resets.'},
+      {time:'9:00 PM',text:'Keep gaming. But if you can, dim your monitor brightness slightly and turn on night mode (warm/orange tint). Blue light from screens suppresses melatonin.',why:'Why it matters: night mode doesn\'t affect gaming but significantly reduces the sleep-disrupting effects of late-night screen use.'},
+      {time:'10:00 PM',text:'Still gaming — that\'s fine. But set a soft alarm for midnight as your stop time. Having a defined end point is more effective than "I\'ll stop when I\'m tired."',why:'Why it matters: chronic sleep deprivation past midnight tanks testosterone, increases appetite, impairs memory, and makes the next day significantly harder.'},
+      {time:'11:00 PM',text:'Start wrapping up. Finish your current match or session. Avoid starting something long and new. The "one more game" spiral is real — having a wind-down rule works better than trying to stop mid-session.',why:'Why it matters: giving yourself a defined stopping rule reduces the decision fatigue that leads to gaming until 3 AM without meaning to.'},
+      {time:'12:00 AM',text:'Sleep. You don\'t have to fix your whole schedule — just try to be asleep by midnight consistently. Consistent sleep timing, even at non-traditional hours, is far better than irregular sleep.',why:'Why it matters: consistency matters more than timing. A consistent midnight bedtime is significantly healthier than sleeping at random hours.'},
+    ]
+  },
+  'degenerates-plus': {
+    id:'degenerates-plus', title:'Degenerates ++', icon:'💀', mode:'degen',
+    subtitle:'You quit vaping. You\'re drinking water. You\'re actually trying. This is your next level.',
+    disclaimer:'Quitting nicotine is genuinely one of the hardest things a person can do — and you did it. This page builds on that win. The habits here are bigger than before, but still built around your actual lifestyle. You still game. You still sit. That\'s fine. Let\'s just make the rest of the day work harder for you.',
+    tasks:[
+      {time:'8:00 AM',text:'Wake up 30–60 minutes earlier than before. Without nicotine disrupting REM sleep, your body recovers faster. Waking up slightly earlier costs less than it used to.',why:'Why it matters: without nicotine disrupting REM sleep, your body actually gets more out of fewer hours. Use that extra time.'},
+      {time:'8:30 AM',text:'Drink 20 oz of water immediately. Then step outside for 10 minutes. Actual outside. Morning light now, cravings less later — your dopamine system is still recalibrating from nicotine and sunlight helps.',why:'Why it matters: nicotine artificially flooded your dopamine system for years. Morning sunlight is one of the fastest natural ways to restore a healthy dopamine baseline.'},
+      {time:'9:00 AM',text:'Eat a real breakfast with protein. Now that you\'re not suppressing appetite with nicotine, hunger is real again — feed it properly. Eggs, Greek yogurt, cottage cheese. Aim for at least 30g protein.',why:'Why it matters: nicotine suppressed appetite for years. Your metabolism is recalibrating — high protein breakfast reduces junk food cravings throughout the day.'},
+      {time:'9:30 AM',text:'Start work. Replace the "reach for the vape" habit with a sip of water or a piece of gum. The hand-to-mouth reflex takes a few months to fully fade.',why:'Why it matters: the hand-to-mouth habit is conditioned behavior separate from nicotine addiction. Having a replacement action prevents relapse more than willpower alone.'},
+      {time:'10:00 AM',text:'First workout of your new life — 15 to 20 minutes. Bodyweight exercises: 3 sets of push-ups, 3 sets of squats, and a 1-minute plank. Your cardiovascular system is already recovering from vaping.',why:'Why it matters: lung capacity begins recovering within weeks of quitting. Light exercise accelerates this recovery and the gains come faster than you\'d expect.'},
+      {time:'10:30 AM',text:'Back to work — and try 30 minutes of single-focus work. No show, no game in the background. You\'re rebuilding your dopamine system\'s ability to find reward in normal activities.',why:'Why it matters: nicotine hijacked your dopamine reward system. Single-focus work rebuilds the brain\'s ability to find satisfaction in non-stimulant activities.'},
+      {time:'11:00 AM',text:'Stand up, stretch, and take a 5-minute walk. Add a set of 15 push-ups or 20 squats before sitting back down. Your hourly movement habit from before should be locked in.',why:'Why it matters: adding reps turns a health habit into a fitness habit without needing a separate workout.'},
+      {time:'12:00 PM',text:'Lunch — now aim for half your plate being vegetables, protein, or whole foods. You don\'t have to eat clean all the time — just make lunch the meal where you consistently do well.',why:'Why it matters: one high-quality meal per day is a sustainable entry point into better nutrition. It compounds significantly over months.'},
+      {time:'12:30 PM',text:'Post-lunch walk — 15–20 minutes. You\'ve already built this habit. Now increase the pace slightly. Not a jog — just walk with purpose.',why:'Why it matters: increasing walk intensity slightly is the easiest cardiovascular upgrade. Even a 10% pace increase adds real aerobic benefit.'},
+      {time:'1:00 PM',text:'Practice the single-focus block again — 25 to 30 minutes of no background noise. Use the Pomodoro method: 25 minutes on, 5 minutes off. Your concentration will rebuild faster than you think.',why:'Why it matters: nicotine withdrawal impairs focus for 2–4 weeks but then focus typically exceeds pre-quitting levels. You are building a cognitive engine.'},
+      {time:'1:30 PM',text:'Hydrate. Check in — any nicotine cravings right now? They peak at 3–5 minutes and then pass. Drink water, do 20 squats, or step outside. Physical movement is one of the fastest craving suppressors.',why:'Why it matters: exercise triggers dopamine release through a healthy pathway, directly competing with nicotine cravings and reducing their intensity over time.'},
+      {time:'2:00 PM',text:'Hourly stand and move — this time do something slightly harder. Try 10 burpees, 20 lunges, or a 2-minute wall sit. You\'re past the beginner stage.',why:'Why it matters: your baseline fitness has risen enough that the same 10 squats are no longer a sufficient stimulus. Progressive challenge is required for continued improvement.'},
+      {time:'3:00 PM',text:'Protein-focused snack. Your muscles are now getting actual stimulation from the movement you\'ve been adding — feed them. Beef jerky, hard-boiled eggs, or a protein shake. Aim for 20–30g protein.',why:'Why it matters: you are now building muscle with your hourly reps. Without adequate protein, the stimulus goes to waste.'},
+      {time:'3:30 PM',text:'Increase your daily walk target — aim for 7,000 to 8,000 steps today. Track it on your phone. You\'re probably already hitting 4,000–5,000 from your existing habits.',why:'Why it matters: 7,000–8,000 steps per day is associated with a 50–65% reduction in all-cause mortality compared to sedentary levels.'},
+      {time:'4:00 PM',text:'End-of-workday movement — do a proper 10-minute bodyweight circuit. Push-ups, squats, lunges, and a plank. No equipment. Just 10 minutes as a transition between work and gaming.',why:'Why it matters: a short circuit at day\'s end resets cortisol, improves evening mood, and creates a clear mental boundary between work and leisure.'},
+      {time:'4:30 PM',text:'Get outside for a proper 20-minute walk before gaming starts. Think of this as your decompression ritual — the thing that makes gaming feel better and more focused.',why:'Why it matters: outdoor light exposure in the afternoon delays melatonin onset slightly, meaning you\'ll feel more awake during gaming and sleepier when you want to sleep.'},
+      {time:'5:00 PM',text:'Eat dinner sitting down, away from a screen. This is now a real rule — not optional. You\'ve proven you can build habits. This one matters for digestion and portion control.',why:'Why it matters: eating without a screen increases meal satisfaction and reduces total calorie intake by 15–25% on average, without trying to eat less.'},
+      {time:'5:30 PM',text:'Post-dinner walk — 15 minutes minimum. Non-negotiable at your level. Blood sugar, digestion, sleep quality — this one walk improves all three every single night.',why:'Why it matters: consistency over months makes this walk one of the most powerful cardiovascular and metabolic habits in your entire routine.'},
+      {time:'6:00 PM',text:'Gaming time — earned and enjoyed. Set up your station with water on the desk, snacks chosen in advance, and your monitor on night mode. You\'ve already done the work today. Game without guilt.',why:'Why it matters: guilt-free leisure time is a real health factor. Chronic guilt around habits you enjoy increases cortisol and undermines the health gains you\'ve made elsewhere.'},
+      {time:'8:00 PM',text:'Last food of the night. Make it something with protein — cottage cheese, a protein shake, or nuts. A 12-hour fast overnight (8 PM to 8 AM) supports gut repair, metabolic health, and better sleep.',why:'Why it matters: time-restricted eating improves insulin sensitivity, supports fat metabolism, and gives your digestive system the overnight rest it needs.'},
+      {time:'9:30 PM',text:'Start thinking about winding down. Set a hard stop for 11 PM. Getting to sleep by 11:30 gives you 8+ hours before an 8 AM wake-up.',why:'Why it matters: your body is in a recovery phase from years of nicotine damage. Extra sleep during this period accelerates healing of lung tissue, cardiovascular function, and nervous system health.'},
+      {time:'11:00 PM',text:'Sleep. Consistent, nicotine-free, reasonably-timed sleep is the foundation everything else is built on. You\'ve done the hard part. The version of you that started on the Degenerates page wouldn\'t recognize where you are now.',why:'Why it matters: at this point your lung function, cardiovascular health, sleep quality, focus, and fitness are all measurably better than they were. Keep going.'},
+    ]
+  },
+  'super-degenerate': {
+    id:'super-degenerate', title:'SUPER Degenerate', icon:'🔥', mode:'degen',
+    subtitle:'You\'ve been clean for a while. Now it\'s time to actively reverse the damage — lungs, heart, blood vessels, and all.',
+    disclaimer:'This is the redemption arc. You\'re not just maintaining anymore — you\'re in active recovery mode. The human body has a remarkable ability to repair itself when given the right inputs. Years of vaping damage can be meaningfully reversed.',
+    tasks:[
+      {time:'7:00 AM',text:'Wake up. Drink 20 oz of water immediately. Consistent wake times regulate cortisol, testosterone, and growth hormone cycles — all of which are actively repairing vaping-related tissue damage right now.',why:'Why it matters: your morning hydration habit is locked in. Protect it every single day without exception.'},
+      {time:'7:30 AM',text:'Morning breathing exercise — 10 minutes of diaphragmatic breathing or box breathing. Breathe in through your nose for 4 seconds, hold for 4, out for 4, hold for 4. This is not optional.',why:'Why it matters: cilia (tiny lung hairs that clear toxins) begin regenerating within weeks of quitting. Deep breathing exercises speed this process and rebuild lung capacity measurably faster.'},
+      {time:'8:00 AM',text:'Get outside for morning sunlight — 10 full minutes, not through a window. Circadian rhythm optimization directly supports the hormonal environment your body needs for tissue repair.',why:'Why it matters: hormonal timing governs repair processes throughout the body. A well-set circadian clock means your body is doing the right thing at the right time, including vascular and lung repair overnight.'},
+      {time:'8:30 AM',text:'Recovery-focused breakfast: eggs or salmon (omega-3s for vascular repair), berries (antioxidants to combat oxidative damage from vaping), and leafy greens (vitamin C and folate for tissue regeneration). 40g+ protein minimum.',why:'Why it matters: vaping floods the body with oxidative stress. Antioxidant-rich foods actively neutralize the residual damage and support cellular repair that continues for years after quitting.'},
+      {time:'9:00 AM',text:'Take your recovery supplement stack: NAC (N-Acetyl Cysteine, 600mg) — directly supports lung mucus clearance and glutathione production. Vitamin C (500–1000mg) — rebuilds collagen in lung and blood vessel walls. Omega-3 fish oil (2–3g EPA/DHA) — reduces vascular inflammation.',why:'Why it matters: NAC is used clinically for lung conditions. It replenishes glutathione, your body\'s primary antioxidant defense that vaping severely depleted.'},
+      {time:'9:30 AM',text:'Cardio session — 30 to 40 minutes of Zone 2 (conversational pace). Running, cycling, rowing, or swimming. Every aerobic session literally grows new capillaries, strengthens the heart, and forces your lungs to expand fully.',why:'Why it matters: nicotine constricted blood vessels for years. Aerobic exercise is the primary stimulus for reversing vascular damage and rebuilding the cardiovascular function you lost.'},
+      {time:'10:00 AM',text:'Cool down with 5 minutes slow walking, then do a lung expansion exercise — inhale as deeply as possible, hold for 5 seconds, exhale fully and hold empty for 3 seconds. Repeat 10 times.',why:'Why it matters: the lower lobes of the lungs are the most oxygen-rich and most neglected by shallow breathers. Expanding them fully accelerates gas exchange efficiency and clears residual inflammatory debris.'},
+      {time:'10:30 AM',text:'Shower — end cold for the last 2 minutes. Cold water exposure reduces systemic inflammation, boosts norepinephrine, and stimulates the lymphatic system which is actively clearing toxin residue left by prolonged vaping.',why:'Why it matters: the lymphatic system has no pump — it relies on movement and temperature change. Cold exposure and exercise are the two most effective ways to accelerate lymphatic clearance of vaping-related toxins.'},
+      {time:'11:00 AM',text:'Work — with full focused blocks. Your concentration is now genuinely better than it was when you were vaping. Your dopamine system has largely recalibrated. Use 45-minute Pomodoro blocks.',why:'Why it matters: nicotine dependency compressed the natural range of your focus and motivation. You are operating with a fully functional dopamine system for probably the first time in years.'},
+      {time:'11:30 AM',text:'Movement break — 10 push-ups, 15 squats, 10 lunges each leg. Make it automatic. Your cardiovascular system responds to every bout of movement with another small round of vascular repair.',why:'Why it matters: each short movement bout triggers a separate wave of VEGF (vascular endothelial growth factor) — the protein that grows new blood vessels. You\'re rebuilding circulation one session at a time.'},
+      {time:'12:00 PM',text:'Lunch — anti-inflammatory and antioxidant focused. Salmon or sardines, a large salad with olive oil, avocado, and colorful vegetables. Add turmeric to something — curcumin directly counteracts the chronic inflammation left by years of vaping aerosol inhalation.',why:'Why it matters: vaping creates a state of chronic airway inflammation. Consistently eating anti-inflammatory foods measurably reduces this over months, accelerating lung tissue repair.'},
+      {time:'12:30 PM',text:'Post-lunch walk — 20 minutes at a brisk pace. You\'re rebuilding the vascular tone in your legs and core that years of sitting and nicotine-induced vasoconstriction degraded. Walk like you mean it.',why:'Why it matters: peripheral vascular resistance — how easily blood flows through your smaller vessels — was chronically elevated by nicotine. Consistent brisk walking is one of the primary ways to normalize it.'},
+      {time:'1:00 PM',text:'Breathing practice round two — 5 minutes of pursed lip breathing (inhale through nose, exhale slowly through pursed lips over 4–6 seconds). Used clinically in pulmonary rehabilitation.',why:'Why it matters: vaping damages small airways and creates air trapping. Pursed lip breathing directly counteracts this and is used in clinical lung recovery programs.'},
+      {time:'1:30 PM',text:'Limit coffee to 1–2 cups maximum and none after 2 PM. Your sleep architecture is your single most powerful recovery tool right now. Caffeine that lingers into the evening cuts into deep sleep.',why:'Why it matters: deep sleep is when the body performs its most intensive repair work — including lung epithelium regeneration and vascular wall restoration. Protecting deep sleep is protecting your recovery.'},
+      {time:'2:00 PM',text:'Hydrate — you should be at 50–60 oz of water by now. Proper hydration keeps the mucosal lining of your airways moist and functioning. Vaping chronically dried out your respiratory tract.',why:'Why it matters: the mucous membranes lining your airways are your first line of respiratory defense. Consistent hydration is directly restorative.'},
+      {time:'2:30 PM',text:'Strength training session — 30 minutes. Focus on compound movements: bench press or push-ups, rows, squats, deadlifts. Muscle mass is medicine — it improves insulin sensitivity, hormone levels, and metabolic health.',why:'Why it matters: skeletal muscle secretes myokines that have anti-inflammatory and neuroprotective effects. Building more muscle directly accelerates systemic recovery from years of vaping-related inflammation.'},
+      {time:'3:30 PM',text:'Outdoor walk — 20 minutes. Three deliberate walks per day is your new standard. This one clears the cortisol from your afternoon work and prepares your nervous system to shift into evening recovery mode.',why:'Why it matters: cortisol naturally rises mid-afternoon. An outdoor walk metabolizes it more effectively than sitting.'},
+      {time:'4:00 PM',text:'Sauna if available — 15 to 20 minutes at 170°F+. Heat stress triggers HSPs (heat shock proteins) that repair damaged cells, stimulates nitric oxide production that heals blood vessel walls, and forces cardiovascular adaptation that directly counteracts nicotine\'s vasoconstriction.',why:'Why it matters: nicotine chronically constricted blood vessels and impaired nitric oxide production. Sauna use is one of the most direct ways to restore it.'},
+      {time:'5:00 PM',text:'Dinner: a fatty fish or quality protein, a large serving of dark leafy greens (magnesium and vitamin K for vascular health), sweet potato or brown rice, and olive oil. Reserve fast food for weekends if needed.',why:'Why it matters: the nutrients that repair vascular walls, lung epithelium, and cardiovascular tissue require consistent daily supply.'},
+      {time:'5:30 PM',text:'Post-dinner walk — 20 minutes. This is the third deliberate walk of your day. It lowers blood sugar, begins the evening cortisol decline, and signals your body that the active portion of the day is ending and repair mode is beginning.',why:'Why it matters: the post-dinner walk is the simplest and most consistent predictor of good overnight recovery in people rebuilding from lifestyle-related health damage.'},
+      {time:'6:00 PM',text:'Gaming — you have earned this. But notice something: the games feel sharper now. Your reaction time is better. Your focus lasts longer. That\'s not a coincidence — that\'s what a repaired cardiovascular system does to your cognitive performance.',why:'Why it matters: brain oxygenation improves significantly as vaping-related vascular damage reverses. Many ex-vapers report noticeably better cognitive and gaming performance within 3–6 months of quitting.'},
+      {time:'7:30 PM',text:'Take magnesium glycinate (300–400mg) with water. Magnesium supports vascular relaxation, deep sleep quality, and muscle recovery. Nicotine depletes magnesium over time.',why:'Why it matters: magnesium deficiency is directly linked to arterial stiffness and poor sleep quality — two things you are actively trying to reverse. Supplementing it addresses both simultaneously.'},
+      {time:'8:00 PM',text:'Last food of the night. Kitchen is closed after this. Your overnight fast (8 PM to 7 AM — 11 hours) allows autophagy to run — the cellular cleanup process where your body breaks down and recycles damaged cells.',why:'Why it matters: autophagy is the body\'s primary cellular repair mechanism and is strongly suppressed by eating. An 11–12 hour overnight fast is one of the most powerful recovery tools available.'},
+      {time:'9:30 PM',text:'Final breathing exercise — 5 minutes of slow nasal breathing. In for 5 counts, out for 7 counts. The longer exhale activates the parasympathetic nervous system and initiates the overnight recovery process.',why:'Why it matters: a longer exhale than inhale directly stimulates the vagus nerve and triggers rest-and-repair mode.'},
+      {time:'10:00 PM',text:'Sleep. Consistent, well-timed, nicotine-free sleep is the most powerful recovery tool that exists. You are not the same person who started on the Degenerates page. You have rebuilt your habits, your body, your lungs, and your relationship with your own health from the ground up.',why:'Why it matters: lung function, vascular health, and cardiovascular fitness continue improving for up to 10–15 years after quitting nicotine with consistent effort. You are early in a long and very worthwhile recovery curve.'},
+    ]
+  }
+};
+
+// ─── PROFILE SYSTEM ──────────────────────────────────────────────────────────
+const AVATAR_COLORS = ['#2dd46e','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316'];
+
+function getProfiles()      { return JSON.parse(localStorage.getItem('doh_profiles') || '{}'); }
+function getActiveId()      { return localStorage.getItem('doh_active_profile') || null; }
+function getActiveProfile() { const id=getActiveId(); return id ? getProfiles()[id] : null; }
+
+function createProfile(name) {
+  const profiles = getProfiles();
+  const id = 'p_' + Date.now();
+  const used = Object.values(profiles).map(p=>p.color);
+  const color = AVATAR_COLORS.find(c=>!used.includes(c)) || AVATAR_COLORS[0];
+  profiles[id] = { id, name: name.trim(), color, created: new Date().toISOString() };
+  localStorage.setItem('doh_profiles', JSON.stringify(profiles));
+  return profiles[id];
+}
+
+function initials(name) {
+  return name.split(' ').slice(0,2).map(w=>w[0]?.toUpperCase()||'').join('');
+}
+
+function storagePrefix() {
+  const id = getActiveId();
+  return id ? `doh_${id}_` : 'doh_guest_';
+}
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const STATE = {
+  mode: localStorage.getItem('doh_mode') || 'health',
+  xp: 0,
+  streak: { count: 0, last: '' },
+};
+
+function loadState() {
+  const pfx = storagePrefix();
+  STATE.xp     = parseInt(localStorage.getItem(`${pfx}xp`) || '0');
+  STATE.streak = JSON.parse(localStorage.getItem(`${pfx}streak`) || '{"count":0,"last":""}');
+}
+
+// ─── DATE HELPERS ─────────────────────────────────────────────────────────────
+function dateKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getChecked(goalId) {
+  const raw = localStorage.getItem(`${storagePrefix()}${dateKey()}_${goalId}`);
+  return new Set(raw ? JSON.parse(raw) : []);
+}
+
+function saveChecked(goalId, set) {
+  localStorage.setItem(`${storagePrefix()}${dateKey()}_${goalId}`, JSON.stringify([...set]));
+}
+
+function addXP(amount) {
+  STATE.xp = Math.max(0, STATE.xp + amount);
+  localStorage.setItem(`${storagePrefix()}xp`, STATE.xp);
+}
+
+function touchStreak() {
+  const today = dateKey();
+  if (STATE.streak.last === today) return;
+  const d = new Date(); d.setDate(d.getDate()-1);
+  const yd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  STATE.streak.count = (STATE.streak.last === yd) ? STATE.streak.count + 1 : 1;
+  STATE.streak.last = today;
+  localStorage.setItem(`${storagePrefix()}streak`, JSON.stringify(STATE.streak));
+}
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+function parseHour(t) {
+  const m = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!m) return 0;
+  let h = parseInt(m[1]), min = parseInt(m[2]);
+  if (m[3].toUpperCase()==='PM' && h!==12) h+=12;
+  if (m[3].toUpperCase()==='AM' && h===12) h=0;
+  return h + min/60;
+}
+
+function currentTaskIdx(tasks) {
+  const now = new Date().getHours() + new Date().getMinutes()/60;
+  let best=-1, diff=Infinity;
+  tasks.forEach((t,i)=>{
+    const h=parseHour(t.time), d=now-h;
+    if(d>=0 && d<diff){ diff=d; best=i; }
+  });
+  return best;
+}
+
+function getLevel(isDegenMode) {
+  const lvls = LEVELS[isDegenMode?'degen':'health'];
+  for(let i=lvls.length-1;i>=0;i--) if(STATE.xp>=lvls[i].min) return {idx:i,...lvls[i],next:lvls[i+1]||null,total:lvls.length};
+  return {idx:0,...lvls[0],next:lvls[1]||null,total:lvls.length};
+}
+
+function pct(goalId) {
+  const g=S[goalId]; if(!g) return 0;
+  return getChecked(goalId).size / g.tasks.length;
+}
+
+function ringOffset(p, r) {
+  return 2*Math.PI*r*(1-Math.min(1,Math.max(0,p)));
+}
+
+function todayDone() {
+  return Object.keys(S).reduce((s,id)=>s+getChecked(id).size,0);
+}
+
+// ─── PARTICLES ────────────────────────────────────────────────────────────────
+function initParticles() {
+  const c = document.getElementById('particles');
+  c.innerHTML='';
+  const health=['🥦','🫐','🥑','🍇','🥬','🍋','🥕','🍓','🌿','🥝','🍅','🧄','🐟','🥚','🍒','🍊'];
+  const degen =['🎮','💧','🫁','💀','🔥','🎯','⚡','🕹️','😤','🧃'];
+  const pool = STATE.mode==='degen' ? degen : health;
+  for(let i=0;i<14;i++) setTimeout(()=>spawnP(c,pool), Math.random()*12000);
+}
+function spawnP(c, pool) {
+  const el=document.createElement('span');
+  el.className='ptcl';
+  el.textContent=pool[Math.floor(Math.random()*pool.length)];
+  const sz=Math.random()*16+13, dur=Math.random()*20+22;
+  el.style.cssText=`font-size:${sz}px;left:${Math.random()*96}vw;top:${Math.random()*30+50}vh;animation-duration:${dur}s;${Math.random()<.3?'filter:blur(1px)':''}`;
+  c.appendChild(el);
+  el.addEventListener('animationend',()=>{el.remove(); spawnP(c,pool);});
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+let toastTmr;
+function toast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTmr);
+  toastTmr=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// ─── MODAL SYSTEM ────────────────────────────────────────────────────────────
+function showModal(html) {
+  document.getElementById('modal-wrap').innerHTML =
+    `<div class="modal-overlay" onclick="handleOverlayClick(event)">${html}</div>`;
+}
+function closeModal() { document.getElementById('modal-wrap').innerHTML = ''; }
+function handleOverlayClick(e) { if(e.target.classList.contains('modal-overlay')) closeModal(); }
+
+function showLoginModal() {
+  const profiles = Object.values(getProfiles());
+  const existingHTML = profiles.length ? `
+    <div class="modal-divider">or pick an existing profile</div>
+    <div class="profile-list">
+      ${profiles.map(p=>`
+        <div class="profile-item" onclick="switchProfile('${p.id}')">
+          <div class="p-avatar" style="background:${p.color}">${initials(p.name)}</div>
+          <div>
+            <div class="p-item-name">${p.name}</div>
+            <div class="p-item-meta">Since ${new Date(p.created).toLocaleDateString()}</div>
+          </div>
+        </div>`).join('')}
+    </div>` : '';
+
+  showModal(`<div class="modal">
+    <div class="modal-icon">🌿</div>
+    <div class="modal-title">Save your progress</div>
+    <div class="modal-sub">Enter your name to track your streak, XP, and daily completions across sessions.</div>
+    <input class="modal-input" id="login-name" type="text" placeholder="Your name..."
+      maxlength="30" onkeydown="if(event.key==='Enter') submitLogin()">
+    <button class="modal-btn" onclick="submitLogin()">Get Started →</button>
+    ${existingHTML}
+  </div>`);
+  setTimeout(()=>document.getElementById('login-name')?.focus(), 60);
+}
+
+function submitLogin() {
+  const el = document.getElementById('login-name');
+  const name = el?.value.trim() || '';
+  if (!name) { if(el){el.style.borderColor='#ef4444'; el.placeholder='Enter a name first...';} return; }
+  const profile = createProfile(name);
+  localStorage.setItem('doh_active_profile', profile.id);
+  loadState();
+  closeModal();
+  renderProfileBtn();
+  renderHub();
+}
+
+function switchProfile(id) {
+  localStorage.setItem('doh_active_profile', id);
+  loadState();
+  closeModal();
+  closeDropdown();
+  renderProfileBtn();
+  document.getElementById('sch-view').classList.remove('active');
+  document.getElementById('hub-view').classList.add('active');
+  renderHub();
+  window.scrollTo(0,0);
+}
+
+function signOut() {
+  localStorage.removeItem('doh_active_profile');
+  loadState();
+  closeDropdown();
+  renderProfileBtn();
+  document.getElementById('sch-view').classList.remove('active');
+  document.getElementById('hub-view').classList.add('active');
+  renderHub();
+  window.scrollTo(0,0);
+  showLoginModal();
+}
+
+function showSwitchModal() {
+  closeDropdown();
+  const profiles = Object.values(getProfiles());
+  const activeId = getActiveId();
+  showModal(`<div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon">🔄</div>
+    <div class="modal-title">Switch Profile</div>
+    <div class="modal-sub">Select a profile or create a new one.</div>
+    <div class="profile-list" style="margin-bottom:14px">
+      ${profiles.map(p=>`
+        <div class="profile-item ${p.id===activeId?'active-profile':''}" onclick="switchProfile('${p.id}')">
+          <div class="p-avatar" style="background:${p.color}">${initials(p.name)}</div>
+          <div>
+            <div class="p-item-name">${p.name}${p.id===activeId?' ✓':''}</div>
+            <div class="p-item-meta">Since ${new Date(p.created).toLocaleDateString()}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="modal-divider">create new</div>
+    <input class="modal-input" id="new-pname" type="text" placeholder="New profile name..."
+      maxlength="30" onkeydown="if(event.key==='Enter') addNewProfile()">
+    <button class="modal-btn" onclick="addNewProfile()">Create Profile</button>
+  </div>`);
+}
+
+function addNewProfile() {
+  const el = document.getElementById('new-pname');
+  const name = el?.value.trim() || '';
+  if (!name) { if(el){el.style.borderColor='#ef4444';} return; }
+  const profile = createProfile(name);
+  switchProfile(profile.id);
+  toast(`Welcome, ${name}! 🎉`);
+}
+
+function showExportModal() {
+  closeDropdown();
+  const pid = getActiveId();
+  if (!pid) return;
+  const data = { profile: getActiveProfile(), keys: {} };
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k.startsWith(`doh_${pid}_`)) data.keys[k] = localStorage.getItem(k);
+  }
+  const code = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+  showModal(`<div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon">📤</div>
+    <div class="modal-title">Export / Import</div>
+    <div class="modal-sub">Copy this code to restore your progress on another device.</div>
+    <textarea class="export-code" id="export-code" readonly>${code}</textarea>
+    <button class="modal-btn" onclick="copyExport()">Copy Code</button>
+    <div class="modal-divider">import on this device</div>
+    <textarea class="export-code" id="import-code" placeholder="Paste your code here..."></textarea>
+    <button class="modal-btn-sec" onclick="importData()">Import →</button>
+  </div>`);
+}
+
+function copyExport() {
+  const code = document.getElementById('export-code')?.value || '';
+  navigator.clipboard.writeText(code).then(()=>toast('Copied! ✓')).catch(()=>{
+    document.getElementById('export-code').select();
+    document.execCommand('copy');
+    toast('Copied! ✓');
+  });
+}
+
+function importData() {
+  const raw = document.getElementById('import-code')?.value.trim() || '';
+  if (!raw) return;
+  try {
+    const data = JSON.parse(decodeURIComponent(escape(atob(raw))));
+    if (!data.profile || !data.keys) throw new Error('invalid');
+    const profiles = getProfiles();
+    profiles[data.profile.id] = data.profile;
+    localStorage.setItem('doh_profiles', JSON.stringify(profiles));
+    Object.entries(data.keys).forEach(([k,v]) => localStorage.setItem(k,v));
+    switchProfile(data.profile.id);
+    toast(`Welcome back, ${data.profile.name}! ✓`);
+  } catch { toast('Invalid code ✗'); }
+}
+
+// ─── HEATMAP ─────────────────────────────────────────────────────────────────
+function buildHeatmapData() {
+  const pid = getActiveId();
+  if (!pid) return {};
+  const result = {};
+  const pfx = `doh_${pid}_`;
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k.startsWith(pfx)) continue;
+    const dateMatch = k.slice(pfx.length).match(/^(\d{4}-\d{2}-\d{2})_/);
+    if (!dateMatch) continue;
+    const date = dateMatch[1];
+    try { result[date] = (result[date] || 0) + JSON.parse(localStorage.getItem(k)).length; } catch {}
+  }
+  return result;
+}
+
+function heatColor(count, isDegen) {
+  if (count === 0) return 'rgba(255,255,255,0.06)';
+  if (isDegen) {
+    if (count <= 3)  return '#3a0060';
+    if (count <= 8)  return '#7a00aa';
+    if (count <= 15) return '#c800ff';
+    return '#f0a0ff';
+  } else {
+    if (count <= 3)  return '#1a5c32';
+    if (count <= 8)  return '#1a8a50';
+    if (count <= 15) return '#2dd46e';
+    return '#7fffc4';
+  }
+}
+
+function renderHeatmap() {
+  const data = buildHeatmapData();
+  const WEEKS = 16;
+  const isDegen = STATE.mode === 'degen';
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // Build week columns starting from WEEKS*7 days ago
+  const origin = new Date(today);
+  origin.setDate(today.getDate() - (WEEKS * 7 - 1));
+
+  const weekCols = [];
+  const monthLabels = [];
+  let lastMonth = -1;
+
+  for (let w = 0; w < WEEKS; w++) {
+    const days = [];
+    let mLabel = '';
+    for (let d = 0; d < 7; d++) {
+      const dt = new Date(origin);
+      dt.setDate(origin.getDate() + w * 7 + d);
+      const key = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+      const count = data[key] || 0;
+      const isFuture = dt > today;
+      if (d === 0 && dt.getMonth() !== lastMonth) {
+        mLabel = dt.toLocaleDateString('en-US', { month: 'short' });
+        lastMonth = dt.getMonth();
+      }
+      days.push({ key, count, isFuture });
+    }
+    weekCols.push(days);
+    monthLabels.push(mLabel);
+  }
+
+  const monthRow = monthLabels.map(l =>
+    `<div class="hm-mlbl">${l}</div>`
+  ).join('');
+
+  const grid = weekCols.map(days =>
+    `<div class="hm-week">${days.map(d =>
+      `<div class="hm-day"
+        style="background:${d.isFuture ? 'rgba(255,255,255,0.03)' : heatColor(d.count, isDegen)}"
+        title="${d.key}${d.count ? ': ' + d.count + ' task' + (d.count!==1?'s':'') + ' done' : ': no activity'}"></div>`
+    ).join('')}</div>`
+  ).join('');
+
+  const legendColors = isDegen
+    ? ['rgba(255,255,255,0.06)', '#3a0060', '#7a00aa', '#c800ff', '#f0a0ff']
+    : ['rgba(255,255,255,0.06)', '#1a5c32', '#1a8a50', '#2dd46e', '#7fffc4'];
+
+  return `<div class="heatmap-scroll">
+    <div class="heatmap-months">${monthRow}</div>
+    <div class="heatmap-grid">${grid}</div>
+    <div class="hm-legend">
+      ${legendColors.map(c=>`<div class="hm-lswatch" style="background:${c}"></div>`).join('')}
+      <span>less → more</span>
+    </div>
+  </div>`;
+}
+
+// ─── PROFILE PAGE ────────────────────────────────────────────────────────────
+let pfDraftColor = null; // tracks selected color before save
+
+function allTimeStats() {
+  const pid = getActiveId();
+  if (!pid) return { tasks: 0 };
+  let tasks = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k.startsWith(`doh_${pid}_`) && k.includes('_2')) { // date keys contain year
+      try { tasks += JSON.parse(localStorage.getItem(k)).length; } catch {}
+    }
+  }
+  return { tasks };
+}
+
+function openProfile() {
+  closeDropdown();
+  const p = getActiveProfile();
+  if (!p) { showLoginModal(); return; }
+  pfDraftColor = p.color;
+  document.getElementById('hub-view').classList.remove('active');
+  document.getElementById('sch-view').classList.remove('active');
+  document.getElementById('profile-view').classList.add('active');
+  renderProfilePage();
+  window.scrollTo(0, 0);
+}
+
+function renderProfilePage() {
+  const p = getActiveProfile();
+  if (!p) return;
+  const stats = allTimeStats();
+  const lv = getLevel(STATE.mode === 'degen');
+  const since = new Date(p.created).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  const swatches = AVATAR_COLORS.map(c =>
+    `<div class="color-swatch ${pfDraftColor===c?'active':''}"
+      style="background:${c}"
+      onclick="pickColor('${c}')"></div>`
+  ).join('');
+
+  const goalOptions = [
+    { id:'', label:'— Not set —' },
+    { id:'longevity',        label:'🌿 Longevity' },
+    { id:'muscle',           label:'💪 Muscle Building' },
+    { id:'cardio',           label:'❤️ Cardiovascular' },
+    { id:'bone',             label:'🦴 Bone Health' },
+    { id:'brain',            label:'🧠 Brain Health' },
+    { id:'digestive',        label:'🥦 Digestive Health' },
+    { id:'degenerates',      label:'🎮 Degenerates' },
+    { id:'degenerates-plus', label:'💀 Degenerates ++' },
+    { id:'super-degenerate', label:'🔥 SUPER Degenerate' },
+  ];
+
+  document.getElementById('profile-view').innerHTML = `<div id="profile-page">
+    <button class="sch-back" onclick="goHub()">← Back</button>
+
+    <div class="pf-hero">
+      <div class="pf-avatar-wrap" onclick="document.getElementById('pf-color-picker').style.display='flex'">
+        <div class="pf-avatar" id="pf-avatar-preview" style="background:${pfDraftColor}">${initials(p.name)}</div>
+        <div class="pf-avatar-edit">✏️</div>
+      </div>
+      <div class="pf-name">${p.name}</div>
+      <div class="pf-since">Member since ${since} · ${lv.name}</div>
+      <div class="pf-color-picker" id="pf-color-picker" style="display:none">${swatches}</div>
+    </div>
+
+    <div class="pf-section">
+      <div class="pf-section-label">Account</div>
+      <div class="pf-card">
+        <div class="pf-row">
+          <div class="pf-row-icon">👤</div>
+          <div class="pf-row-label">Display name</div>
+          <input class="pf-row-input" id="pf-name" type="text" value="${p.name}" maxlength="30" placeholder="Your name">
+        </div>
+        <div class="pf-row">
+          <div class="pf-row-icon">✉️</div>
+          <div class="pf-row-label">Email</div>
+          <input class="pf-row-input" id="pf-email" type="email" value="${p.email||''}" placeholder="Optional — for future notifications">
+        </div>
+      </div>
+    </div>
+
+    <div class="pf-section">
+      <div class="pf-section-label">Preferences</div>
+      <div class="pf-card">
+        <div class="pf-row">
+          <div class="pf-row-icon">🎯</div>
+          <div class="pf-row-label">Primary goal</div>
+          <select class="pf-row-select" id="pf-goal">
+            ${goalOptions.map(o=>`<option value="${o.id}" ${(p.primaryGoal||'')===o.id?'selected':''}>${o.label}</option>`).join('')}
+          </select>
+        </div>
+        <div class="pf-row">
+          <div class="pf-row-icon">🌗</div>
+          <div class="pf-row-label">Default mode</div>
+          <select class="pf-row-select" id="pf-mode">
+            <option value="health" ${STATE.mode==='health'?'selected':''}>🌿 Health</option>
+            <option value="degen"  ${STATE.mode==='degen' ?'selected':''}>💀 Degenerate</option>
+          </select>
+        </div>
+        <div class="pf-row">
+          <div class="pf-row-icon">🔔</div>
+          <div class="pf-row-label">Reminder time</div>
+          <input class="pf-row-input" id="pf-reminder" type="time" value="${p.reminderTime||''}"
+            style="color-scheme:dark">
+        </div>
+      </div>
+    </div>
+
+    <div class="pf-section">
+      <div class="pf-section-label">Your Stats</div>
+      <div class="pf-stats-grid">
+        <div class="pf-stat-card">
+          <div class="pf-stat-val">🔥 ${STATE.streak.count}</div>
+          <div class="pf-stat-lbl">Day Streak</div>
+        </div>
+        <div class="pf-stat-card">
+          <div class="pf-stat-val">⚡ ${STATE.xp}</div>
+          <div class="pf-stat-lbl">Total XP</div>
+        </div>
+        <div class="pf-stat-card">
+          <div class="pf-stat-val">✅ ${stats.tasks}</div>
+          <div class="pf-stat-lbl">Tasks Done</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pf-section">
+      <div class="pf-section-label">Activity — last 16 weeks</div>
+      <div class="pf-card" style="padding:16px 18px">
+        ${renderHeatmap()}
+      </div>
+    </div>
+
+    <button class="pf-save" onclick="saveProfile()">Save Changes</button>
+  </div>`;
+}
+
+function pickColor(color) {
+  pfDraftColor = color;
+  // Update swatches
+  document.querySelectorAll('.color-swatch').forEach(s => {
+    s.classList.toggle('active', s.style.background === color || s.style.backgroundColor === color);
+  });
+  // Update avatar preview live
+  const preview = document.getElementById('pf-avatar-preview');
+  if (preview) preview.style.background = color;
+}
+
+function saveProfile() {
+  const p = getActiveProfile();
+  if (!p) return;
+  const name    = document.getElementById('pf-name')?.value.trim()     || p.name;
+  const email   = document.getElementById('pf-email')?.value.trim()    || '';
+  const goal    = document.getElementById('pf-goal')?.value            || '';
+  const mode    = document.getElementById('pf-mode')?.value            || STATE.mode;
+  const reminder= document.getElementById('pf-reminder')?.value        || '';
+
+  if (!name) { toast('Name cannot be empty ✗'); return; }
+
+  const profiles = getProfiles();
+  profiles[p.id] = { ...p, name, email, primaryGoal: goal, reminderTime: reminder, color: pfDraftColor || p.color };
+  localStorage.setItem('doh_profiles', JSON.stringify(profiles));
+
+  if (mode !== STATE.mode) setMode(mode);
+
+  renderProfileBtn();
+  toast('Profile saved ✓');
+  // Refresh the page to reflect name/color changes
+  renderProfilePage();
+}
+
+// ─── PROFILE BUTTON + DROPDOWN ───────────────────────────────────────────────
+function renderProfileBtn() {
+  const btn = document.getElementById('profile-btn');
+  const p = getActiveProfile();
+  if (p) {
+    btn.textContent = initials(p.name);
+    btn.style.background = p.color;
+    btn.style.color = '#000';
+    btn.title = p.name;
+    btn.style.border = `2px solid ${p.color}`;
+  } else {
+    btn.textContent = '👤';
+    btn.style.background = 'var(--glass)';
+    btn.style.color = 'var(--muted)';
+    btn.title = 'Log in';
+    btn.style.border = '2px solid var(--glass-b)';
+    btn.style.fontSize = '.9rem';
+  }
+}
+
+function toggleDropdown() {
+  if (document.getElementById('profile-dropdown')) { closeDropdown(); return; }
+  const p = getActiveProfile();
+  const dd = document.createElement('div');
+  dd.id = 'profile-dropdown';
+  dd.className = 'p-dropdown';
+  if (p) {
+    dd.innerHTML = `
+      <div class="p-dd-name">👤 ${p.name}</div>
+      <div class="p-dd-item" onclick="openProfile()">🪪 View Profile</div>
+      <div class="p-dd-item" onclick="showExportModal()">📤 Export / Import data</div>
+      <div class="p-dd-item" onclick="showSwitchModal()">🔄 Switch profile</div>
+      <div class="p-dd-item danger" onclick="signOut()">← Sign out</div>`;
+  } else {
+    dd.innerHTML = `<div class="p-dd-item" onclick="closeDropdown();showLoginModal()">→ Log in / Create profile</div>`;
+  }
+  document.body.appendChild(dd);
+}
+
+function closeDropdown() { document.getElementById('profile-dropdown')?.remove(); }
+
+// ─── RENDER HUB ──────────────────────────────────────────────────────────────
+function renderHub() {
+  const isDegen = STATE.mode==='degen';
+  const lv = getLevel(isDegen);
+  const xpIn = STATE.xp - lv.min;
+  const xpFor = lv.next ? lv.next.min - lv.min : 1;
+  const xpPct = lv.next ? Math.min(100,xpIn/xpFor*100) : 100;
+  const done = todayDone();
+  const hGoals = ['longevity','muscle','cardio','bone','brain','digestive'];
+  const dGoals = ['degenerates','degenerates-plus','super-degenerate'];
+
+  const card = id => {
+    const g=S[id], p=pct(id), r=22, circ=2*Math.PI*r;
+    const off=ringOffset(p,r);
+    const isDg=g.mode==='degen';
+    return `<div class="goal-card" onclick="openGoal('${id}')">
+      <div class="ring-wrap">
+        <svg viewBox="0 0 50 50">
+          <circle class="r-track" cx="25" cy="25" r="${r}"/>
+          <circle class="r-fill" cx="25" cy="25" r="${r}"
+            stroke-dasharray="${circ.toFixed(2)}"
+            stroke-dashoffset="${off.toFixed(2)}"
+            ${isDg?'style="stroke:#c800ff;filter:drop-shadow(0 0 3px #c800ff)"':''}/>
+        </svg>
+        <div class="ring-icon">${g.icon}</div>
+      </div>
+      <div class="card-info">
+        <div class="card-title">${g.title}</div>
+        <div class="card-desc">${g.subtitle}</div>
+        <div class="card-pct">${p>0?Math.round(p*100)+'% today':'Start →'}</div>
+      </div>
+    </div>`;
+  };
+
+  document.getElementById('hub-view').innerHTML=`<div id="hub">
+    <div class="mode-toggle">
+      <button class="mode-btn ${!isDegen?'active':''}" onclick="setMode('health')">🌿 Health</button>
+      <button class="mode-btn ${isDegen?'active':''}" onclick="setMode('degen')">💀 Degenerate</button>
+    </div>
+    <div class="hub-header">
+      <h1 class="hub-title">Daily Optimal Health</h1>
+      <p class="hub-sub">Choose a goal. Check off your day. Stack wins.</p>
+      <div class="stats-row">
+        <div class="stat-pill">🔥 ${STATE.streak.count} <span class="lbl">day streak</span></div>
+        <div class="stat-pill">⚡ ${STATE.xp} <span class="lbl">XP</span></div>
+        <div class="stat-pill">🏆 ${lv.name}</div>
+        ${done>0?`<div class="stat-pill">✅ ${done} <span class="lbl">done today</span></div>`:''}
+      </div>
+      ${lv.next?`<div class="xp-wrap">
+        <div class="xp-meta"><span>${lv.name}</span><span>${xpIn}/${xpFor} XP → ${lv.next.name}</span></div>
+        <div class="xp-track"><div class="xp-fill" style="width:${xpPct.toFixed(1)}%"></div></div>
+      </div>`:''}
+    </div>
+    <div class="sec-label">Health Goals</div>
+    <div class="goal-grid">${hGoals.map(card).join('')}</div>
+    <div class="degen-div"><span class="degen-label">Degenerate Fucks</span></div>
+    <div class="sec-label">Recovery Tiers</div>
+    <div class="goal-grid">${dGoals.map(card).join('')}</div>
+  </div>`;
+}
+
+// ─── RENDER SCHEDULE ─────────────────────────────────────────────────────────
+function renderSchedule(goalId) {
+  const g=S[goalId];
+  const checked=getChecked(goalId);
+  const total=g.tasks.length, done=checked.size;
+  const p=done/total;
+  const curIdx=currentTaskIdx(g.tasks);
+  const R=38, circ=2*Math.PI*R;
+  const isDg=g.mode==='degen';
+
+  const tasks=g.tasks.map((t,i)=>{
+    const isChk=checked.has(i), isCur=i===curIdx, hasWhy=!!t.why;
+    return `<div class="task-card${isChk?' checked':''}${isCur?' current':''}" id="tc${i}">
+      <div class="tcol">
+        <div class="t-time">${t.time}</div>
+        ${isCur?'<div class="t-now">▶ NOW</div>':''}
+      </div>
+      <div class="t-body" onclick="expandTask(${i})">
+        <div class="t-text">${t.text}</div>
+        ${hasWhy?`<div class="t-why">${t.why}</div><div class="t-tap">tap for why ▾</div>`:''}
+      </div>
+      <div class="t-check" onclick="toggleTask('${goalId}',${i})">
+        <span class="chk-icon">✓</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('sch-view').innerHTML=`<div id="sch-view-inner">
+    <button class="sch-back" onclick="goHub()">← Back</button>
+    <div class="sch-head">
+      <div class="sch-ring">
+        <svg viewBox="0 0 88 88">
+          <circle class="r-track" cx="44" cy="44" r="${R}" stroke-width="6"/>
+          <circle class="r-fill" cx="44" cy="44" r="${R}" stroke-width="6"
+            id="sch-ring-fill"
+            stroke-dasharray="${circ.toFixed(2)}"
+            stroke-dashoffset="${ringOffset(p,R).toFixed(2)}"
+            ${isDg?'style="stroke:#c800ff;filter:drop-shadow(0 0 4px #c800ff)"':''}/>
+        </svg>
+        <div class="sch-ring-icon">${g.icon}</div>
+      </div>
+      <div class="sch-info">
+        <div class="sch-title">${g.title}</div>
+        <div class="sch-subtitle">${g.subtitle}</div>
+        <div class="sch-stats" id="sch-stats">
+          <div class="sch-stat">${done}/${total} <span>done</span></div>
+          <div class="sch-stat">${Math.round(p*100)}% <span>complete</span></div>
+          <div class="sch-stat">🔥 ${STATE.streak.count} <span>streak</span></div>
+        </div>
+      </div>
+    </div>
+    ${g.disclaimer?`<div class="disclaimer">${g.disclaimer}</div>`:''}
+    <div class="task-list">${tasks}</div>
+  </div>`;
+
+  if(curIdx>=0) setTimeout(()=>{
+    const el=document.getElementById(`tc${curIdx}`);
+    if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+  },150);
+}
+
+// ─── ACTIONS ──────────────────────────────────────────────────────────────────
+function openGoal(id) {
+  document.getElementById('hub-view').classList.remove('active');
+  document.getElementById('sch-view').classList.add('active');
+  renderSchedule(id);
+  window.scrollTo(0,0);
+}
+
+function goHub() {
+  document.getElementById('sch-view').classList.remove('active');
+  document.getElementById('profile-view').classList.remove('active');
+  document.getElementById('hub-view').classList.add('active');
+  renderHub();
+  window.scrollTo(0,0);
+}
+
+function toggleTask(goalId, idx) {
+  const checked=getChecked(goalId);
+  const wasChk=checked.has(idx);
+  wasChk ? checked.delete(idx) : checked.add(idx);
+  saveChecked(goalId, checked);
+
+  const g=S[goalId];
+  const xpDelta = g.mode==='degen' ? 15 : 10;
+  addXP(wasChk ? -xpDelta : xpDelta);
+  if(!wasChk) { touchStreak(); toast(`+${xpDelta} XP ⚡`); }
+
+  // Update card DOM
+  const card=document.getElementById(`tc${idx}`);
+  if(card){
+    card.classList.toggle('checked',!wasChk);
+    const chk=card.querySelector('.t-check');
+    const icon=card.querySelector('.chk-icon');
+    chk.style.background=!wasChk?'var(--acc)':'';
+    chk.style.borderColor=!wasChk?'var(--acc)':'';
+    icon.style.display=!wasChk?'block':'none';
+  }
+
+  // Update schedule header stats
+  const done=checked.size, total=g.tasks.length, p=done/total;
+  const statsEl=document.getElementById('sch-stats');
+  if(statsEl) statsEl.innerHTML=`
+    <div class="sch-stat">${done}/${total} <span>done</span></div>
+    <div class="sch-stat">${Math.round(p*100)}% <span>complete</span></div>
+    <div class="sch-stat">🔥 ${STATE.streak.count} <span>streak</span></div>`;
+  const ring=document.getElementById('sch-ring-fill');
+  if(ring) ring.setAttribute('stroke-dashoffset', ringOffset(p,38).toFixed(2));
+  if(p>=1) setTimeout(()=>toast('🎉 Perfect day! Incredible.'),300);
+}
+
+function expandTask(idx) {
+  const card=document.getElementById(`tc${idx}`);
+  if(card) card.classList.toggle('expanded');
+}
+
+function setMode(mode) {
+  STATE.mode=mode;
+  localStorage.setItem('doh_mode', mode);
+  document.body.classList.toggle('degen', mode==='degen');
+  initParticles();
+  renderHub();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+(function init() {
+  if(STATE.mode==='degen') document.body.classList.add('degen');
+  loadState();
+  renderProfileBtn();
+  renderHub();
+  initParticles();
+  if (!getActiveId()) showLoginModal();
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#profile-btn') && !e.target.closest('#profile-dropdown')) closeDropdown();
+  });
+})();
+</script>
+</body>
+</html>
