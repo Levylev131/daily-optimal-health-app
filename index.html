@@ -48,9 +48,9 @@
     }
     @keyframes floatUp {
       0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
-      8%   { opacity: .17; }
-      92%  { opacity: .17; }
-      100% { transform: translateY(-120vh) rotate(520deg); opacity: 0; }
+      8%   { opacity: .55; }
+      92%  { opacity: .55; }
+      100% { transform: translateY(-130vh) rotate(520deg); opacity: 0; }
     }
 
     #app { position: relative; z-index: 1; }
@@ -163,6 +163,27 @@
       border-radius: var(--r-sm); padding: 13px 17px; margin-bottom: 18px;
       font-size: .86rem; color: var(--muted); line-height: 1.6; backdrop-filter: blur(8px);
     }
+
+    /* ── DAY CHANGER (SPA) ── */
+    .day-nav {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); padding: 10px 14px; margin-bottom: 16px;
+      backdrop-filter: blur(8px);
+    }
+    .dn-btn {
+      background: none; border: 1px solid var(--glass-b); color: var(--acc);
+      padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: .85rem;
+      transition: background .15s, color .15s; flex-shrink: 0; font-family: inherit;
+    }
+    .dn-btn:hover:not(:disabled) { background: var(--glass-h); color: var(--text); }
+    .dn-btn:disabled { opacity: .3; cursor: not-allowed; }
+    .dn-center { flex: 1; text-align: center; }
+    .dn-label { font-size: .88rem; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+    .dn-bar-row { display: flex; align-items: center; gap: 8px; justify-content: center; }
+    .dn-count { font-size: .76rem; color: var(--muted); white-space: nowrap; }
+    .dn-track { flex: 1; max-width: 160px; height: 4px; background: rgba(255,255,255,.1); border-radius: 2px; overflow: hidden; }
+    .dn-fill { height: 100%; background: var(--acc); border-radius: 2px; transition: width .35s ease; }
 
     .task-list { display: flex; flex-direction: column; gap: 7px; }
 
@@ -421,14 +442,14 @@
     body.degen .pf-save { color: #fff; }
 
     /* ── HEATMAP ── */
-    .heatmap-scroll { overflow-x: auto; padding-bottom: 6px; }
+    .heatmap-scroll { padding-bottom: 6px; }
     .heatmap-months { display: flex; gap: 3px; margin-bottom: 5px; }
-    .hm-mlbl { min-width: 12px; font-size: .62rem; color: var(--muted); white-space: nowrap; overflow: visible; }
+    .hm-mlbl { flex: 1; min-width: 0; font-size: .62rem; color: var(--muted); white-space: nowrap; overflow: visible; }
     .heatmap-grid { display: flex; gap: 3px; }
-    .hm-week { display: flex; flex-direction: column; gap: 3px; }
+    .hm-week { display: flex; flex-direction: column; gap: 3px; flex: 1; }
     .hm-day {
-      width: 12px; height: 12px; border-radius: 2px;
-      cursor: default; transition: transform .12s; flex-shrink: 0;
+      width: 100%; aspect-ratio: 1; border-radius: 2px;
+      cursor: default; transition: transform .12s;
     }
     .hm-day:hover { transform: scale(1.5); z-index: 2; position: relative; }
     .hm-legend { display: flex; align-items: center; gap: 5px; margin-top: 10px; font-size: .7rem; color: var(--muted); }
@@ -810,18 +831,53 @@ function loadState() {
 }
 
 // ─── DATE HELPERS ─────────────────────────────────────────────────────────────
-function dateKey() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+let viewDate = null; // null = today; 'YYYY-MM-DD' for past days
+
+function dateKey(d) {
+  const dt = d || new Date();
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
+
+function todayKey() { return dateKey(); }
+
+function isViewingToday() { return !viewDate || viewDate === todayKey(); }
+
+function activeKey() { return viewDate || todayKey(); }
+
+function formatDayLabel() {
+  if (isViewingToday()) return '▶ Today';
+  const dt = new Date(viewDate + 'T00:00:00');
+  const yd = new Date(); yd.setDate(yd.getDate()-1);
+  const ydStr = dateKey(yd);
+  const lbl = dt.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+  return viewDate === ydStr ? 'Yesterday — ' + lbl : lbl;
+}
+
+function schPrevDay(goalId) {
+  const base = viewDate ? new Date(viewDate + 'T00:00:00') : new Date();
+  base.setDate(base.getDate() - 1);
+  viewDate = dateKey(base);
+  renderSchedule(goalId);
+  window.scrollTo(0,0);
+}
+
+function schNextDay(goalId) {
+  if (isViewingToday()) return;
+  const base = new Date(viewDate + 'T00:00:00');
+  base.setDate(base.getDate() + 1);
+  const next = dateKey(base);
+  viewDate = next === todayKey() ? null : next;
+  renderSchedule(goalId);
+  window.scrollTo(0,0);
 }
 
 function getChecked(goalId) {
-  const raw = localStorage.getItem(`${storagePrefix()}${dateKey()}_${goalId}`);
+  const raw = localStorage.getItem(`${storagePrefix()}${activeKey()}_${goalId}`);
   return new Set(raw ? JSON.parse(raw) : []);
 }
 
 function saveChecked(goalId, set) {
-  localStorage.setItem(`${storagePrefix()}${dateKey()}_${goalId}`, JSON.stringify([...set]));
+  localStorage.setItem(`${storagePrefix()}${activeKey()}_${goalId}`, JSON.stringify([...set]));
 }
 
 function addXP(amount) {
@@ -885,14 +941,14 @@ function initParticles() {
   const health=['🥦','🫐','🥑','🍇','🥬','🍋','🥕','🍓','🌿','🥝','🍅','🧄','🐟','🥚','🍒','🍊'];
   const degen =['🎮','💧','🫁','💀','🔥','🎯','⚡','🕹️','😤','🧃'];
   const pool = STATE.mode==='degen' ? degen : health;
-  for(let i=0;i<14;i++) setTimeout(()=>spawnP(c,pool), Math.random()*12000);
+  for(let i=0;i<26;i++) setTimeout(()=>spawnP(c,pool), Math.random()*8000);
 }
 function spawnP(c, pool) {
   const el=document.createElement('span');
   el.className='ptcl';
   el.textContent=pool[Math.floor(Math.random()*pool.length)];
-  const sz=Math.random()*16+13, dur=Math.random()*20+22;
-  el.style.cssText=`font-size:${sz}px;left:${Math.random()*96}vw;top:${Math.random()*30+50}vh;animation-duration:${dur}s;${Math.random()<.3?'filter:blur(1px)':''}`;
+  const sz=Math.random()*28+26, dur=Math.random()*18+20;
+  el.style.cssText=`font-size:${sz}px;left:${Math.random()*96}vw;top:${Math.random()*30+90}vh;animation-duration:${dur}s;`;
   c.appendChild(el);
   el.addEventListener('animationend',()=>{el.remove(); spawnP(c,pool);});
 }
@@ -1093,7 +1149,7 @@ function heatColor(count, isDegen) {
 
 function renderHeatmap() {
   const data = buildHeatmapData();
-  const WEEKS = 16;
+  const WEEKS = 20;
   const isDegen = STATE.mode === 'degen';
   const today = new Date(); today.setHours(0,0,0,0);
 
@@ -1477,6 +1533,17 @@ function renderSchedule(goalId) {
       </div>
     </div>
     ${g.disclaimer?`<div class="disclaimer">${g.disclaimer}</div>`:''}
+    <div class="day-nav">
+      <button class="dn-btn" onclick="schPrevDay('${goalId}')">&#9664; Prev</button>
+      <div class="dn-center">
+        <div class="dn-label">${formatDayLabel()}</div>
+        <div class="dn-bar-row">
+          <span class="dn-count">${done}/${total} tasks</span>
+          <div class="dn-track"><div class="dn-fill" style="width:${Math.round(p*100)}%"></div></div>
+        </div>
+      </div>
+      <button class="dn-btn" onclick="schNextDay('${goalId}')" ${isViewingToday()?'disabled':''}>Next &#9654;</button>
+    </div>
     <div class="task-list">${tasks}</div>
   </div>`;
 
@@ -1488,10 +1555,7 @@ function renderSchedule(goalId) {
 
 // ─── ACTIONS ──────────────────────────────────────────────────────────────────
 function openGoal(id) {
-  document.getElementById('hub-view').classList.remove('active');
-  document.getElementById('sch-view').classList.add('active');
-  renderSchedule(id);
-  window.scrollTo(0,0);
+  window.location.href = id + '.html';
 }
 
 function goHub() {
@@ -1508,10 +1572,12 @@ function toggleTask(goalId, idx) {
   wasChk ? checked.delete(idx) : checked.add(idx);
   saveChecked(goalId, checked);
 
-  const g=S[goalId];
-  const xpDelta = g.mode==='degen' ? 15 : 10;
-  addXP(wasChk ? -xpDelta : xpDelta);
-  if(!wasChk) { touchStreak(); toast(`+${xpDelta} XP ⚡`); }
+  if (isViewingToday()) {
+    const g=S[goalId];
+    const xpDelta = g.mode==='degen' ? 15 : 10;
+    addXP(wasChk ? -xpDelta : xpDelta);
+    if(!wasChk) { touchStreak(); toast(`+${xpDelta} XP ⚡`); }
+  }
 
   // Update card DOM
   const card=document.getElementById(`tc${idx}`);
@@ -1533,7 +1599,12 @@ function toggleTask(goalId, idx) {
     <div class="sch-stat">🔥 ${STATE.streak.count} <span>streak</span></div>`;
   const ring=document.getElementById('sch-ring-fill');
   if(ring) ring.setAttribute('stroke-dashoffset', ringOffset(p,38).toFixed(2));
-  if(p>=1) setTimeout(()=>toast('🎉 Perfect day! Incredible.'),300);
+  // Update day nav progress bar
+  const dnCount=document.querySelector('.dn-count');
+  if(dnCount) dnCount.textContent=`${done}/${total} tasks`;
+  const dnFill=document.querySelector('.dn-fill');
+  if(dnFill) dnFill.style.width=Math.round(p*100)+'%';
+  if(p>=1 && isViewingToday()) setTimeout(()=>toast('🎉 Perfect day! Incredible.'),300);
 }
 
 function expandTask(idx) {

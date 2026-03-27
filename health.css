@@ -2,6 +2,9 @@
    DAILY OPTIMAL HEALTH — Shared Styles
    ══════════════════════════════════════ */
 
+/* Hide page until health-tracker.js finishes building the layout */
+body { opacity: 0; transition: opacity 0.05s ease; }
+
 @keyframes gradientShift {
   0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }
@@ -64,9 +67,9 @@ h1 {
 
 .subtitle {
   text-align: center;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255,255,255,1);
   margin-bottom: 36px;
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-style: italic;
 }
 
@@ -113,10 +116,407 @@ td {
   line-height: 1.6;
 }
 
-td:first-child {
+/* time column — 2nd child because checkbox is now 1st */
+tbody td:nth-child(2) {
   font-weight: bold;
   white-space: nowrap;
   color: #166534;
-  width: 110px;
-  font-size: 0.88rem;
+  width: 72px;
+  font-size: 0.85rem;
+}
+
+/* ── SUMMARY / DETAIL HOVER ── */
+.summary {
+  display: block;
+  cursor: default;
+}
+
+.detail {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #86efac;
+  border-radius: 6px;
+  padding: 12px 16px;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  line-height: 1.6;
+  font-size: 0.95rem;
+  color: #1a3a2a;
+}
+
+tbody td:last-child {
+  position: relative;
+  padding-left: 24px;
+}
+
+tbody tr:hover .summary {
+  visibility: hidden;
+}
+
+tbody tr:hover .detail {
+  display: block;
+}
+
+/* ══════════════════════════════════════
+   PROFILE BAR
+   ══════════════════════════════════════ */
+
+#pf-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(5, 46, 22, 0.88);
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+}
+
+.pf-home {
+  color: rgba(255,255,255,0.55);
+  text-decoration: none;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.pf-home:hover { color: #4ade80; }
+
+.pf-home-btn {
+  color: #4ade80;
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.pf-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.pf-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pf-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pf-level {
+  font-size: 0.75rem;
+  color: #4ade80;
+  margin-bottom: 4px;
+}
+
+.pf-xp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pf-xp-track {
+  flex: 1;
+  max-width: 140px;
+  height: 4px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pf-xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #16a34a, #4ade80);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.pf-xp-num {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.45);
+  white-space: nowrap;
+}
+
+.pf-streak {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fbbf24;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ══════════════════════════════════════
+   DAY CHANGER + CHECKLIST
+   ══════════════════════════════════════ */
+
+#day-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(5, 46, 22, 0.88);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+}
+
+.dc-btn {
+  background: rgba(45, 212, 110, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  color: #4ade80;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: Georgia, serif;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.dc-btn:hover:not(:disabled) {
+  background: rgba(45, 212, 110, 0.28);
+  color: #fff;
+}
+
+.dc-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+#dc-center {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+}
+
+#dc-label {
+  color: #fff;
+  font-weight: bold;
+  font-size: 0.98rem;
+  margin-bottom: 6px;
+  letter-spacing: 0.4px;
+}
+
+#dc-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+#dc-count {
+  color: #a7f3d0;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+#dc-bar-wrap {
+  flex: 1;
+  max-width: 180px;
+  height: 5px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+#dc-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #16a34a, #4ade80);
+  border-radius: 3px;
+  transition: width 0.35s ease;
+  width: 0%;
+}
+
+/* ── NOW floating card ── */
+#now-card {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #0a1a0f;
+  border: 1px solid #22c55e;
+  border-radius: 16px;
+  padding: 12px 20px 12px 16px;
+  box-shadow: 0 0 24px rgba(34,197,94,0.35), 0 4px 20px rgba(0,0,0,0.6);
+  cursor: pointer;
+  z-index: 999;
+  max-width: 480px;
+  width: calc(100% - 48px);
+  animation: card-glow 2s ease-in-out infinite;
+  transition: box-shadow 0.2s;
+}
+#now-card:hover {
+  box-shadow: 0 0 36px rgba(34,197,94,0.55), 0 4px 20px rgba(0,0,0,0.6);
+}
+.now-card-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+  animation: blink-dot 1s step-start infinite;
+}
+.now-card-body {
+  flex: 1;
+  min-width: 0;
+}
+.now-card-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #22c55e;
+  margin-bottom: 2px;
+}
+.now-card-task {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.now-card-arrow {
+  font-size: 1rem;
+  color: #4ade80;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+@keyframes blink-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+@keyframes card-glow {
+  0%, 100% { box-shadow: 0 0 24px rgba(34,197,94,0.35), 0 4px 20px rgba(0,0,0,0.6); }
+  50%       { box-shadow: 0 0 40px rgba(34,197,94,0.6),  0 4px 20px rgba(0,0,0,0.6); }
+}
+
+/* ── Current task row highlight ── */
+#now-card-target td {
+  border-top: 4px solid #166534 !important;
+  border-bottom: 4px solid #166534 !important;
+  background: rgba(0,0,0,0.35) !important;
+  animation: border-blink 1.8s ease-in-out infinite;
+}
+#now-card-target td:first-child {
+  border-left: 4px solid #166534 !important;
+}
+#now-card-target td:last-child {
+  border-right: 4px solid #166534 !important;
+}
+@keyframes border-blink {
+  0%, 100% { border-color: #4ade80 !important; }
+  50%       { border-color: transparent !important; }
+}
+#now-card-target .summary {
+  color: #000 !important;
+  font-weight: 700 !important;
+}
+#now-card-target td:nth-child(2) {
+  color: #000 !important;
+  font-weight: 700 !important;
+}
+
+/* ── Toast notification ── */
+#ht-toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: #1a3a2a;
+  border: 1px solid #4ade80;
+  color: #4ade80;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 10px;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+  z-index: 1000;
+  white-space: nowrap;
+}
+#ht-toast.ht-toast--show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── Checkbox column ── */
+.cb-all-btn {
+  background: none;
+  border: 1px solid #4ade80;
+  color: #4ade80;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  padding: 2px 4px;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+}
+.cb-all-btn:hover {
+  background: #4ade80;
+  color: #000;
+}
+
+.cb-th {
+  width: 36px;
+  text-align: center !important;
+  color: #4ade80 !important;
+  font-size: 1rem !important;
+  letter-spacing: 0 !important;
+}
+
+.cb-td {
+  width: 36px;
+  text-align: center;
+  padding: 0 !important;
+  vertical-align: middle !important;
+}
+
+.cb-td input[type=checkbox] {
+  width: 17px;
+  height: 17px;
+  cursor: pointer;
+  accent-color: #22c55e;
+  position: relative;
+  z-index: 101;
+}
+
+
+
+/* ── Completed row ── */
+.row-done td:not(.cb-td) {
+  opacity: 0.45;
+}
+
+.row-done .summary {
+  text-decoration: line-through;
+  text-decoration-color: #166534;
 }

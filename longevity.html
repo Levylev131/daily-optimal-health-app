@@ -6,6 +6,7 @@
   <title>Longevity — Daily Optimal Health</title>
   <link rel="stylesheet" href="health.css">
   <script src="health-stickers.js" defer></script>
+  <script src="health-tracker.js" defer></script>
 </head>
 <body>
 
@@ -22,39 +23,39 @@
       </tr>
     </thead>
     <tbody>
-      <tr><td>6:00 AM</td><td>Wake up — no phone. Get outside or near a window for natural sunlight exposure to reset your circadian rhythm.</td></tr>
-      <tr><td>6:30 AM</td><td>Hydrate with 16–20 oz of water. Add a pinch of sea salt or electrolytes to replenish what was lost overnight.</td></tr>
-      <tr><td>7:00 AM</td><td>Strength training — compound lifts (squats, deadlifts, pressing). Building muscle is one of the strongest predictors of longevity.</td></tr>
-      <tr><td>7:30 AM</td><td>Continue workout — focus on progressive overload and proper form. Aim for 45–60 minutes total exercise.</td></tr>
-      <tr><td>8:00 AM</td><td>Cold shower (2–3 minutes). Boosts norepinephrine, reduces inflammation, and improves mood and resilience.</td></tr>
-      <tr><td>8:30 AM</td><td>High-protein breakfast — eggs, Greek yogurt, or a protein shake. Aim for 40–50g of protein to support muscle synthesis.</td></tr>
-      <tr><td>9:00 AM</td><td>Morning walk outside (15–20 min). Aids digestion, stabilizes blood sugar, and reinforces circadian signaling.</td></tr>
-      <tr><td>9:30 AM</td><td>Deep focused work or learning. Cognitive engagement and mental challenge are linked to reduced dementia risk.</td></tr>
-      <tr><td>10:00 AM</td><td>Hydrate. Stand up, stretch, or do 10 squats. Prolonged sitting increases cardiovascular and metabolic risk.</td></tr>
-      <tr><td>10:30 AM</td><td>Continue focused work. Avoid multitasking — sustained attention reduces cortisol spikes.</td></tr>
-      <tr><td>11:00 AM</td><td>5-minute breathing exercise — try box breathing (4 sec in, hold, out, hold). Activates the parasympathetic nervous system.</td></tr>
-      <tr><td>11:30 AM</td><td>Light movement break — a short walk or dynamic stretching to keep blood flowing and prevent stiffness.</td></tr>
-      <tr><td>12:00 PM</td><td>Lunch — whole foods focused. Leafy greens, lean protein, healthy fats (avocado, olive oil). Minimize ultra-processed foods.</td></tr>
-      <tr><td>12:30 PM</td><td>Post-meal walk (10–15 min). Shown to significantly reduce post-meal blood sugar spikes.</td></tr>
-      <tr><td>1:00 PM</td><td>Social connection — call a friend, have a meaningful conversation. Strong social ties are one of the most consistent longevity predictors.</td></tr>
-      <tr><td>1:30 PM</td><td>Return to focused work or creative tasks. Early afternoon is ideal for analytical thinking.</td></tr>
-      <tr><td>2:00 PM</td><td>Hydrate. Step outside briefly for light exposure — helps maintain energy without caffeine.</td></tr>
-      <tr><td>2:30 PM</td><td>Optional nap (10–20 min max) or quiet rest. Short naps improve cognitive performance and reduce cardiovascular risk.</td></tr>
-      <tr><td>3:00 PM</td><td>Healthy snack if hungry — handful of nuts, fruit, or vegetables with hummus. Avoid sugary snacks that spike insulin.</td></tr>
-      <tr><td>3:30 PM</td><td>Zone 2 cardio — brisk walk, cycling, or light jog at a pace where you can hold a conversation. Builds mitochondrial health.</td></tr>
-      <tr><td>4:00 PM</td><td>Sauna session (15–20 min at 170–190°F) if available. Linked to reduced cardiovascular mortality and improved detoxification.</td></tr>
-      <tr><td>4:30 PM</td><td>Cool down and rehydrate after sauna. This is also a good time for light stretching or mobility work.</td></tr>
-      <tr><td>5:00 PM</td><td>Dinner — aim to eat by 6 PM. Early time-restricted eating aligns with circadian biology and improves metabolic health.</td></tr>
-      <tr><td>5:30 PM</td><td>Post-dinner walk (15–20 min). One of the single best habits for blood sugar regulation and digestion.</td></tr>
-      <tr><td>6:00 PM</td><td>Quality time with family or close friends. Purposeful relationships reduce stress hormones and support immune function.</td></tr>
-      <tr><td>6:30 PM</td><td>Relaxing hobby — reading, music, cooking, gardening. Leisure activities reduce all-cause mortality risk.</td></tr>
-      <tr><td>7:00 PM</td><td>Begin winding down. Dim the lights and reduce screen brightness — blue light suppresses melatonin production.</td></tr>
-      <tr><td>7:30 PM</td><td>Gratitude journaling — write 3 things you're grateful for. Shown to lower cortisol and improve sleep quality.</td></tr>
-      <tr><td>8:00 PM</td><td>No screens if possible. Read a physical book, meditate, or have calm conversation instead.</td></tr>
-      <tr><td>8:30 PM</td><td>Cool the bedroom to 65–68°F. A cooler room significantly improves deep sleep quality.</td></tr>
-      <tr><td>9:00 PM</td><td>Gentle stretching or yoga (10–15 min). Releases tension, lowers heart rate, and signals the body it's time for sleep.</td></tr>
-      <tr><td>9:30 PM</td><td>Sleep hygiene routine — brush teeth, no stimulating content, keep a consistent bedtime. Consistency is key for circadian health.</td></tr>
-      <tr><td>10:00 PM</td><td>Sleep. Aim for 7–9 hours. Sleep is when the body repairs tissue, consolidates memory, and clears brain waste (glymphatic system).</td></tr>
+      <tr><td>6:00 AM</td><td><span class="summary">Wake up, no phone</span><span class="detail">Wake up — no phone. Get outside or near a window for natural sunlight exposure to reset your circadian rhythm.</span></td></tr>
+      <tr><td>6:30 AM</td><td><span class="summary">Hydrate</span><span class="detail">Hydrate with 16–20 oz of water. Add a pinch of sea salt or electrolytes to replenish what was lost overnight.</span></td></tr>
+      <tr><td>7:00 AM</td><td><span class="summary">Strength training</span><span class="detail">Strength training — compound lifts (squats, deadlifts, pressing). Building muscle is one of the strongest predictors of longevity.</span></td></tr>
+      <tr><td>7:30 AM</td><td><span class="summary">Continue workout</span><span class="detail">Continue workout — focus on progressive overload and proper form. Aim for 45–60 minutes total exercise.</span></td></tr>
+      <tr><td>8:00 AM</td><td><span class="summary">Cold shower</span><span class="detail">Cold shower (2–3 minutes). Boosts norepinephrine, reduces inflammation, and improves mood and resilience.</span></td></tr>
+      <tr><td>8:30 AM</td><td><span class="summary">High-protein breakfast</span><span class="detail">High-protein breakfast — eggs, Greek yogurt, or a protein shake. Aim for 40–50g of protein to support muscle synthesis.</span></td></tr>
+      <tr><td>9:00 AM</td><td><span class="summary">Morning walk outside</span><span class="detail">Morning walk outside (15–20 min). Aids digestion, stabilizes blood sugar, and reinforces circadian signaling.</span></td></tr>
+      <tr><td>9:30 AM</td><td><span class="summary">Deep focused work</span><span class="detail">Deep focused work or learning. Cognitive engagement and mental challenge are linked to reduced dementia risk.</span></td></tr>
+      <tr><td>10:00 AM</td><td><span class="summary">Hydrate, move briefly</span><span class="detail">Hydrate. Stand up, stretch, or do 10 squats. Prolonged sitting increases cardiovascular and metabolic risk.</span></td></tr>
+      <tr><td>10:30 AM</td><td><span class="summary">Continue focused work</span><span class="detail">Continue focused work. Avoid multitasking — sustained attention reduces cortisol spikes.</span></td></tr>
+      <tr><td>11:00 AM</td><td><span class="summary">Breathing exercise</span><span class="detail">5-minute breathing exercise — try box breathing (4 sec in, hold, out, hold). Activates the parasympathetic nervous system.</span></td></tr>
+      <tr><td>11:30 AM</td><td><span class="summary">Light movement break</span><span class="detail">Light movement break — a short walk or dynamic stretching to keep blood flowing and prevent stiffness.</span></td></tr>
+      <tr><td>12:00 PM</td><td><span class="summary">Whole foods lunch</span><span class="detail">Lunch — whole foods focused. Leafy greens, lean protein, healthy fats (avocado, olive oil). Minimize ultra-processed foods.</span></td></tr>
+      <tr><td>12:30 PM</td><td><span class="summary">Post-meal walk</span><span class="detail">Post-meal walk (10–15 min). Shown to significantly reduce post-meal blood sugar spikes.</span></td></tr>
+      <tr><td>1:00 PM</td><td><span class="summary">Social connection</span><span class="detail">Social connection — call a friend, have a meaningful conversation. Strong social ties are one of the most consistent longevity predictors.</span></td></tr>
+      <tr><td>1:30 PM</td><td><span class="summary">Focused work or creativity</span><span class="detail">Return to focused work or creative tasks. Early afternoon is ideal for analytical thinking.</span></td></tr>
+      <tr><td>2:00 PM</td><td><span class="summary">Hydrate, get sunlight</span><span class="detail">Hydrate. Step outside briefly for light exposure — helps maintain energy without caffeine.</span></td></tr>
+      <tr><td>2:30 PM</td><td><span class="summary">Optional short nap</span><span class="detail">Optional nap (10–20 min max) or quiet rest. Short naps improve cognitive performance and reduce cardiovascular risk.</span></td></tr>
+      <tr><td>3:00 PM</td><td><span class="summary">Healthy snack</span><span class="detail">Healthy snack if hungry — handful of nuts, fruit, or vegetables with hummus. Avoid sugary snacks that spike insulin.</span></td></tr>
+      <tr><td>3:30 PM</td><td><span class="summary">Zone 2 cardio</span><span class="detail">Zone 2 cardio — brisk walk, cycling, or light jog at a pace where you can hold a conversation. Builds mitochondrial health.</span></td></tr>
+      <tr><td>4:00 PM</td><td><span class="summary">Sauna session</span><span class="detail">Sauna session (15–20 min at 170–190°F) if available. Linked to reduced cardiovascular mortality and improved detoxification.</span></td></tr>
+      <tr><td>4:30 PM</td><td><span class="summary">Cool down, rehydrate</span><span class="detail">Cool down and rehydrate after sauna. This is also a good time for light stretching or mobility work.</span></td></tr>
+      <tr><td>5:00 PM</td><td><span class="summary">Dinner</span><span class="detail">Dinner — aim to eat by 6 PM. Early time-restricted eating aligns with circadian biology and improves metabolic health.</span></td></tr>
+      <tr><td>5:30 PM</td><td><span class="summary">Post-dinner walk</span><span class="detail">Post-dinner walk (15–20 min). One of the single best habits for blood sugar regulation and digestion.</span></td></tr>
+      <tr><td>6:00 PM</td><td><span class="summary">Quality time with others</span><span class="detail">Quality time with family or close friends. Purposeful relationships reduce stress hormones and support immune function.</span></td></tr>
+      <tr><td>6:30 PM</td><td><span class="summary">Relaxing hobby</span><span class="detail">Relaxing hobby — reading, music, cooking, gardening. Leisure activities reduce all-cause mortality risk.</span></td></tr>
+      <tr><td>7:00 PM</td><td><span class="summary">Dim lights, wind down</span><span class="detail">Begin winding down. Dim the lights and reduce screen brightness — blue light suppresses melatonin production.</span></td></tr>
+      <tr><td>7:30 PM</td><td><span class="summary">Gratitude journaling</span><span class="detail">Gratitude journaling — write 3 things you're grateful for. Shown to lower cortisol and improve sleep quality.</span></td></tr>
+      <tr><td>8:00 PM</td><td><span class="summary">No screens</span><span class="detail">No screens if possible. Read a physical book, meditate, or have calm conversation instead.</span></td></tr>
+      <tr><td>8:30 PM</td><td><span class="summary">Cool the bedroom</span><span class="detail">Cool the bedroom to 65–68°F. A cooler room significantly improves deep sleep quality.</span></td></tr>
+      <tr><td>9:00 PM</td><td><span class="summary">Gentle stretching or yoga</span><span class="detail">Gentle stretching or yoga (10–15 min). Releases tension, lowers heart rate, and signals the body it's time for sleep.</span></td></tr>
+      <tr><td>9:30 PM</td><td><span class="summary">Sleep hygiene routine</span><span class="detail">Sleep hygiene routine — brush teeth, no stimulating content, keep a consistent bedtime. Consistency is key for circadian health.</span></td></tr>
+      <tr><td>10:00 PM</td><td><span class="summary">Sleep</span><span class="detail">Sleep. Aim for 7–9 hours. Sleep is when the body repairs tissue, consolidates memory, and clears brain waste (glymphatic system).</span></td></tr>
     </tbody>
   </table>
 
