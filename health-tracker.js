@@ -163,8 +163,7 @@
     const bar = document.createElement('div');
     bar.id = 'pf-bar';
     updateProfileBar(bar);
-    const back = document.querySelector('.back');
-    back.parentNode.insertBefore(bar, back.nextSibling);
+    document.body.insertBefore(bar, document.body.firstChild);
   }
 
   function updateProfileBar(bar) {
