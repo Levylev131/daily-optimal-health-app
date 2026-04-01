@@ -666,8 +666,13 @@ var currentDate = todayKey();
 function isViewingToday() { return currentDate === todayKey(); }
 
 function renderDayNav() {
-  var label = isViewingToday() ? '▶ Today' : formatDate(currentDate);
-  var sub   = isViewingToday() ? '' : new Date(currentDate + 'T00:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  var todayName = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  var pastDt = new Date(currentDate + 'T00:00:00');
+  var isYesterday = currentDate === offsetDate(todayKey(), -1);
+  var label = isViewingToday() ? 'Today' : isYesterday ? 'Yesterday' : pastDt.toLocaleDateString('en-US', { weekday:'long' });
+  var sub   = isViewingToday() ? todayName : isYesterday
+    ? pastDt.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' })
+    : pastDt.toLocaleDateString('en-US', { month:'long', day:'numeric' });
   document.getElementById('pdn-label').textContent = label;
   document.getElementById('pdn-sub').textContent   = sub;
   document.getElementById('pdn-next').disabled = isViewingToday();

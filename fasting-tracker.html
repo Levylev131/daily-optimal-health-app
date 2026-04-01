@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fasting Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --r: 14px; --r-sm: 10px;
+      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
+      --danger: #e05555; --danger-glow: rgba(224,85,85,0.35);
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+    .page { max-width: 720px; margin: 0 auto; padding: 28px 20px 80px; }
+
+    .back-btn {
+      background: none; border: none; color: var(--muted);
+      font-size: .88rem; font-weight: 600; cursor: pointer;
+      padding: 6px 0; margin-bottom: 22px; display: inline-flex;
+      align-items: center; gap: 6px; transition: var(--trans);
+    }
+    .back-btn:hover { color: var(--text); }
+
+    .page-title {
+      text-align: center; font-size: 1.7rem; font-weight: 800;
+      margin-bottom: 28px; letter-spacing: -0.3px;
+    }
+    .page-title span { font-size: 1.5rem; }
+
+    /* ── GLASS CARD ── */
+    .card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px);
+      padding: 28px; margin-bottom: 18px;
+    }
+    .card-title {
+      font-size: .78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.2px; color: var(--muted); margin-bottom: 18px;
+    }
+
+    /* ── CIRCULAR TIMER ── */
+    .timer-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+    }
+    .circle-container {
+      position: relative; width: 220px; height: 220px;
+    }
+    .circle-svg { width: 220px; height: 220px; transform: rotate(-90deg); }
+    .circle-bg { fill: none; stroke: var(--glass-b); stroke-width: 12; }
+    .circle-prog {
+      fill: none; stroke: var(--acc); stroke-width: 12;
+      stroke-linecap: round;
+      stroke-dasharray: 628;
+      stroke-dashoffset: 628;
+      transition: stroke-dashoffset 1s linear, stroke 0.5s;
+    }
+    .circle-prog.complete { stroke: #ffd700; }
+    .circle-inner {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 4px;
+    }
+    .timer-hms {
+      font-size: 2.6rem; font-weight: 800; letter-spacing: -1px;
+      line-height: 1; font-variant-numeric: tabular-nums;
+    }
+    .timer-pct {
+      font-size: .85rem; color: var(--muted); font-weight: 600;
+    }
+
+    /* idle state */
+    .idle-icon { font-size: 3.5rem; margin-bottom: 4px; }
+    .idle-label {
+      font-size: 1rem; color: var(--muted); font-weight: 600; margin-bottom: 8px;
+    }
+
+    /* ── INFO ROWS ── */
+    .info-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px; width: 100%;
+    }
+    .info-box {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); padding: 14px 16px;
+    }
+    .info-label { font-size: .72rem; color: var(--muted); font-weight: 700;
+      text-transform: uppercase; letter-spacing: .8px; margin-bottom: 4px; }
+    .info-val { font-size: 1rem; font-weight: 700; }
+
+    /* ── PROGRESS BAR ── */
+    .prog-bar-wrap { width: 100%; }
+    .prog-bar-track {
+      height: 8px; background: var(--glass-b); border-radius: 999px;
+      overflow: hidden; margin-top: 6px;
+    }
+    .prog-bar-fill {
+      height: 100%; background: var(--acc); border-radius: 999px;
+      transition: width 1s linear;
+      max-width: 100%;
+    }
+
+    /* ── GOAL PRESETS ── */
+    .presets-row {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;
+    }
+    .preset-btn {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: 999px; color: var(--text);
+      font-size: .88rem; font-weight: 700; padding: 7px 16px;
+      cursor: pointer; transition: var(--trans);
+    }
+    .preset-btn:hover { background: var(--glass-h); }
+    .preset-btn.active {
+      background: var(--acc); color: #000;
+      border-color: var(--acc); box-shadow: 0 0 10px var(--glow);
+    }
+    .custom-row {
+      display: flex; align-items: center; gap: 10px; margin-top: 4px;
+    }
+    .custom-row label { font-size: .85rem; color: var(--muted); white-space: nowrap; }
+    .custom-row input {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); color: var(--text);
+      padding: 8px 12px; outline: none; width: 90px; font-size: .9rem;
+      font-weight: 700;
+    }
+    .custom-row input:focus { border-color: var(--acc); }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      background: var(--acc); color: #000; font-weight: 800;
+      border: none; border-radius: 10px; padding: 14px 32px;
+      cursor: pointer; font-size: 1.05rem; letter-spacing: .3px;
+      transition: var(--trans); box-shadow: 0 0 16px var(--glow);
+      width: 100%;
+    }
+    .btn-primary:hover { background: #38f07d; box-shadow: 0 0 24px var(--glow); transform: translateY(-1px); }
+    .btn-danger {
+      background: var(--danger); color: #fff; font-weight: 800;
+      border: none; border-radius: 10px; padding: 14px 32px;
+      cursor: pointer; font-size: 1.05rem; letter-spacing: .3px;
+      transition: var(--trans); box-shadow: 0 0 16px var(--danger-glow);
+      width: 100%;
+    }
+    .btn-danger:hover { background: #f06060; transform: translateY(-1px); }
+    .btn-secondary {
+      background: var(--glass); color: var(--text);
+      border: 1px solid var(--glass-b); border-radius: 10px;
+      padding: 10px 20px; cursor: pointer; font-size: .88rem;
+      font-weight: 600; transition: var(--trans);
+    }
+    .btn-secondary:hover { background: var(--glass-h); }
+
+    /* ── HISTORY ── */
+    .history-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .history-entry {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); padding: 14px 16px;
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 10px; transition: var(--trans);
+    }
+    .history-entry:hover { background: var(--glass-h); }
+    .hist-badge {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+    }
+    .hist-badge.hit { background: rgba(45,212,110,0.2); }
+    .hist-badge.miss { background: rgba(255,255,255,0.06); }
+    .hist-info { flex: 1; }
+    .hist-date { font-size: .8rem; color: var(--muted); font-weight: 600; margin-bottom: 3px; }
+    .hist-dur { font-size: .95rem; font-weight: 700; }
+    .hist-goal { font-size: .78rem; color: var(--muted); }
+    .hist-pct {
+      font-size: .85rem; font-weight: 800; color: var(--acc);
+      text-align: right; min-width: 44px;
+    }
+    .hist-pct.miss { color: var(--muted); }
+    .empty-hist {
+      text-align: center; color: var(--muted); padding: 28px 0;
+      font-size: .9rem;
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(60px);
+      background: var(--acc); color: #000; font-weight: 800;
+      padding: 12px 24px; border-radius: 999px; font-size: .9rem;
+      transition: var(--trans); pointer-events: none; z-index: 999;
+      white-space: nowrap; box-shadow: 0 4px 20px var(--glow);
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: var(--glass-b); margin: 18px 0; }
+
+    @media (max-width: 480px) {
+      .info-grid { grid-template-columns: 1fr; }
+      .timer-hms { font-size: 2rem; }
+      .circle-container { width: 180px; height: 180px; }
+      .circle-svg { width: 180px; height: 180px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <button class="back-btn" onclick="window.location.href='index.html'">&#8592; Back</button>
+  <h1 class="page-title"><span>⏱️</span> Fasting Tracker</h1>
+
+  <!-- MAIN FAST CARD -->
+  <div class="card" id="main-card">
+    <div class="timer-wrap" id="timer-wrap">
+      <!-- injected by JS -->
+    </div>
+  </div>
+
+  <!-- GOAL PRESETS CARD -->
+  <div class="card" id="goal-card">
+    <div class="card-title">Fasting Goal</div>
+    <div class="presets-row" id="presets-row"></div>
+    <div class="custom-row">
+      <label>Custom:</label>
+      <input type="number" id="custom-hrs" min="1" max="72" placeholder="hours" />
+      <button class="btn-secondary" onclick="setCustomGoal()">Set</button>
+    </div>
+  </div>
+
+  <!-- HISTORY CARD -->
+  <div class="card">
+    <div class="history-header">
+      <div class="card-title" style="margin-bottom:0">History</div>
+      <button class="btn-secondary" onclick="clearHistory()">Clear History</button>
+    </div>
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  /* ── STATE ── */
+  var PRESETS = [12, 16, 18, 20, 24, 36];
+  var goalHours = 16;
+  var timerInterval = null;
+
+  /* ── HELPERS ── */
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function fmtHMS(ms) {
+    var s = Math.floor(ms / 1000);
+    var h = Math.floor(s / 3600);
+    var m = Math.floor((s % 3600) / 60);
+    var sec = s % 60;
+    return pad(h) + ':' + pad(m) + ':' + pad(sec);
+  }
+
+  function fmtGoal(h) {
+    return pad(h) + ':00';
+  }
+
+  function fmtDateTime(iso) {
+    var d = new Date(iso);
+    var now = new Date();
+    var isToday = d.toDateString() === now.toDateString();
+    var yest = new Date(now); yest.setDate(yest.getDate() - 1);
+    var isYest = d.toDateString() === yest.toDateString();
+    var prefix = isToday ? 'Today' : isYest ? 'Yesterday' : d.toLocaleDateString('en-US', {month:'short',day:'numeric'});
+    var time = d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
+    return prefix + ' at ' + time;
+  }
+
+  function fmtDuration(mins) {
+    var h = Math.floor(mins / 60);
+    var m = mins % 60;
+    if (m === 0) return h + 'h';
+    return h + 'h ' + m + 'm';
+  }
+
+  function fmtProjectedEnd(startIso, goalH) {
+    var end = new Date(new Date(startIso).getTime() + goalH * 3600 * 1000);
+    var now = new Date();
+    var isToday = end.toDateString() === now.toDateString();
+    var yest = new Date(now); yest.setDate(yest.getDate() - 1);
+    var isTomorrow = end > now && end.toDateString() !== now.toDateString() &&
+      end.getTime() - now.getTime() < 86400000 * 2;
+    var prefix = isToday ? 'Today' : isTomorrow ? 'Tomorrow' :
+      end.toLocaleDateString('en-US', {month:'short',day:'numeric'});
+    return prefix + ' at ' + end.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'});
+  }
+
+  /* ── STORAGE ── */
+  function getActive() {
+    try { return JSON.parse(localStorage.getItem('ft:active')); } catch(e) { return null; }
+  }
+  function setActive(obj) {
+    if (obj === null) localStorage.removeItem('ft:active');
+    else localStorage.setItem('ft:active', JSON.stringify(obj));
+  }
+  function getHistory() {
+    try { return JSON.parse(localStorage.getItem('ft:history')) || []; } catch(e) { return []; }
+  }
+  function setHistory(arr) { localStorage.setItem('ft:history', JSON.stringify(arr)); }
+  function getGoal() {
+    var g = localStorage.getItem('ft:goal');
+    return g ? parseInt(g) : 16;
+  }
+  function saveGoal(h) { localStorage.setItem('ft:goal', String(h)); }
+
+  /* ── GOAL PRESETS ── */
+  function renderPresets() {
+    var row = document.getElementById('presets-row');
+    row.innerHTML = '';
+    PRESETS.forEach(function(h) {
+      var btn = document.createElement('button');
+      btn.className = 'preset-btn' + (h === goalHours ? ' active' : '');
+      btn.textContent = h + 'h';
+      btn.onclick = function() { setGoal(h); };
+      row.appendChild(btn);
+    });
+    // check if custom
+    if (PRESETS.indexOf(goalHours) === -1) {
+      var custEl = document.getElementById('custom-hrs');
+      if (custEl) custEl.value = goalHours;
+    }
+  }
+
+  function setGoal(h) {
+    goalHours = h;
+    saveGoal(h);
+    renderPresets();
+    renderMain();
+  }
+
+  function setCustomGoal() {
+    var val = parseInt(document.getElementById('custom-hrs').value);
+    if (!val || val < 1 || val > 168) { showToast('Enter 1–168 hours'); return; }
+    setGoal(val);
+  }
+
+  /* ── MAIN TIMER UI ── */
+  function renderMain() {
+    var active = getActive();
+    var wrap = document.getElementById('timer-wrap');
+    if (active) {
+      renderActiveFast(wrap, active);
+    } else {
+      renderIdleState(wrap);
+    }
+  }
+
+  function renderIdleState(wrap) {
+    wrap.innerHTML = [
+      '<div class="idle-icon">🍽️</div>',
+      '<div class="idle-label">Not currently fasting</div>',
+      '<button class="btn-primary" id="start-btn" onclick="startFast()">▶ Start Fast</button>'
+    ].join('');
+  }
+
+  function renderActiveFast(wrap, active) {
+    wrap.innerHTML = [
+      '<div class="circle-container">',
+        '<svg class="circle-svg" viewBox="0 0 220 220">',
+          '<circle class="circle-bg" cx="110" cy="110" r="100"/>',
+          '<circle class="circle-prog" id="circle-prog" cx="110" cy="110" r="100"/>',
+        '</svg>',
+        '<div class="circle-inner">',
+          '<div class="timer-hms" id="timer-hms">00:00:00</div>',
+          '<div class="timer-pct" id="timer-pct">0%</div>',
+        '</div>',
+      '</div>',
+      '<div class="info-grid">',
+        '<div class="info-box">',
+          '<div class="info-label">Started</div>',
+          '<div class="info-val" id="info-started">' + fmtDateTime(active.start) + '</div>',
+        '</div>',
+        '<div class="info-box">',
+          '<div class="info-label">Goal</div>',
+          '<div class="info-val">' + fmtGoal(goalHours) + '</div>',
+        '</div>',
+        '<div class="info-box" style="grid-column:1/-1">',
+          '<div class="info-label">Projected End</div>',
+          '<div class="info-val" id="info-end">' + fmtProjectedEnd(active.start, goalHours) + '</div>',
+        '</div>',
+      '</div>',
+      '<div class="prog-bar-wrap">',
+        '<div class="info-label">Progress</div>',
+        '<div class="prog-bar-track"><div class="prog-bar-fill" id="prog-fill" style="width:0%"></div></div>',
+      '</div>',
+      '<button class="btn-danger" onclick="endFast()">&#9632; End Fast</button>'
+    ].join('');
+    tickTimer(active);
+  }
+
+  /* ── TICK ── */
+  function tickTimer(active) {
+    if (timerInterval) clearInterval(timerInterval);
+    function update() {
+      var elapsed = Date.now() - new Date(active.start).getTime();
+      var goalMs = goalHours * 3600 * 1000;
+      var pct = Math.min(100, (elapsed / goalMs) * 100);
+      var hmsEl = document.getElementById('timer-hms');
+      var pctEl = document.getElementById('timer-pct');
+      var progEl = document.getElementById('circle-prog');
+      var fillEl = document.getElementById('prog-fill');
+      if (!hmsEl) { clearInterval(timerInterval); return; }
+      hmsEl.textContent = fmtHMS(elapsed);
+      pctEl.textContent = pct.toFixed(1) + '%';
+      fillEl.style.width = pct + '%';
+      // SVG arc: circumference = 2*pi*100 ≈ 628.318
+      var circ = 628.318;
+      progEl.style.strokeDashoffset = circ - (circ * pct / 100);
+      if (pct >= 100) {
+        progEl.classList.add('complete');
+        pctEl.textContent = '✓ Goal reached!';
+      } else {
+        progEl.classList.remove('complete');
+      }
+    }
+    update();
+    timerInterval = setInterval(update, 1000);
+  }
+
+  /* ── ACTIONS ── */
+  function startFast() {
+    setActive({ start: new Date().toISOString() });
+    renderMain();
+    showToast('Fast started! You got this.');
+  }
+
+  function endFast() {
+    var active = getActive();
+    if (!active) return;
+    var endTime = new Date().toISOString();
+    var durationMs = Date.now() - new Date(active.start).getTime();
+    var duration_mins = Math.floor(durationMs / 60000);
+    var goal_mins = goalHours * 60;
+    var history = getHistory();
+    history.unshift({ start: active.start, end: endTime, duration_mins: duration_mins, goal_mins: goal_mins });
+    if (history.length > 50) history = history.slice(0, 50);
+    setHistory(history);
+    setActive(null);
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    renderMain();
+    renderHistory();
+    var hit = duration_mins >= goal_mins;
+    showToast(hit ? '🎉 Goal reached! Amazing fast.' : 'Fast ended — ' + fmtDuration(duration_mins) + ' completed.');
+  }
+
+  /* ── HISTORY ── */
+  function renderHistory() {
+    var list = document.getElementById('history-list');
+    var history = getHistory().slice(0, 10);
+    if (history.length === 0) {
+      list.innerHTML = '<div class="empty-hist">No fasts yet. Start your first one above!</div>';
+      return;
+    }
+    list.innerHTML = history.map(function(entry) {
+      var hit = entry.duration_mins >= entry.goal_mins;
+      var pct = Math.min(100, Math.round((entry.duration_mins / entry.goal_mins) * 100));
+      return [
+        '<div class="history-entry">',
+          '<div class="hist-badge ' + (hit ? 'hit' : 'miss') + '">' + (hit ? '✅' : '⏸️') + '</div>',
+          '<div class="hist-info">',
+            '<div class="hist-date">' + fmtDateTime(entry.start) + '</div>',
+            '<div class="hist-dur">' + fmtDuration(entry.duration_mins) + ' completed</div>',
+            '<div class="hist-goal">Goal: ' + fmtDuration(entry.goal_mins) + '</div>',
+          '</div>',
+          '<div class="hist-pct ' + (hit ? '' : 'miss') + '">' + pct + '%</div>',
+        '</div>'
+      ].join('');
+    }).join('');
+  }
+
+  function clearHistory() {
+    if (!confirm('Clear all fasting history?')) return;
+    setHistory([]);
+    renderHistory();
+    showToast('History cleared.');
+  }
+
+  /* ── TOAST ── */
+  var toastTimer = null;
+  function showToast(msg) {
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() { el.classList.remove('show'); }, 3000);
+  }
+
+  /* ── EXPOSE ── */
+  window.startFast = startFast;
+  window.endFast = endFast;
+  window.clearHistory = clearHistory;
+  window.setCustomGoal = setCustomGoal;
+
+  /* ── INIT ── */
+  goalHours = getGoal();
+  renderPresets();
+  renderMain();
+  renderHistory();
+})();
+</script>
+</body>
+</html>

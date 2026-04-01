@@ -616,10 +616,11 @@ function renderHub() {
   };
 
   document.getElementById('hub-view').innerHTML=`<div id="hub">
+    ${false /* DEGEN HIDDEN — change false to true to restore */ ? `
     <div class="mode-toggle">
       <button class="mode-btn ${!isDegen?'active':''}" onclick="setMode('health')">🌿 Health</button>
       <button class="mode-btn ${isDegen?'active':''}" onclick="setMode('degen')">💀 Degenerate</button>
-    </div>
+    </div>` : ''}
     <div class="hub-header">
       <h1 class="hub-title">Daily Optimal Health</h1>
       <p class="hub-sub">Choose a goal. Check off your day. Stack wins.</p>
@@ -637,21 +638,57 @@ function renderHub() {
     </div>
     <div class="sec-label">Health Goals</div>
     <div class="goal-grid">${hGoals.map(card).join('')}</div>
+    ${false /* DEGEN HIDDEN — change false to true to restore */ ? `
     <div class="degen-div"><span class="degen-label">Degenerate Fucks</span></div>
     <div class="sec-label">Recovery Tiers</div>
-    <div class="goal-grid">${dGoals.map(card).join('')}</div>
+    <div class="goal-grid">${dGoals.map(card).join('')}</div>` : ''}
     <div class="sec-label" style="margin-top:28px">Tools &amp; Trackers</div>
     <div class="goal-grid">
       <div class="goal-card" onclick="window.location.href='tools.html'">
-        <div class="ring-wrap">
-          <svg viewBox="0 0 50 50">
-            <circle class="r-track" cx="25" cy="25" r="22"/>
-          </svg>
-          <div class="ring-icon">🛠️</div>
-        </div>
+        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">🛠️</div></div>
         <div class="card-info">
           <div class="card-title">Tools &amp; Trackers</div>
           <div class="card-desc">Journal, water, mood, supplements, sleep log, and your personal checklist</div>
+          <div class="card-pct">Open →</div>
+        </div>
+      </div>
+      <div class="goal-card" onclick="window.location.href='workout-log.html'">
+        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">💪</div></div>
+        <div class="card-info">
+          <div class="card-title">Workout Logger</div>
+          <div class="card-desc">Log exercises, sets, reps, and weight. Track progressive overload day by day.</div>
+          <div class="card-pct">Open →</div>
+        </div>
+      </div>
+      <div class="goal-card" onclick="window.location.href='nutrition-log.html'">
+        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">🥗</div></div>
+        <div class="card-info">
+          <div class="card-title">Nutrition Log</div>
+          <div class="card-desc">Track meals and macros — protein, carbs, fat, and calories across the day.</div>
+          <div class="card-pct">Open →</div>
+        </div>
+      </div>
+      <div class="goal-card" onclick="window.location.href='fasting-tracker.html'">
+        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">⏱️</div></div>
+        <div class="card-info">
+          <div class="card-title">Fasting Tracker</div>
+          <div class="card-desc">Start and track intermittent fasts. Set goals, monitor progress, log history.</div>
+          <div class="card-pct">Open →</div>
+        </div>
+      </div>
+      <div class="goal-card" onclick="window.location.href='habit-tracker.html'">
+        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">✅</div></div>
+        <div class="card-info">
+          <div class="card-title">Habit Tracker</div>
+          <div class="card-desc">Build custom daily habits. Track streaks and stay consistent over time.</div>
+          <div class="card-pct">Open →</div>
+        </div>
+      </div>
+      <div class="goal-card" onclick="window.location.href='challenges.html'">
+        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">🏆</div></div>
+        <div class="card-info">
+          <div class="card-title">30-Day Challenges</div>
+          <div class="card-desc">Pick a challenge, check in daily, and build a new habit in 30 days.</div>
           <div class="card-pct">Open →</div>
         </div>
       </div>

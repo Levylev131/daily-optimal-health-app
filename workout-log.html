@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workout Logger</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --r: 14px; --r-sm: 10px;
+      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
+      --danger: #ff5c5c; --danger-glass: rgba(255,92,92,0.13);
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+    .page { max-width: 720px; margin: 0 auto; padding: 28px 20px 80px; }
+
+    /* Back button */
+    .back-btn {
+      background: none; border: none; color: var(--muted);
+      font-size: .88rem; font-weight: 600; cursor: pointer;
+      padding: 6px 0; margin-bottom: 22px; display: inline-flex;
+      align-items: center; gap: 5px; transition: var(--trans);
+    }
+    .back-btn:hover { color: var(--acc); }
+
+    /* Page header */
+    .page-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 28px;
+    }
+    .page-header .icon {
+      font-size: 2.4rem; line-height: 1;
+    }
+    .page-header h1 {
+      font-size: 1.9rem; font-weight: 900;
+      background: linear-gradient(135deg, #fff 40%, var(--acc));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Day nav */
+    .day-nav {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px);
+      padding: 12px 16px; margin-bottom: 24px;
+    }
+    .day-nav button {
+      background: var(--glass); color: var(--text);
+      border: 1px solid var(--glass-b); border-radius: var(--r-sm);
+      padding: 8px 14px; cursor: pointer; font-size: .85rem;
+      font-weight: 600; transition: var(--trans); white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .day-nav button:hover:not(:disabled) { background: var(--glass-h); border-color: var(--acc); color: var(--acc); }
+    .day-nav button:disabled { opacity: 0.35; cursor: default; }
+    .dn-center { flex: 1; text-align: center; }
+    #dn-label { font-size: 1rem; font-weight: 700; }
+    #dn-sub { font-size: .75rem; color: var(--muted); margin-top: 3px; }
+
+    /* Add exercise button */
+    .add-ex-btn {
+      width: 100%; background: var(--acc); color: #000;
+      font-weight: 800; border: none; border-radius: 10px;
+      padding: 13px; cursor: pointer; font-size: .95rem;
+      transition: var(--trans); margin-bottom: 20px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .add-ex-btn:hover { background: var(--acc2); color: #fff; transform: translateY(-1px); box-shadow: 0 6px 24px var(--glow); }
+
+    /* Inline add-exercise form */
+    .add-ex-form {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px);
+      padding: 18px; margin-bottom: 20px;
+      display: none; /* shown via JS */
+    }
+    .add-ex-form.visible { display: block; }
+    .add-ex-form label { font-size: .8rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 6px; }
+    .add-ex-form input {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: 10px; color: var(--text); padding: 10px 14px;
+      outline: none; width: 100%; font-size: .95rem;
+      transition: var(--trans);
+    }
+    .add-ex-form input:focus { border-color: var(--acc); box-shadow: 0 0 0 3px var(--glow); }
+    .form-row { display: flex; gap: 10px; margin-top: 12px; }
+    .form-row button {
+      flex: 1; border-radius: 10px; padding: 10px; cursor: pointer;
+      font-weight: 700; border: none; font-size: .9rem; transition: var(--trans);
+    }
+    .btn-confirm { background: var(--acc); color: #000; }
+    .btn-confirm:hover { background: var(--acc2); color: #fff; }
+    .btn-cancel { background: var(--glass); color: var(--text); border: 1px solid var(--glass-b) !important; }
+    .btn-cancel:hover { background: var(--glass-h); }
+    .form-row button { border: none; }
+
+    /* Exercise cards */
+    .ex-list { display: flex; flex-direction: column; gap: 16px; }
+
+    .ex-card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px);
+      overflow: hidden; transition: var(--trans);
+    }
+    .ex-card:hover { border-color: rgba(255,255,255,0.22); }
+
+    .ex-card-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 16px 14px;
+      border-bottom: 1px solid var(--glass-b);
+    }
+    .ex-name-wrap { flex: 1; }
+    .ex-name {
+      font-size: 1.05rem; font-weight: 800;
+      background: none; border: none; border-bottom: 2px solid transparent;
+      color: var(--text); width: 100%; padding: 2px 0;
+      cursor: text; transition: var(--trans); outline: none;
+    }
+    .ex-name:hover, .ex-name:focus { border-bottom-color: var(--acc); }
+    .ex-set-count {
+      font-size: .75rem; color: var(--muted); margin-top: 3px;
+      font-weight: 600; letter-spacing: .5px; text-transform: uppercase;
+    }
+    .ex-delete-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 1.1rem; padding: 4px 6px;
+      border-radius: 8px; transition: var(--trans); line-height: 1;
+    }
+    .ex-delete-btn:hover { background: var(--danger-glass); color: var(--danger); }
+
+    /* Sets list */
+    .sets-list { padding: 10px 16px 4px; }
+    .set-row {
+      display: grid;
+      grid-template-columns: 28px 1fr 1fr 72px 32px;
+      align-items: center; gap: 8px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .set-row:last-child { border-bottom: none; }
+    .set-num {
+      font-size: .8rem; font-weight: 700; color: var(--acc);
+      text-align: center;
+    }
+    .set-input {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: 8px; color: var(--text);
+      padding: 7px 10px; font-size: .88rem; outline: none;
+      width: 100%; transition: var(--trans);
+    }
+    .set-input:focus { border-color: var(--acc); box-shadow: 0 0 0 2px var(--glow); }
+    .set-input::placeholder { color: var(--muted); font-size: .8rem; }
+
+    /* Unit toggle */
+    .unit-toggle {
+      display: flex; border-radius: 8px; overflow: hidden;
+      border: 1px solid var(--glass-b); height: 34px;
+    }
+    .unit-toggle button {
+      flex: 1; border: none; cursor: pointer;
+      font-size: .75rem; font-weight: 700; transition: var(--trans);
+      background: var(--glass); color: var(--muted);
+      padding: 0 6px;
+    }
+    .unit-toggle button.active { background: var(--acc); color: #000; }
+    .unit-toggle button:not(.active):hover { background: var(--glass-h); color: var(--text); }
+
+    .set-del-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: .95rem; padding: 4px;
+      border-radius: 6px; transition: var(--trans); line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .set-del-btn:hover { background: var(--danger-glass); color: var(--danger); }
+
+    /* Add set button */
+    .add-set-btn {
+      display: flex; align-items: center; gap: 7px;
+      margin: 8px 16px 14px;
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: 10px; padding: 9px 14px;
+      cursor: pointer; color: var(--acc); font-weight: 700;
+      font-size: .85rem; transition: var(--trans); width: calc(100% - 32px);
+    }
+    .add-set-btn:hover { background: var(--glass-h); border-color: var(--acc); box-shadow: 0 0 12px var(--glow); }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      color: var(--muted);
+    }
+    .empty-state .empty-icon { font-size: 3.5rem; margin-bottom: 14px; display: block; }
+    .empty-state h3 { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .empty-state p { font-size: .88rem; line-height: 1.6; }
+
+    /* Set label row */
+    .set-labels {
+      display: grid;
+      grid-template-columns: 28px 1fr 1fr 72px 32px;
+      gap: 8px; padding: 0 16px 4px;
+      font-size: .72rem; font-weight: 600;
+      color: var(--muted); text-transform: uppercase; letter-spacing: .5px;
+    }
+    .set-labels span:nth-child(1) { text-align: center; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Back -->
+  <button class="back-btn" onclick="window.location.href='index.html'">← Back</button>
+
+  <!-- Header -->
+  <div class="page-header">
+    <span class="icon">💪</span>
+    <h1>Workout Logger</h1>
+  </div>
+
+  <!-- Day nav -->
+  <div class="day-nav">
+    <button onclick="prevDay()">← Prev</button>
+    <div class="dn-center">
+      <div id="dn-label"></div>
+      <div id="dn-sub"></div>
+    </div>
+    <button id="dn-next" onclick="nextDay()">Next →</button>
+  </div>
+
+  <!-- Add exercise button -->
+  <button class="add-ex-btn" onclick="toggleAddForm()">
+    <span>＋</span> Add Exercise
+  </button>
+
+  <!-- Inline add form -->
+  <div class="add-ex-form" id="add-ex-form">
+    <label for="new-ex-name">Exercise name</label>
+    <input type="text" id="new-ex-name" placeholder="e.g. Bench Press, Squat, Pull-up…" autocomplete="off">
+    <div class="form-row">
+      <button class="btn-confirm" onclick="addExercise()">Add Exercise</button>
+      <button class="btn-cancel" onclick="toggleAddForm()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Exercise list -->
+  <div class="ex-list" id="ex-list"></div>
+
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  /* ── Day nav ── */
+  var currentDate = todayKey();
+
+  function todayKey() {
+    var d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+  }
+  function pad(n) { return String(n).padStart(2,'0'); }
+  function offsetDate(iso, n) {
+    var d = new Date(iso + 'T00:00:00');
+    d.setDate(d.getDate() + n);
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+  }
+  function isToday() { return currentDate === todayKey(); }
+
+  function renderDayNav() {
+    var dt = new Date(currentDate + 'T00:00:00');
+    var isYesterday = currentDate === offsetDate(todayKey(), -1);
+    var label = isToday() ? 'Today' : isYesterday ? 'Yesterday' : dt.toLocaleDateString('en-US', {weekday:'long'});
+    var sub = isToday()
+      ? new Date().toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'})
+      : dt.toLocaleDateString('en-US', isYesterday ? {weekday:'long', month:'long', day:'numeric'} : {month:'long', day:'numeric'});
+    document.getElementById('dn-label').textContent = label;
+    document.getElementById('dn-sub').textContent = sub;
+    document.getElementById('dn-next').disabled = isToday();
+  }
+
+  function prevDay() { currentDate = offsetDate(currentDate, -1); renderDayNav(); render(); }
+  function nextDay() { if (isToday()) return; currentDate = offsetDate(currentDate, 1); renderDayNav(); render(); }
+
+  /* ── Data ── */
+  function storageKey() { return 'wl:' + currentDate; }
+
+  function loadDay() {
+    try { return JSON.parse(localStorage.getItem(storageKey()) || '[]'); } catch(e) { return []; }
+  }
+
+  function saveDay(data) {
+    localStorage.setItem(storageKey(), JSON.stringify(data));
+  }
+
+  function newId() { return 'ex_' + Date.now() + '_' + Math.random().toString(36).slice(2,6); }
+
+  /* ── State ── */
+  var exercises = [];
+
+  /* ── Add exercise form ── */
+  window.toggleAddForm = function() {
+    var form = document.getElementById('add-ex-form');
+    var visible = form.classList.toggle('visible');
+    if (visible) {
+      document.getElementById('new-ex-name').value = '';
+      document.getElementById('new-ex-name').focus();
+    }
+  };
+
+  window.addExercise = function() {
+    var input = document.getElementById('new-ex-name');
+    var name = input.value.trim();
+    if (!name) { input.focus(); return; }
+    exercises.push({ id: newId(), name: name, sets: [] });
+    saveDay(exercises);
+    document.getElementById('add-ex-form').classList.remove('visible');
+    render();
+  };
+
+  /* ── Enter key on add form ── */
+  document.getElementById('new-ex-name').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') window.addExercise();
+    if (e.key === 'Escape') window.toggleAddForm();
+  });
+
+  /* ── Prev / Next exposed to HTML ── */
+  window.prevDay = prevDay;
+  window.nextDay = nextDay;
+
+  /* ── Render ── */
+  function render() {
+    exercises = loadDay();
+    var list = document.getElementById('ex-list');
+
+    if (exercises.length === 0) {
+      list.innerHTML = '<div class="empty-state">' +
+        '<span class="empty-icon">🏋️</span>' +
+        '<h3>No exercises logged yet</h3>' +
+        '<p>Tap <strong>＋ Add Exercise</strong> above to start<br>logging today\'s workout.</p>' +
+        '</div>';
+      return;
+    }
+
+    list.innerHTML = exercises.map(function(ex, ei) {
+      var setCount = ex.sets.length;
+      var setLabel = setCount === 1 ? '1 set' : setCount + ' sets';
+      var setsHTML = '';
+
+      if (setCount > 0) {
+        setsHTML += '<div class="set-labels"><span>#</span><span>Reps</span><span>Weight</span><span>Unit</span><span></span></div>';
+        setsHTML += '<div class="sets-list">' + ex.sets.map(function(set, si) {
+          var kgActive = (set.unit !== 'lbs') ? 'active' : '';
+          var lbsActive = (set.unit === 'lbs') ? 'active' : '';
+          return '<div class="set-row">' +
+            '<span class="set-num">' + (si+1) + '</span>' +
+            '<input class="set-input" type="number" min="0" placeholder="Reps"' +
+              ' value="' + (set.reps !== undefined && set.reps !== null && set.reps !== '' ? set.reps : '') + '"' +
+              ' onchange="updateSet(' + ei + ',' + si + ',\'reps\',this.value)"' +
+              ' oninput="updateSet(' + ei + ',' + si + ',\'reps\',this.value)">' +
+            '<input class="set-input" type="number" min="0" step="0.5" placeholder="Weight"' +
+              ' value="' + (set.weight !== undefined && set.weight !== null && set.weight !== '' ? set.weight : '') + '"' +
+              ' onchange="updateSet(' + ei + ',' + si + ',\'weight\',this.value)"' +
+              ' oninput="updateSet(' + ei + ',' + si + ',\'weight\',this.value)">' +
+            '<div class="unit-toggle">' +
+              '<button class="' + kgActive + '" onclick="updateSet(' + ei + ',' + si + ',\'unit\',\'kg\')">kg</button>' +
+              '<button class="' + lbsActive + '" onclick="updateSet(' + ei + ',' + si + ',\'unit\',\'lbs\')">lbs</button>' +
+            '</div>' +
+            '<button class="set-del-btn" onclick="deleteSet(' + ei + ',' + si + ')" title="Delete set">✕</button>' +
+          '</div>';
+        }).join('') + '</div>';
+      }
+
+      return '<div class="ex-card" id="ex-' + ex.id + '">' +
+        '<div class="ex-card-header">' +
+          '<div class="ex-name-wrap">' +
+            '<input class="ex-name" type="text" value="' + escAttr(ex.name) + '"' +
+              ' onchange="renameExercise(' + ei + ',this.value)"' +
+              ' onblur="renameExercise(' + ei + ',this.value)"' +
+              ' title="Click to rename">' +
+            '<div class="ex-set-count">' + setLabel + '</div>' +
+          '</div>' +
+          '<button class="ex-delete-btn" onclick="deleteExercise(' + ei + ')" title="Delete exercise">🗑</button>' +
+        '</div>' +
+        setsHTML +
+        '<button class="add-set-btn" onclick="addSet(' + ei + ')">＋ Add Set</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  /* ── Actions ── */
+  window.renameExercise = function(ei, val) {
+    var name = val.trim();
+    if (!name) return;
+    exercises[ei].name = name;
+    saveDay(exercises);
+    // update count label without full re-render to avoid losing focus
+    var card = document.getElementById('ex-' + exercises[ei].id);
+    if (card) {
+      var countEl = card.querySelector('.ex-set-count');
+      if (countEl) {
+        var n = exercises[ei].sets.length;
+        countEl.textContent = n === 1 ? '1 set' : n + ' sets';
+      }
+    }
+  };
+
+  window.deleteExercise = function(ei) {
+    exercises.splice(ei, 1);
+    saveDay(exercises);
+    render();
+  };
+
+  window.addSet = function(ei) {
+    var lastSet = exercises[ei].sets[exercises[ei].sets.length - 1] || {};
+    exercises[ei].sets.push({
+      reps: '',
+      weight: '',
+      unit: lastSet.unit || 'kg'
+    });
+    saveDay(exercises);
+    render();
+    // focus the reps input of the new set
+    var card = document.getElementById('ex-' + exercises[ei].id);
+    if (card) {
+      var inputs = card.querySelectorAll('.set-row:last-child .set-input');
+      if (inputs.length) inputs[0].focus();
+    }
+  };
+
+  window.updateSet = function(ei, si, field, val) {
+    if (!exercises[ei] || !exercises[ei].sets[si]) return;
+    if (field === 'reps' || field === 'weight') {
+      exercises[ei].sets[si][field] = val === '' ? '' : Number(val);
+    } else {
+      exercises[ei].sets[si][field] = val;
+    }
+    saveDay(exercises);
+    // if unit changed, re-render the toggle buttons only
+    if (field === 'unit') {
+      var card = document.getElementById('ex-' + exercises[ei].id);
+      if (card) {
+        var rows = card.querySelectorAll('.set-row');
+        if (rows[si]) {
+          var btns = rows[si].querySelectorAll('.unit-toggle button');
+          if (btns.length === 2) {
+            btns[0].className = (val === 'kg') ? 'active' : '';
+            btns[1].className = (val === 'lbs') ? 'active' : '';
+          }
+        }
+      }
+    }
+  };
+
+  window.deleteSet = function(ei, si) {
+    exercises[ei].sets.splice(si, 1);
+    saveDay(exercises);
+    render();
+  };
+
+  /* ── Helpers ── */
+  function escAttr(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  /* ── Init ── */
+  renderDayNav();
+  render();
+})();
+</script>
+</body>
+</html>
