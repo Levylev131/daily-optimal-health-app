@@ -568,6 +568,7 @@ function renderHub() {
   const done = todayDone();
   const hGoals = ['longevity','muscle','cardio','bone','brain','digestive'];
   const dGoals = ['degenerates','degenerates-plus','super-degenerate'];
+  const customScheds = JSON.parse(localStorage.getItem(storagePrefix()+'cscheds') || '[]');
 
   const NOTIF_NAMES = {
     'bone-health':           { name: 'Bone Health',          icon: '🦴' },
@@ -642,6 +643,34 @@ function renderHub() {
     <div class="degen-div"><span class="degen-label">Degenerate Fucks</span></div>
     <div class="sec-label">Recovery Tiers</div>
     <div class="goal-grid">${dGoals.map(card).join('')}</div>` : ''}
+    ${customScheds.length > 0 ? `
+    <div class="sec-label" style="margin-top:28px">My Schedules</div>
+    <div class="goal-grid">${customScheds.map(cs => {
+      const r=22, circ=2*Math.PI*r;
+      const pfx = storagePrefix();
+      const today = activeKey();
+      const checked = JSON.parse(localStorage.getItem(`${pfx}${cs.id}_${today}`) || '[]');
+      const p = cs.tasks.length ? checked.length / cs.tasks.length : 0;
+      const off = ringOffset(p, r);
+      return `<div class="goal-card" onclick="window.location.href='custom-view.html#${cs.id}'">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 50 50">
+            <circle class="r-track" cx="25" cy="25" r="${r}"/>
+            <circle class="r-fill" cx="25" cy="25" r="${r}" stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"/>
+          </svg>
+          <div class="ring-icon">${cs.icon}</div>
+        </div>
+        <div class="card-info">
+          <div class="card-title">${cs.title}</div>
+          <div class="card-desc">${cs.subtitle || cs.tasks.length + ' tasks'}</div>
+          <div class="card-pct">${p>0 ? Math.round(p*100)+'% today' : 'Start →'}</div>
+        </div>
+      </div>`;
+    }).join('')}
+    </div>
+    <div style="text-align:center;margin-bottom:20px">
+      <button onclick="window.location.href='schedule-builder.html'" style="background:none;border:1px solid var(--glass-b);color:var(--muted);border-radius:20px;padding:6px 18px;font-size:.78rem;cursor:pointer;transition:var(--trans)" onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--glass-b)';this.style.color='var(--muted)'">＋ New Schedule</button>
+    </div>` : ''}
     <div class="sec-label" style="margin-top:28px">Tools &amp; Trackers</div>
     <div class="goal-grid">
       <div class="goal-card" onclick="window.location.href='tools.html'">
