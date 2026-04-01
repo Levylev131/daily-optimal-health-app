@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schedule Builder — Daily Optimal Health</title>
+  <script src="health-notifications.js" defer></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --r: 14px; --r-sm: 10px;
+      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
+    }
+    body.degen {
+      --acc: #c800ff; --acc2: #7a00aa; --glow: rgba(200,0,255,0.35);
+      --bg1: #060008; --bg2: #180028; --bg3: #060008;
+      --glass: rgba(100,0,160,0.1); --glass-b: rgba(200,0,255,0.18);
+      --glass-h: rgba(100,0,160,0.2);
+      --text: #eedeff; --muted: rgba(220,190,255,0.55);
+    }
+    html { min-height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+      color: var(--text); min-height: 100vh;
+    }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+    /* ── TOP BAR ── */
+    .top-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 24px; max-width: 760px; margin: 0 auto;
+      border-bottom: 1px solid var(--glass-b);
+    }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: .88rem; font-weight: 600; transition: color .2s; white-space: nowrap; }
+    .back-btn:hover { color: var(--acc); }
+    .top-title { flex: 1; text-align: center; font-size: 1rem; font-weight: 800; text-shadow: 0 0 20px var(--glow); }
+    .pf-pill { display: flex; align-items: center; gap: 7px; background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px; padding: 4px 11px 4px 5px; font-size: .8rem; color: var(--muted); white-space: nowrap; }
+    .pf-av { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: .66rem; font-weight: 800; color: #000; }
+
+    /* ── LAYOUT ── */
+    .wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 80px; }
+    .page-hdr { text-align: center; margin-bottom: 28px; }
+    .page-hdr h1 { font-size: clamp(1.5rem,4vw,2rem); font-weight: 900; text-shadow: 0 0 40px var(--glow); margin-bottom: 4px; }
+    .page-hdr p { color: var(--muted); font-size: .84rem; font-style: italic; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      padding: 10px 18px; border: none; border-radius: var(--r-sm);
+      cursor: pointer; font-family: inherit; font-weight: 800; font-size: .88rem; transition: var(--trans);
+    }
+    .btn.primary { background: var(--acc); color: #000; box-shadow: 0 2px 12px var(--glow); }
+    body.degen .btn.primary { color: #fff; }
+    .btn.primary:hover { filter: brightness(1.12); transform: translateY(-1px); }
+    .btn.secondary { background: var(--glass); color: var(--text); border: 1px solid var(--glass-b); }
+    .btn.secondary:hover { background: var(--glass-h); border-color: var(--acc); }
+    .btn.danger { background: rgba(255,90,90,.12); color: #ff7a7a; border: 1px solid rgba(255,90,90,.25); }
+    .btn.danger:hover { background: rgba(255,90,90,.22); }
+    .btn.full { width: 100%; }
+    .btn.sm { padding: 6px 12px; font-size: .8rem; }
+
+    /* ── CREATE BUTTON ── */
+    .create-bar { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+
+    /* ── SCHEDULE LIST ── */
+    .sch-list { display: flex; flex-direction: column; gap: 12px; }
+    .sch-card {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: var(--r);
+      padding: 16px 18px; backdrop-filter: blur(12px);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .sch-card-icon { font-size: 2rem; flex-shrink: 0; }
+    .sch-card-info { flex: 1; min-width: 0; }
+    .sch-card-title { font-size: .98rem; font-weight: 800; margin-bottom: 2px; }
+    .sch-card-meta { font-size: .76rem; color: var(--muted); }
+    .sch-card-btns { display: flex; gap: 8px; flex-shrink: 0; }
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: .9rem; line-height: 1.7; background: var(--glass); border: 1px solid var(--glass-b); border-radius: var(--r); }
+    .empty-state .big { font-size: 2.5rem; margin-bottom: 10px; }
+
+    /* ── BUILDER FORM ── */
+    .builder-wrap {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); padding: 24px; margin-bottom: 28px;
+      backdrop-filter: blur(12px);
+    }
+    .builder-heading { font-size: 1.15rem; font-weight: 900; margin-bottom: 20px; text-shadow: 0 0 20px var(--glow); }
+
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: .72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+    .t-input {
+      width: 100%; padding: 10px 13px; background: rgba(0,0,0,.28);
+      border: 1px solid var(--glass-b); border-radius: var(--r-sm);
+      color: var(--text); font-family: inherit; font-size: .9rem;
+      outline: none; transition: border-color .2s, box-shadow .2s;
+    }
+    .t-input:focus { border-color: var(--acc); box-shadow: 0 0 0 2px var(--glow); }
+    .t-input::placeholder { color: var(--muted); }
+
+    /* Icon row */
+    .icon-row { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 14px; }
+    .icon-pick-btn {
+      width: 54px; height: 54px; border-radius: var(--r-sm); flex-shrink: 0;
+      background: rgba(0,0,0,.28); border: 2px solid var(--glass-b);
+      font-size: 1.8rem; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; transition: border-color .2s;
+    }
+    .icon-pick-btn:hover, .icon-pick-btn.open { border-color: var(--acc); }
+    .icon-row .t-input { flex: 1; font-size: 1rem; font-weight: 800; }
+    .icon-grid-wrap {
+      display: none; flex-wrap: wrap; gap: 6px;
+      padding: 12px; background: rgba(0,0,0,.4); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); margin-bottom: 14px;
+    }
+    .icon-grid-wrap.open { display: flex; }
+    .ig-btn {
+      width: 36px; height: 36px; border-radius: 8px; background: var(--glass);
+      border: 1px solid var(--glass-b); font-size: 1.25rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: var(--trans);
+    }
+    .ig-btn:hover, .ig-btn.active { background: var(--acc); border-color: var(--acc); transform: scale(1.1); }
+
+    /* Slots */
+    .slots-label { font-size: .72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+    .slots-box {
+      max-height: 440px; overflow-y: auto; border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); background: rgba(0,0,0,.18);
+    }
+    .slots-box::-webkit-scrollbar { width: 5px; }
+    .slots-box::-webkit-scrollbar-track { background: transparent; }
+    .slots-box::-webkit-scrollbar-thumb { background: var(--glass-b); border-radius: 3px; }
+    .slot-row {
+      display: flex; align-items: center; gap: 0;
+      border-bottom: 1px solid var(--glass-b);
+    }
+    .slot-row:last-child { border-bottom: none; }
+    .slot-time {
+      width: 82px; flex-shrink: 0; font-size: .75rem; font-weight: 700;
+      color: var(--acc); padding: 0 12px; white-space: nowrap;
+    }
+    .slot-input {
+      flex: 1; padding: 9px 12px 9px 0; background: transparent;
+      border: none; color: var(--text); font-family: inherit; font-size: .87rem;
+      outline: none;
+    }
+    .slot-input::placeholder { color: rgba(255,255,255,.2); }
+    .slot-row:focus-within { background: rgba(255,255,255,.04); }
+    .slot-row:focus-within .slot-time { color: var(--text); }
+
+    /* Builder action bar */
+    .builder-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .builder-actions .btn { flex: 1; padding: 12px; }
+
+    /* Section label */
+    .sec-lbl { font-size: .7rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--acc); color: #000; padding: 9px 20px; border-radius: 22px;
+      font-size: .86rem; font-weight: 700; transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+      z-index: 200; box-shadow: 0 4px 20px var(--glow); pointer-events: none; white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+    body.degen #toast { color: #fff; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="tools.html" class="back-btn">← Tools</a>
+  <div class="top-title">📋 Schedule Builder</div>
+  <div class="pf-pill" id="pf-pill"><span style="font-size:.85rem">👤</span><span>Guest</span></div>
+</div>
+
+<div class="wrap">
+  <div class="page-hdr">
+    <h1>My Schedules</h1>
+    <p>Build your own daily schedule — give each time slot a task and check it off every day</p>
+  </div>
+
+  <!-- BUILDER FORM (hidden by default) -->
+  <div class="builder-wrap" id="builder" style="display:none">
+    <div class="builder-heading" id="builder-heading">New Schedule</div>
+
+    <div class="icon-row">
+      <button class="icon-pick-btn" id="icon-btn" onclick="toggleIconGrid()" title="Pick an icon">🌿</button>
+      <input class="t-input" id="sch-title" type="text" placeholder="Schedule title (e.g. Morning Routine)" maxlength="50">
+    </div>
+    <div class="icon-grid-wrap" id="icon-grid"></div>
+
+    <div class="field">
+      <label>Description (optional)</label>
+      <input class="t-input" id="sch-subtitle" type="text" placeholder="A short description of this schedule..." maxlength="120">
+    </div>
+
+    <div class="slots-label">Daily Tasks — fill in any time slots you want (leave blank to skip)</div>
+    <div class="slots-box" id="slots-box"></div>
+
+    <div class="builder-actions">
+      <button class="btn secondary" onclick="cancelBuilder()">Cancel</button>
+      <button class="btn primary" onclick="saveSchedule()">Save Schedule</button>
+    </div>
+  </div>
+
+  <!-- CREATE BUTTON -->
+  <div class="create-bar" id="create-bar">
+    <button class="btn primary" onclick="showBuilder()">+ Create New Schedule</button>
+  </div>
+
+  <!-- SCHEDULE LIST -->
+  <div class="sec-lbl" id="list-label" style="display:none">Your Schedules</div>
+  <div class="sch-list" id="sch-list"></div>
+  <div id="empty-state" class="empty-state" style="display:none">
+    <div class="big">📋</div>
+    <strong>No schedules yet</strong><br>
+    Hit <em>Create New Schedule</em> above to build your first one.<br>
+    Each schedule works just like the built-in pages — checkboxes, streaks, the whole thing.
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+var ICONS = ['🌿','💪','❤️','🦴','🧠','🥦','🏃','😴','💊','🧘','🍎','💧','⚡','🎯','🔥','⭐','🌟','🏆','📖','🎵','🧪','🌅','🌙','☀️','🌊','🏋️','🥗','🥑','🫀','🧬','🎮','🕹️','💀','🫁'];
+var editingId = null;
+var selectedIcon = '🌿';
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function getActiveId() { return localStorage.getItem('doh_active_profile') || null; }
+function getProfiles() { return JSON.parse(localStorage.getItem('doh_profiles') || '{}'); }
+function pfx() { var id = getActiveId(); return id ? 'doh_' + id + '_' : 'doh_guest_'; }
+function initials(n) { return n.split(' ').slice(0,2).map(function(w){return w[0]?w[0].toUpperCase():'';}).join(''); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function applyTheme() {
+  if (localStorage.getItem('doh_mode') === 'degen') document.body.classList.add('degen');
+}
+
+function renderProfilePill() {
+  var id = getActiveId(); if (!id) return;
+  var p = getProfiles()[id]; if (!p) return;
+  document.getElementById('pf-pill').innerHTML =
+    '<div class="pf-av" style="background:' + p.color + '">' + initials(p.name) + '</div><span>' + esc(p.name) + '</span>';
+}
+
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+
+// ── SCHEDULE STORAGE ─────────────────────────────────────────────────────────
+function schedsKey() { return pfx() + 'cscheds'; }
+function getScheds() { return JSON.parse(localStorage.getItem(schedsKey()) || '[]'); }
+function saveScheds(list) { localStorage.setItem(schedsKey(), JSON.stringify(list)); }
+
+// ── TIME SLOTS ───────────────────────────────────────────────────────────────
+function genTimes() {
+  var times = [];
+  for (var m = 5*60; m <= 23*60+30; m += 30) {
+    var h = Math.floor(m / 60), min = m % 60;
+    var ampm = h < 12 ? 'AM' : 'PM';
+    var h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    times.push(h12 + ':' + (min === 0 ? '00' : '30') + ' ' + ampm);
+  }
+  return times;
+}
+var ALL_TIMES = genTimes();
+
+function buildSlotsUI(existingTasks) {
+  var taskMap = {};
+  if (existingTasks) existingTasks.forEach(function(t){ taskMap[t.time] = t.text; });
+  var html = ALL_TIMES.map(function(t) {
+    var val = taskMap[t] || '';
+    return '<div class="slot-row">' +
+      '<span class="slot-time">' + t + '</span>' +
+      '<input class="slot-input" type="text" data-time="' + esc(t) + '" value="' + esc(val) + '" placeholder="optional — leave blank to skip" maxlength="140">' +
+    '</div>';
+  }).join('');
+  document.getElementById('slots-box').innerHTML = html;
+}
+
+// ── ICON PICKER ──────────────────────────────────────────────────────────────
+function buildIconGrid() {
+  document.getElementById('icon-grid').innerHTML = ICONS.map(function(ic) {
+    return '<button class="ig-btn' + (ic === selectedIcon ? ' active' : '') + '" onclick="pickIcon(\'' + ic + '\')">' + ic + '</button>';
+  }).join('');
+}
+
+function toggleIconGrid() {
+  var grid = document.getElementById('icon-grid');
+  var btn = document.getElementById('icon-btn');
+  grid.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+
+function pickIcon(ic) {
+  selectedIcon = ic;
+  document.getElementById('icon-btn').textContent = ic;
+  document.querySelectorAll('.ig-btn').forEach(function(b){ b.classList.toggle('active', b.textContent === ic); });
+  document.getElementById('icon-grid').classList.remove('open');
+  document.getElementById('icon-btn').classList.remove('open');
+}
+
+// ── BUILDER SHOW/HIDE ────────────────────────────────────────────────────────
+function showBuilder(editId) {
+  editingId = editId || null;
+  selectedIcon = '🌿';
+
+  var heading = document.getElementById('builder-heading');
+  var titleInput = document.getElementById('sch-title');
+  var subInput = document.getElementById('sch-subtitle');
+
+  if (editId) {
+    var sch = getScheds().find(function(s){ return s.id === editId; });
+    if (!sch) return;
+    heading.textContent = 'Edit Schedule';
+    selectedIcon = sch.icon || '🌿';
+    titleInput.value = sch.title || '';
+    subInput.value = sch.subtitle || '';
+    buildSlotsUI(sch.tasks);
+  } else {
+    heading.textContent = 'New Schedule';
+    titleInput.value = '';
+    subInput.value = '';
+    buildSlotsUI(null);
+  }
+
+  document.getElementById('icon-btn').textContent = selectedIcon;
+  buildIconGrid();
+  document.getElementById('icon-grid').classList.remove('open');
+  document.getElementById('icon-btn').classList.remove('open');
+  document.getElementById('builder').style.display = 'block';
+  document.getElementById('create-bar').style.display = 'none';
+  document.getElementById('sch-title').focus();
+  window.scrollTo(0, 0);
+}
+
+function cancelBuilder() {
+  editingId = null;
+  document.getElementById('builder').style.display = 'none';
+  document.getElementById('create-bar').style.display = 'flex';
+}
+
+// ── SAVE ─────────────────────────────────────────────────────────────────────
+function saveSchedule() {
+  var title = document.getElementById('sch-title').value.trim();
+  if (!title) {
+    document.getElementById('sch-title').style.borderColor = '#ff5a5a';
+    document.getElementById('sch-title').focus();
+    return;
+  }
+  document.getElementById('sch-title').style.borderColor = '';
+
+  var subtitle = document.getElementById('sch-subtitle').value.trim();
+
+  // Collect non-empty slots
+  var tasks = [];
+  document.querySelectorAll('.slot-input').forEach(function(inp) {
+    var text = inp.value.trim();
+    if (text) tasks.push({ time: inp.dataset.time, text: text });
+  });
+
+  if (!tasks.length) {
+    showToast('Add at least one task first!');
+    return;
+  }
+
+  var list = getScheds();
+
+  if (editingId) {
+    var idx = list.findIndex(function(s){ return s.id === editingId; });
+    if (idx >= 0) {
+      list[idx] = { id: editingId, title: title, icon: selectedIcon, subtitle: subtitle, tasks: tasks };
+    }
+  } else {
+    list.push({ id: 'cs_' + Date.now(), title: title, icon: selectedIcon, subtitle: subtitle, tasks: tasks });
+  }
+
+  saveScheds(list);
+  cancelBuilder();
+  renderList();
+  showToast(editingId ? 'Schedule updated ✓' : 'Schedule created! ✓');
+}
+
+// ── DELETE ───────────────────────────────────────────────────────────────────
+function deleteSchedule(id) {
+  if (!confirm('Delete this schedule? This cannot be undone.')) return;
+  var list = getScheds().filter(function(s){ return s.id !== id; });
+  saveScheds(list);
+  renderList();
+  showToast('Schedule deleted');
+}
+
+// ── RENDER LIST ───────────────────────────────────────────────────────────────
+function renderList() {
+  var list = getScheds();
+  var el = document.getElementById('sch-list');
+  var lbl = document.getElementById('list-label');
+  var empty = document.getElementById('empty-state');
+
+  if (!list.length) {
+    el.innerHTML = '';
+    lbl.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  lbl.style.display = 'block';
+  el.innerHTML = list.map(function(s) {
+    return '<div class="sch-card">' +
+      '<div class="sch-card-icon">' + s.icon + '</div>' +
+      '<div class="sch-card-info">' +
+        '<div class="sch-card-title">' + esc(s.title) + '</div>' +
+        '<div class="sch-card-meta">' + s.tasks.length + ' task' + (s.tasks.length !== 1 ? 's' : '') +
+          (s.subtitle ? ' · ' + esc(s.subtitle) : '') + '</div>' +
+      '</div>' +
+      '<div class="sch-card-btns">' +
+        '<button class="btn sm secondary" onclick="window.location.href=\'custom-view.html#' + s.id + '\'">Open</button>' +
+        '<button class="btn sm secondary" onclick="showBuilder(\'' + s.id + '\')">Edit</button>' +
+        '<button class="btn sm danger" onclick="deleteSchedule(\'' + s.id + '\')">✕</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+(function init() {
+  applyTheme();
+  renderProfilePill();
+  renderList();
+})();
+</script>
+</body>
+</html>

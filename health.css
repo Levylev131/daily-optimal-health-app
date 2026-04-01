@@ -175,7 +175,7 @@ tbody tr:hover .detail {
   padding: 10px 14px;
   margin-bottom: 16px;
   position: relative;
-  z-index: 2;
+  z-index: 9998;
   backdrop-filter: blur(4px);
 }
 
@@ -209,6 +209,58 @@ tbody tr:hover .detail {
   flex-shrink: 0;
   box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }
+
+.pf-avatar--clickable {
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.pf-avatar--clickable:hover {
+  box-shadow: 0 0 0 3px rgba(74,222,128,0.4), 0 0 12px rgba(0,0,0,0.4);
+  transform: scale(1.08);
+}
+
+#pf-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 56px;
+  background: rgba(5, 30, 15, 0.97);
+  border: 1px solid rgba(74,222,128,0.3);
+  border-radius: 12px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 9999;
+  min-width: 170px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+  backdrop-filter: blur(8px);
+}
+
+.pf-pop-btn {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.85);
+  padding: 11px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+}
+.pf-pop-btn:hover { background: rgba(74,222,128,0.12); color: #fff; }
+
+.pf-pop-divider {
+  height: 1px;
+  background: rgba(74,222,128,0.15);
+  margin: 2px 6px;
+}
+
+.pf-pop-logout { color: rgba(248,113,113,0.85); }
+.pf-pop-logout:hover { background: rgba(248,113,113,0.12); color: #f87171; }
 
 .pf-info {
   flex: 1;
@@ -264,6 +316,29 @@ tbody tr:hover .detail {
   color: #fbbf24;
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+.pf-notif-btn {
+  background: none;
+  border: 1px solid rgba(74,222,128,0.25);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.35);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 4px 8px;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.pf-notif-btn:hover {
+  border-color: rgba(74,222,128,0.55);
+  color: rgba(255,255,255,0.75);
+}
+.pf-notif-btn.pf-notif-on {
+  border-color: #4ade80;
+  color: #4ade80;
+  background: rgba(74,222,128,0.1);
+  box-shadow: 0 0 8px rgba(74,222,128,0.3);
 }
 
 /* ══════════════════════════════════════

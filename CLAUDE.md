@@ -78,6 +78,12 @@ Note: SPA task state and normal page task state are stored separately (different
 | 5 | Optimizer | Respectable Person | 1400 |
 | 6 | Biohacker | Reformed | 2200 |
 | 7 | Longevity Legend | Devil Is Disappointed | 3500 |
+| 8 | Elite Performer | Suspicious Improvement | 5500 |
+| 9 | Peak Human | Unrecognizable | 8500 |
+| 10 | Longevity Architect | Mom Is Proud | 13000 |
+| 11 | Centenarian Candidate | Dealer Lost A Customer | 20000 |
+| 12 | Demigod | Certified Ex-Degenerate | 30000 |
+| 13 | Transcendent | A Different Species | 45000 |
 
 ## Design principles
 - Dual identity is a core pillar — Health (green) and Degenerate (purple) themes must both work

@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tools &amp; Trackers — Daily Optimal Health</title>
+  <script src="health-notifications.js" defer></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --checked: rgba(45,212,110,0.15);
+      --r: 14px; --r-sm: 10px;
+      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
+    }
+    body.degen {
+      --acc: #c800ff; --acc2: #7a00aa; --glow: rgba(200,0,255,0.35);
+      --bg1: #060008; --bg2: #180028; --bg3: #060008;
+      --glass: rgba(100,0,160,0.1); --glass-b: rgba(200,0,255,0.18);
+      --glass-h: rgba(100,0,160,0.2);
+      --text: #eedeff; --muted: rgba(220,190,255,0.55);
+      --checked: rgba(200,0,255,0.14);
+    }
+
+    html { min-height: 100%; scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+      color: var(--text);
+      min-height: 100vh;
+    }
+    @keyframes gradShift {
+      0%,100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
+    }
+
+    /* ── TOP BAR ── */
+    .top-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 24px; max-width: 980px; margin: 0 auto;
+      border-bottom: 1px solid var(--glass-b);
+    }
+    .back-btn {
+      color: var(--muted); text-decoration: none; font-size: .88rem;
+      font-weight: 600; transition: color .2s; white-space: nowrap;
+    }
+    .back-btn:hover { color: var(--acc); }
+    .top-title {
+      flex: 1; text-align: center; font-size: 1rem; font-weight: 800;
+      text-shadow: 0 0 20px var(--glow);
+    }
+    .pf-pill {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: 20px; padding: 4px 11px 4px 5px;
+      font-size: .8rem; color: var(--muted); white-space: nowrap;
+      cursor: pointer; transition: border-color .15s, box-shadow .15s;
+      position: relative;
+    }
+    .pf-pill:hover { border-color: var(--acc); box-shadow: 0 0 8px var(--glow); }
+    #pf-popup {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      background: rgba(10,10,20,.97); border: 1px solid var(--glass-b);
+      border-radius: 12px; padding: 6px;
+      display: flex; flex-direction: column; gap: 2px;
+      z-index: 9999; min-width: 170px;
+      box-shadow: 0 8px 28px rgba(0,0,0,.55);
+      backdrop-filter: blur(8px);
+    }
+    .pf-pop-btn {
+      display: block; width: 100%; box-sizing: border-box;
+      background: transparent; border: none; color: rgba(255,255,255,.85);
+      padding: 11px 14px; border-radius: 8px; cursor: pointer;
+      font-size: .88rem; text-align: left; transition: background .15s, color .15s;
+      line-height: 1;
+    }
+    .pf-pop-btn:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .pf-pop-divider { height: 1px; background: var(--glass-b); margin: 2px 6px; }
+    .pf-pop-logout { color: rgba(248,113,113,.85); }
+    .pf-pop-logout:hover { background: rgba(248,113,113,.12); color: #f87171; }
+    .pf-avatar-sm {
+      width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .66rem; font-weight: 800; color: #000;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .tools-wrap { max-width: 980px; margin: 0 auto; padding: 28px 20px 80px; }
+    .page-heading { text-align: center; margin-bottom: 28px; }
+    .page-heading h1 {
+      font-size: clamp(1.5rem, 4vw, 2.1rem); font-weight: 900;
+      text-shadow: 0 0 40px var(--glow); margin-bottom: 4px;
+    }
+    .page-heading p { color: var(--muted); font-size: .86rem; font-style: italic; }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(430px, 1fr));
+      gap: 16px;
+    }
+    .tool-card.no-stretch { align-self: start; }
+    @media (max-width: 520px) { .tools-grid { grid-template-columns: 1fr; } }
+
+    /* ── TOOL CARD ── */
+    .tool-card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); padding: 20px 22px;
+      backdrop-filter: blur(12px);
+    }
+    .tool-hdr {
+      display: flex; align-items: center; gap: 13px; margin-bottom: 18px;
+      padding-bottom: 14px; border-bottom: 1px solid var(--glass-b);
+    }
+    .tool-icon { font-size: 1.7rem; line-height: 1; flex-shrink: 0; }
+    .tool-title { font-size: 1rem; font-weight: 800; }
+    .tool-sub { font-size: .74rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── SHARED INPUT STYLES ── */
+    .t-input {
+      width: 100%; padding: 9px 12px; background: rgba(0,0,0,.28);
+      border: 1px solid var(--glass-b); border-radius: var(--r-sm);
+      color: var(--text); font-family: inherit; font-size: .87rem;
+      outline: none; transition: border-color .2s, box-shadow .2s;
+    }
+    .t-input:focus { border-color: var(--acc); box-shadow: 0 0 0 2px var(--glow); }
+    .t-input::placeholder { color: var(--muted); }
+
+    .t-btn {
+      padding: 9px 14px; border: none; border-radius: var(--r-sm);
+      cursor: pointer; font-family: inherit; font-weight: 800;
+      font-size: .87rem; transition: var(--trans);
+    }
+    .t-btn.primary {
+      background: var(--acc); color: #000;
+      box-shadow: 0 2px 10px var(--glow);
+    }
+    body.degen .t-btn.primary { color: #fff; }
+    .t-btn.primary:hover { filter: brightness(1.12); transform: translateY(-1px); }
+    .t-btn.secondary {
+      background: var(--glass); color: var(--text);
+      border: 1px solid var(--glass-b);
+    }
+    .t-btn.secondary:hover { background: var(--glass-h); border-color: var(--acc); }
+
+    .add-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .add-row .t-input { flex: 1; }
+
+    .empty-hint { font-size: .8rem; color: var(--muted); text-align: center; padding: 16px 0; }
+
+    /* ── PAGE DAY NAV ── */
+    .page-day-nav {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); padding: 12px 18px; margin-bottom: 22px;
+      backdrop-filter: blur(12px);
+    }
+    .pdn-btn {
+      background: none; border: 1px solid var(--glass-b); color: var(--acc);
+      padding: 7px 16px; border-radius: 8px; cursor: pointer; font-size: .86rem;
+      font-weight: 700; font-family: inherit; transition: var(--trans); flex-shrink: 0;
+    }
+    .pdn-btn:hover:not(:disabled) { background: var(--glass-h); border-color: var(--acc); }
+    .pdn-btn:disabled { opacity: .3; cursor: not-allowed; }
+    .pdn-center { flex: 1; text-align: center; }
+    .pdn-label { font-size: 1rem; font-weight: 800; text-shadow: 0 0 16px var(--glow); }
+    .pdn-sub   { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── JOURNAL ── */
+    .date-nav {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+    }
+    .date-nav-btn {
+      background: none; border: 1px solid var(--glass-b); color: var(--acc);
+      padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: .78rem;
+      transition: background .15s; flex-shrink: 0;
+    }
+    .date-nav-btn:hover:not(:disabled) { background: var(--glass-h); }
+    .date-nav-btn:disabled { opacity: .3; cursor: not-allowed; }
+    .date-nav-label { flex: 1; text-align: center; font-size: .82rem; font-weight: 700; }
+    .journal-area {
+      width: 100%; min-height: 120px; resize: vertical;
+      background: rgba(0,0,0,.28); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); color: var(--text); font-family: inherit;
+      font-size: .87rem; padding: 12px 14px; outline: none;
+      line-height: 1.65; transition: border-color .2s, box-shadow .2s;
+    }
+    .journal-area:focus { border-color: var(--acc); box-shadow: 0 0 0 2px var(--glow); }
+    .journal-area::placeholder { color: var(--muted); }
+    .save-status { font-size: .72rem; color: var(--acc); margin-top: 6px; display: block; text-align: right; min-height: 16px; }
+
+    /* ── WATER ── */
+    .water-dots { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+    .w-dot {
+      width: 30px; height: 30px; border-radius: 7px;
+      border: 2px solid var(--glass-b); background: rgba(0,0,0,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; transition: all .25s; flex-shrink: 0;
+    }
+    @media (max-width: 500px) {
+      .w-dot { width: 22px; height: 22px; font-size: .7rem; }
+      .w-dot-filler { height: 22px; }
+    }
+    @media (max-width: 360px) {
+      .w-dot { width: 18px; height: 18px; font-size: .6rem; }
+      .w-dot-filler { height: 18px; }
+    }
+    .w-dot.filled {
+      background: linear-gradient(135deg, var(--acc2), var(--acc));
+      border-color: var(--acc); box-shadow: 0 0 8px var(--glow);
+    }
+    .w-dot-filler {
+      width: 30px; height: 30px; flex-shrink: 0; border-radius: 7px;
+      border: 2px solid var(--glass-b); background: rgba(0,0,0,.19);
+      opacity: .3;
+    }
+    @media (max-width: 500px) { .w-dot-filler { width: 22px; height: 22px; } }
+    @media (max-width: 360px) { .w-dot-filler { width: 18px; height: 18px; } }
+    .w-add-more-btn {
+      align-self: center; background: transparent;
+      border: 1px dashed var(--glass-b); border-radius: 6px;
+      color: var(--muted); font-size: .72rem; padding: 4px 8px;
+      cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s;
+    }
+    .w-add-more-btn:hover { border-color: var(--acc); color: var(--acc); }
+    .water-bar-wrap {
+      position: relative; height: 60px; border-radius: var(--r-sm);
+      background: rgba(0,0,0,.28); border: 1px solid var(--glass-b);
+      overflow: hidden; margin-bottom: 12px;
+    }
+    .water-bar-fill {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(0deg, var(--acc2), var(--acc));
+      opacity: .72; transition: height .5s cubic-bezier(.34,1.56,.64,1);
+    }
+    .water-bar-label {
+      position: absolute; inset: 0; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 900; z-index: 1;
+      text-shadow: 0 1px 6px rgba(0,0,0,.7);
+    }
+    .water-btns { display: flex; gap: 8px; }
+    .water-btns .t-btn { flex: 1; }
+    .water-goal-ctrl {
+      display: flex; align-items: center; gap: 5px; margin-left: auto;
+    }
+    .water-goal-ctrl button {
+      background: rgba(0,0,0,.25); border: 1px solid var(--glass-b);
+      color: var(--text); width: 24px; height: 24px; border-radius: 6px;
+      cursor: pointer; font-size: .85rem; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .15s, background .15s;
+    }
+    .water-goal-ctrl button:hover { border-color: var(--acc); background: rgba(0,0,0,.4); }
+    .water-goal-val { font-size: .82rem; color: var(--muted); min-width: 24px; text-align: center; }
+
+    /* ── CHECKLIST (shared by supplements + personal) ── */
+    .check-list { display: flex; flex-direction: column; gap: 6px; }
+    .ci-wrap { border-radius: var(--r-sm); overflow: hidden; border: 1px solid var(--glass-b); transition: border-color .2s; }
+    .ci-wrap:hover { border-color: var(--acc); }
+    .ci-wrap.open { border-color: var(--acc); }
+    .check-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; background: rgba(0,0,0,.2);
+      cursor: pointer; transition: background .2s; user-select: none;
+    }
+    .check-item:hover { background: var(--glass-h); }
+    .check-item.done { background: var(--checked); opacity: .72; }
+    .ci-box {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 2px solid var(--glass-b); background: var(--glass);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: .6rem; font-weight: 900;
+      transition: all .2s; color: #000;
+    }
+    .check-item.done .ci-box { background: var(--acc); border-color: var(--acc); }
+    body.degen .ci-box { color: #fff; }
+    .ci-text { flex: 1; font-size: .87rem; }
+    .check-item.done .ci-text { text-decoration: line-through; opacity: .7; }
+    .ci-more {
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      font-size: .9rem; padding: 2px 6px; transition: color .2s; line-height: 1;
+      border-radius: 4px; letter-spacing: 1px;
+    }
+    .ci-more:hover { color: var(--acc); }
+    .ci-del {
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      font-size: .85rem; padding: 2px 5px; transition: color .2s; line-height: 1;
+      border-radius: 4px;
+    }
+    .ci-del:hover { color: #ff5a5a; background: rgba(255,90,90,.1); }
+    .ci-opts {
+      display: none; flex-wrap: wrap; gap: 5px;
+      padding: 8px 12px; background: rgba(0,0,0,.25);
+      border-top: 1px solid var(--glass-b);
+    }
+    .ci-opts.open { display: flex; }
+    .ci-opt {
+      padding: 4px 10px; background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: 6px; color: var(--muted); font-size: .72rem; font-weight: 600;
+      cursor: pointer; transition: var(--trans); font-family: inherit; white-space: nowrap;
+    }
+    .ci-opt:hover { border-color: var(--acc); color: var(--text); background: var(--glass-h); }
+    .ci-opt.rm    { border-color: rgba(255,90,90,.25); color: #ff7a7a; }
+    .ci-opt.rm:hover { background: rgba(255,90,90,.1); border-color: #ff5a5a; }
+
+    /* ── CONFETTI ── */
+    .confetti-piece {
+      position: fixed; top: -10px; width: 8px; height: 12px;
+      border-radius: 2px; opacity: 1; pointer-events: none; z-index: 9999;
+      animation: confetti-fall linear forwards;
+    }
+    @keyframes confetti-fall {
+      0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+      80%  { opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg) scale(.5); opacity: 0; }
+    }
+
+    /* ── TOAST ── */
+    #tt-toast {
+      position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--acc); color: #000; padding: 9px 20px; border-radius: 22px;
+      font-size: .86rem; font-weight: 700; transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+      z-index: 200; box-shadow: 0 4px 20px var(--glow); pointer-events: none; white-space: nowrap;
+    }
+    #tt-toast.show { transform: translateX(-50%) translateY(0); }
+    body.degen #tt-toast { color: #fff; }
+
+    /* ── MOOD ── */
+    .mood-emojis { display: flex; gap: 8px; justify-content: center; margin-bottom: 8px; }
+    .mood-btn {
+      flex: 1; padding: 18px 4px; background: var(--glass);
+      border: 2px solid var(--glass-b); border-radius: var(--r-sm);
+      cursor: pointer; font-size: 1.7rem; text-align: center;
+      transition: var(--trans); line-height: 1;
+    }
+    .mood-btn:hover { background: var(--glass-h); border-color: var(--acc); transform: translateY(-2px); }
+    .mood-btn.selected {
+      border-color: var(--acc); background: var(--checked);
+      box-shadow: 0 0 14px var(--glow); transform: scale(1.1);
+    }
+    .mood-scale { display: flex; justify-content: space-between; margin-bottom: 12px; }
+    .mood-scale-lbl { font-size: .65rem; color: var(--muted); }
+    .mood-result-box {
+      text-align: center; padding: 13px;
+      background: rgba(0,0,0,.2); border-radius: var(--r-sm);
+      border: 1px solid var(--glass-b);
+      font-size: .87rem; color: var(--muted); min-height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px;
+    }
+    .mood-result-box.selected { border-color: var(--acc); color: var(--text); }
+    .mood-history-label {
+      font-size: .7rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px;
+    }
+    .mood-history-row { display: flex; gap: 5px; justify-content: space-between; }
+    .mood-day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .mood-day-bubble {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(0,0,0,.2); border: 1px solid var(--glass-b);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.15rem; transition: var(--trans);
+    }
+    .mood-day-bubble.logged { border-color: var(--acc); background: var(--checked); }
+    .mood-day-bubble.today  { box-shadow: 0 0 10px var(--glow); border-color: var(--acc); }
+    .mood-day-inner-circle {
+      display: block; width: 22px; height: 22px; border-radius: 50%;
+      background: var(--acc);
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), black calc(100% - 2px));
+      mask: radial-gradient(farthest-side, transparent calc(100% - 2px), black calc(100% - 2px));
+      box-shadow: 0 0 5px var(--glow);
+      opacity: .5;
+    }
+    .mood-day-lbl { font-size: .6rem; color: var(--muted); }
+    .mood-day-lbl.today { color: var(--acc); font-weight: 700; }
+
+    /* ── SLEEP ── */
+    .sleep-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .sleep-field label {
+      display: block; font-size: .7rem; font-weight: 700;
+      color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px;
+    }
+    .sleep-time {
+      width: 100%; padding: 10px 12px; background: rgba(0,0,0,.28);
+      border: 1px solid var(--glass-b); border-radius: var(--r-sm);
+      color: var(--text); font-family: inherit; font-size: .95rem; font-weight: 700;
+      outline: none; transition: border-color .2s; color-scheme: dark;
+    }
+    .sleep-time:focus { border-color: var(--acc); }
+    .sleep-result {
+      text-align: center; padding: 14px 12px;
+      background: rgba(0,0,0,.2); border-radius: var(--r-sm);
+      border: 1px solid var(--glass-b); margin-bottom: 12px;
+    }
+    .sleep-duration {
+      font-size: 2rem; font-weight: 900; color: var(--acc);
+      text-shadow: 0 0 20px var(--glow); line-height: 1; margin-bottom: 4px;
+    }
+    .sleep-quality { font-size: .78rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <a href="index.html" class="back-btn">← Home</a>
+  <div class="top-title">🛠️ Tools &amp; Trackers</div>
+  <div class="pf-pill" id="pf-pill">
+    <span style="font-size:.85rem">👤</span>
+    <span>Guest</span>
+  </div>
+</div>
+
+<div class="tools-wrap">
+  <div class="page-heading">
+    <h1>Tools &amp; Trackers</h1>
+    <p>Daily logs, habits, and personal tools — saved to your profile</p>
+  </div>
+
+  <div class="page-day-nav">
+    <button class="pdn-btn" onclick="prevDay()">◀ Prev</button>
+    <div class="pdn-center">
+      <div class="pdn-label" id="pdn-label">Today</div>
+      <div class="pdn-sub" id="pdn-sub"></div>
+    </div>
+    <button class="pdn-btn" id="pdn-next" onclick="nextDay()" disabled>Next ▶</button>
+  </div>
+
+  <div class="tools-grid">
+
+    <!-- ── 1. HEALTH JOURNAL ── -->
+    <div class="tool-card">
+      <div class="tool-hdr">
+        <span class="tool-icon">📔</span>
+        <div>
+          <div class="tool-title">Health Journal</div>
+          <div class="tool-sub">Daily notes and reflections</div>
+        </div>
+      </div>
+      <textarea class="journal-area" id="journal-text"
+        placeholder="How are you feeling today? What went well? Any notes on your sleep, energy, or habits..."
+        oninput="journalChanged()"></textarea>
+      <span class="save-status" id="journal-status"></span>
+    </div>
+
+    <!-- ── 2. WATER TRACKER ── -->
+    <div class="tool-card">
+      <div class="tool-hdr">
+        <span class="tool-icon">💧</span>
+        <div>
+          <div class="tool-title">Water Tracker</div>
+          <div class="tool-sub">Track your daily hydration</div>
+        </div>
+        <div class="water-goal-ctrl">
+          <button onclick="setWaterGoal(getWaterGoal()-1)">&#8249;</button>
+          <span class="water-goal-val" id="water-goal-display">8</span>
+          <button onclick="setWaterGoal(getWaterGoal()+1)">&#8250;</button>
+        </div>
+      </div>
+      <div class="water-dots" id="water-dots"></div>
+      <div class="water-bar-wrap">
+        <div class="water-bar-fill" id="water-fill" style="height:0%"></div>
+        <div class="water-bar-label" id="water-label">0 / 8 cups</div>
+      </div>
+      <div class="water-btns">
+        <button class="t-btn secondary" onclick="adjustWater(-1)">− Remove</button>
+        <button class="t-btn primary" onclick="adjustWater(1)">+ Add Cup 💧</button>
+      </div>
+    </div>
+
+    <!-- ── 3. SLEEP LOGGER ── -->
+    <div class="tool-card">
+      <div class="tool-hdr">
+        <span class="tool-icon">😴</span>
+        <div>
+          <div class="tool-title">Sleep Logger</div>
+          <div class="tool-sub">Track last night's sleep</div>
+        </div>
+      </div>
+      <div class="sleep-row">
+        <div class="sleep-field">
+          <label>Bedtime</label>
+          <input class="sleep-time" id="sleep-bed" type="time" oninput="updateSleepPreview()">
+        </div>
+        <div class="sleep-field">
+          <label>Wake Time</label>
+          <input class="sleep-time" id="sleep-wake" type="time" oninput="updateSleepPreview()">
+        </div>
+      </div>
+      <div class="sleep-result" id="sleep-result">
+        <div class="sleep-duration" id="sleep-duration">—</div>
+        <div class="sleep-quality" id="sleep-quality">Enter your times above</div>
+      </div>
+      <button class="t-btn primary" style="width:100%;padding:14px;font-size:1rem;font-weight:700;letter-spacing:.3px" onclick="saveSleep()" id="sleep-save-btn">Save Sleep Log</button>
+    </div>
+
+    <!-- ── 4. MOOD TRACKER ── -->
+    <div class="tool-card">
+      <div class="tool-hdr">
+        <span class="tool-icon">🌡️</span>
+        <div>
+          <div class="tool-title">Mood Tracker</div>
+          <div class="tool-sub">One check-in per day</div>
+        </div>
+      </div>
+      <div class="mood-emojis">
+        <button class="mood-btn" data-mood="0" onclick="setMood(0)" title="Rough">😔</button>
+        <button class="mood-btn" data-mood="1" onclick="setMood(1)" title="Meh">😕</button>
+        <button class="mood-btn" data-mood="2" onclick="setMood(2)" title="Okay">😐</button>
+        <button class="mood-btn" data-mood="3" onclick="setMood(3)" title="Good">🙂</button>
+        <button class="mood-btn" data-mood="4" onclick="setMood(4)" title="Great">😄</button>
+      </div>
+      <div class="mood-scale">
+        <span class="mood-scale-lbl">Rough</span>
+        <span class="mood-scale-lbl">Meh</span>
+        <span class="mood-scale-lbl">Okay</span>
+        <span class="mood-scale-lbl">Good</span>
+        <span class="mood-scale-lbl">Great</span>
+      </div>
+      <div class="mood-result-box" id="mood-result">Tap an emoji to log your mood for today</div>
+      <div class="mood-history-label">Last 7 days</div>
+      <div class="mood-history-row" id="mood-history"></div>
+    </div>
+
+    <!-- ── 5. PERSONAL CHECKLIST ── -->
+    <div class="tool-card no-stretch">
+      <div class="tool-hdr">
+        <span class="tool-icon">✅</span>
+        <div>
+          <div class="tool-title">Personal Checklist</div>
+          <div class="tool-sub">Your own custom daily tasks</div>
+        </div>
+      </div>
+      <div class="add-row">
+        <input class="t-input" id="cl-input" type="text"
+          placeholder="Add a custom task..."
+          maxlength="80" onkeydown="if(event.key==='Enter') addCustomTask()">
+        <button class="t-btn primary" onclick="addCustomTask()">Add</button>
+      </div>
+      <div class="check-list" id="cl-list"></div>
+      <a href="schedule-builder.html" style="
+        display:block; margin-top:14px; padding:10px 14px;
+        background:var(--glass); border:1px solid var(--glass-b); border-radius:var(--r-sm);
+        color:var(--muted); font-size:.82rem; font-weight:700; text-decoration:none;
+        text-align:center; transition:var(--trans);"
+        onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--text)'"
+        onmouseout="this.style.borderColor='var(--glass-b)';this.style.color='var(--muted)'">
+        📋 Build a Full Day Schedule →
+      </a>
+    </div>
+
+    <!-- ── 6. SUPPLEMENT REMINDERS ── -->
+    <div class="tool-card no-stretch">
+      <div class="tool-hdr">
+        <span class="tool-icon">💊</span>
+        <div>
+          <div class="tool-title">Supplement Reminders</div>
+          <div class="tool-sub">Check off your daily supplements</div>
+        </div>
+      </div>
+      <div class="add-row">
+        <input class="t-input" id="supp-input" type="text"
+          placeholder="Add supplement (e.g. Vitamin D3, Omega-3...)"
+          maxlength="50" onkeydown="if(event.key==='Enter') addSupplement()">
+        <button class="t-btn primary" onclick="addSupplement()">Add</button>
+      </div>
+      <div class="check-list" id="supp-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<div id="tt-toast"></div>
+
+<script>
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function getActiveId()  { return localStorage.getItem('doh_active_profile') || null; }
+function getProfiles()  { return JSON.parse(localStorage.getItem('doh_profiles') || '{}'); }
+function pfx()          { var id = getActiveId(); return id ? 'doh_' + id + '_' : 'doh_guest_'; }
+
+function todayKey() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function offsetDate(iso, days) {
+  var dt = new Date(iso + 'T00:00:00');
+  dt.setDate(dt.getDate() + days);
+  return dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
+}
+
+function formatDate(iso) {
+  if (iso === todayKey()) return 'Today';
+  var yd = offsetDate(todayKey(), -1);
+  if (iso === yd) return 'Yesterday';
+  var dt = new Date(iso + 'T00:00:00');
+  return dt.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+}
+
+function initials(name) {
+  return name.split(' ').slice(0,2).map(function(w){ return w[0]?w[0].toUpperCase():''; }).join('');
+}
+
+function esc(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── THEME ────────────────────────────────────────────────────────────────────
+function applyTheme() {
+  if (localStorage.getItem('doh_mode') === 'degen') document.body.classList.add('degen');
+  else document.body.classList.remove('degen');
+}
+
+// ── PROFILE PILL ─────────────────────────────────────────────────────────────
+function renderProfilePill() {
+  var id = getActiveId();
+  var pill = document.getElementById('pf-pill');
+  if (!id) return;
+  var p = getProfiles()[id];
+  if (!p) return;
+  pill.innerHTML =
+    '<div class="pf-avatar-sm" style="background:' + p.color + '">' + initials(p.name) + '</div>' +
+    '<span>' + esc(p.name) + '</span>';
+  pill.onclick = function(e) { e.stopPropagation(); toggleProfilePopup(); };
+}
+
+function toggleProfilePopup() {
+  var existing = document.getElementById('pf-popup');
+  if (existing) { existing.remove(); return; }
+  var pill = document.getElementById('pf-pill');
+  var popup = document.createElement('div');
+  popup.id = 'pf-popup';
+  popup.innerHTML =
+    '<button class="pf-pop-btn" id="pf-switch-btn">⇄ Switch Profile</button>' +
+    '<div class="pf-pop-divider"></div>' +
+    '<button class="pf-pop-btn pf-pop-logout" id="pf-logoff-btn">← Log Off</button>';
+  pill.appendChild(popup);
+  document.getElementById('pf-switch-btn').onclick = function() {
+    localStorage.removeItem('doh_active_profile');
+    window.location.href = 'index.html';
+  };
+  document.getElementById('pf-logoff-btn').onclick = function() {
+    window.location.href = 'index.html';
+  };
+  setTimeout(function() {
+    document.addEventListener('click', function closePopup() {
+      var p = document.getElementById('pf-popup');
+      if (p) p.remove();
+      document.removeEventListener('click', closePopup);
+    });
+  }, 0);
+}
+
+// ── SHARED DATE STATE ────────────────────────────────────────────────────────
+var currentDate = todayKey();
+
+function isViewingToday() { return currentDate === todayKey(); }
+
+function renderDayNav() {
+  var label = isViewingToday() ? '▶ Today' : formatDate(currentDate);
+  var sub   = isViewingToday() ? '' : new Date(currentDate + 'T00:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  document.getElementById('pdn-label').textContent = label;
+  document.getElementById('pdn-sub').textContent   = sub;
+  document.getElementById('pdn-next').disabled = isViewingToday();
+}
+
+function prevDay() { currentDate = offsetDate(currentDate, -1); renderDayNav(); renderAll(); }
+function nextDay() {
+  if (isViewingToday()) return;
+  currentDate = offsetDate(currentDate, 1);
+  renderDayNav(); renderAll();
+}
+
+function renderAll() {
+  renderJournal();
+  renderWater();
+  renderSupps();
+  renderMood();
+  renderChecklist();
+  loadSleep();
+}
+
+// ── JOURNAL ──────────────────────────────────────────────────────────────────
+var journalTimer = null;
+
+function journalKey() { return pfx() + 'journal_' + currentDate; }
+
+function renderJournal() {
+  var text = localStorage.getItem(journalKey()) || '';
+  document.getElementById('journal-text').value = text;
+  document.getElementById('journal-status').textContent = text.trim() ? 'Saved ✓' : '';
+  document.getElementById('journal-text').placeholder = isViewingToday()
+    ? 'How are you feeling today? What went well? Any notes on your sleep, energy, or habits...'
+    : 'Add notes for this day...';
+}
+
+function journalChanged() {
+  clearTimeout(journalTimer);
+  document.getElementById('journal-status').textContent = 'Saving...';
+  journalTimer = setTimeout(function() {
+    var val = document.getElementById('journal-text').value;
+    if (val.trim()) localStorage.setItem(journalKey(), val);
+    else localStorage.removeItem(journalKey());
+    document.getElementById('journal-status').textContent = val.trim() ? 'Saved ✓' : '';
+  }, 600);
+}
+
+// ── WATER TRACKER ────────────────────────────────────────────────────────────
+function waterGoalKey() { return pfx() + 'water_goal'; }
+function getWaterGoal() { return parseInt(localStorage.getItem(waterGoalKey()) || '8'); }
+
+function waterKey() { return pfx() + 'water_' + currentDate; }
+function getWater() { return parseInt(localStorage.getItem(waterKey()) || '0'); }
+
+function renderWater() {
+  var count = getWater();
+  var goal = getWaterGoal();
+  document.getElementById('water-goal-display').textContent = goal;
+
+  if (goal === 0) {
+    document.getElementById('water-fill').style.height = '0%';
+    document.getElementById('water-label').textContent = 'Zero cups? Bold strategy. 🏜️';
+    document.getElementById('water-dots').innerHTML = '';
+    return;
+  }
+
+  var pct = Math.min(100, count / goal * 100);
+  document.getElementById('water-fill').style.height = pct + '%';
+  document.getElementById('water-label').textContent = count + ' / ' + goal + ' cups' + (count >= goal ? ' 🎉' : '');
+
+  var dots = '';
+  for (var i = 0; i < goal; i++) {
+    dots += '<div class="w-dot' + (i < count ? ' filled' : '') + '">' + (i < count ? '💧' : '') + '</div>';
+  }
+  var container = document.getElementById('water-dots');
+  container.innerHTML = dots;
+
+  if (goal > 0) {
+    var firstDot = container.querySelector('.w-dot');
+    if (firstDot) {
+      var dotWidth = firstDot.offsetWidth;
+      var capacity = Math.floor((container.clientWidth + 5) / (dotWidth + 5));
+      var remainder = goal % capacity;
+      var slotsLeft = remainder === 0 ? 0 : capacity - remainder;
+      if (goal === 24) {
+        dots += '<button class="w-add-more-btn" onclick="unlockWaterGoal()">+ more</button>';
+        container.innerHTML = dots;
+      } else if (slotsLeft > 0) {
+        for (var j = 0; j < slotsLeft; j++) dots += '<div class="w-dot-filler"></div>';
+        container.innerHTML = dots;
+      }
+    }
+  }
+}
+
+function setWaterGoal(val) {
+  var current = getWaterGoal();
+  var unlocked = current > 24;
+  var parsed = parseInt(val) || 0;
+  if (unlocked && parsed > 48) {
+    ttToast('⚠️ 48 cups?? Please drink some water, not a swimming pool.');
+    return;
+  }
+  var goal = Math.max(0, unlocked ? Math.min(48, parsed) : Math.min(24, parsed));
+  localStorage.setItem(waterGoalKey(), String(goal));
+  renderWater();
+}
+
+function unlockWaterGoal() {
+  localStorage.setItem(waterGoalKey(), String(getWaterGoal() + 1));
+  renderWater();
+}
+
+function adjustWater(delta) {
+  var goal = getWaterGoal();
+  var prev = getWater();
+  if (delta > 0 && prev >= 48) {
+    ttToast('⚠️ 48 cups is the limit. Your kidneys thank you for stopping.');
+    return;
+  }
+  var count = Math.max(0, Math.min(48, prev + delta));
+  localStorage.setItem(waterKey(), count);
+  renderWater();
+  if (count === goal && prev < goal) {
+    triggerConfetti();
+    ttToast('🎉 Hydration goal crushed! Keep it up!');
+  } else if (count > 48 && prev <= 48) {
+    ttToast('⚠️ Over 48 cups?! Your kidneys are filing a complaint.');
+  }
+}
+
+function triggerConfetti() {
+  var colors = ['#4ade80','#22d3ee','#f472b6','#facc15','#a78bfa','#fb923c','#fff'];
+  var count = 80;
+  for (var i = 0; i < count; i++) {
+    (function(i) {
+      setTimeout(function() {
+        var el = document.createElement('div');
+        el.className = 'confetti-piece';
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.background = colors[Math.floor(Math.random() * colors.length)];
+        el.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+        el.style.animationDelay = '0s';
+        el.style.width = (6 + Math.random() * 8) + 'px';
+        el.style.height = (10 + Math.random() * 8) + 'px';
+        el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        document.body.appendChild(el);
+        setTimeout(function() { el.remove(); }, 3500);
+      }, i * 18);
+    })(i);
+  }
+}
+
+// ── SUPPLEMENT REMINDERS ─────────────────────────────────────────────────────
+function suppListKey()  { return pfx() + 'supps_' + currentDate; }
+function suppCheckKey() { return pfx() + 'supp_checks_' + currentDate; }
+function getSupps()       { return JSON.parse(localStorage.getItem(suppListKey()) || '[]'); }
+function getSuppChecks()  { return JSON.parse(localStorage.getItem(suppCheckKey()) || '[]'); }
+function saveSupps(l)     { localStorage.setItem(suppListKey(), JSON.stringify(l)); }
+function saveSuppChecks(c){ localStorage.setItem(suppCheckKey(), JSON.stringify(c)); }
+
+function renderSupps() {
+  var list = getSupps(), checks = getSuppChecks();
+  var el = document.getElementById('supp-list');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-hint">No supplements for this day — add one above</div>';
+    return;
+  }
+  el.innerHTML = list.map(function(s, i) {
+    var done = checks.indexOf(i) >= 0;
+    var oid = 'so' + i;
+    return '<div class="ci-wrap" id="sw' + i + '">' +
+      '<div class="check-item' + (done?' done':'') + '" onclick="toggleSupp(' + i + ')">' +
+        '<div class="ci-box">' + (done?'✓':'') + '</div>' +
+        '<span class="ci-text">' + esc(s) + '</span>' +
+        '<button class="ci-more" onclick="event.stopPropagation();toggleOpts(\'' + oid + '\',\'sw' + i + '\')" title="More options">···</button>' +
+        '<button class="ci-del"  onclick="event.stopPropagation();deleteSupp(' + i + ')" title="Remove from today">✕</button>' +
+      '</div>' +
+      '<div class="ci-opts" id="' + oid + '">' +
+        '<button class="ci-opt" onclick="applyOptByIdx(\'supp\',' + i + ',\'past\')">← Apply to past 90 days</button>' +
+        '<button class="ci-opt" onclick="applyOptByIdx(\'supp\',' + i + ',\'future\')">→ Apply to next 90 days</button>' +
+        '<button class="ci-opt rm" onclick="removeOptByIdx(\'supp\',' + i + ',\'past\')">← Remove from past 90 days</button>' +
+        '<button class="ci-opt rm" onclick="removeOptByIdx(\'supp\',' + i + ',\'future\')">→ Remove from next 90 days</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function addSupplement() {
+  var inp = document.getElementById('supp-input');
+  var val = inp.value.trim();
+  if (!val) return;
+  var list = getSupps(); list.push(val); saveSupps(list);
+  inp.value = ''; renderSupps();
+}
+
+function toggleSupp(i) {
+  var checks = getSuppChecks();
+  var idx = checks.indexOf(i);
+  if (idx >= 0) checks.splice(idx, 1); else checks.push(i);
+  saveSuppChecks(checks); renderSupps();
+}
+
+function deleteSupp(i) {
+  var list = getSupps(), checks = getSuppChecks();
+  list.splice(i, 1);
+  var nc = checks.filter(function(c){return c!==i;}).map(function(c){return c>i?c-1:c;});
+  saveSupps(list); saveSuppChecks(nc); renderSupps();
+}
+
+// ── MOOD TRACKER ─────────────────────────────────────────────────────────────
+var MOOD_TEXT = [
+  'Rough day — rest up and be kind to yourself 😔',
+  'A bit off — keep going, it gets better 😕',
+  'Doing okay — solid, steady progress 😐',
+  'Feeling good — keep the momentum going 🙂',
+  'Feeling great — stack that energy today! 😄'
+];
+
+function moodKey() { return pfx() + 'mood_' + currentDate; }
+
+var MOOD_EMOJIS = ['😔','😕','😐','🙂','😄'];
+
+function renderMood() {
+  var saved = localStorage.getItem(moodKey());
+  var val = saved !== null ? parseInt(saved) : -1;
+  document.querySelectorAll('.mood-btn').forEach(function(btn, i) {
+    btn.classList.toggle('selected', i === val);
+  });
+  var res = document.getElementById('mood-result');
+  if (val >= 0) {
+    res.textContent = MOOD_TEXT[val];
+    res.classList.add('selected');
+  } else {
+    res.textContent = isViewingToday() ? 'Tap an emoji to log your mood for today' : 'No mood logged for this day';
+    res.classList.remove('selected');
+  }
+
+  // 7-day history strip
+  var hist = document.getElementById('mood-history');
+  if (!hist) return;
+  var days = [];
+  for (var d = 6; d >= 0; d--) {
+    var date = offsetDate(currentDate, -d);
+    var dayMood = localStorage.getItem(pfx() + 'mood_' + date);
+    var moodVal = dayMood !== null ? parseInt(dayMood) : -1;
+    var isToday = (date === currentDate && isViewingToday() && d === 0) || date === (function(){var n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');})();
+    // day label: Mon, Tue, etc.
+    var parts = date.split('-');
+    var dayObj = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+    var dayLbl = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dayObj.getDay()];
+    days.push({ date: date, moodVal: moodVal, isToday: isToday, dayLbl: dayLbl });
+  }
+  hist.innerHTML = days.map(function(d) {
+    var bubbleClass = 'mood-day-bubble' + (d.moodVal >= 0 ? ' logged' : '') + (d.isToday ? ' today' : '');
+    var lblClass = 'mood-day-lbl' + (d.isToday ? ' today' : '');
+    var emoji = d.moodVal >= 0 ? MOOD_EMOJIS[d.moodVal] : '<span class="mood-day-inner-circle"></span>';
+    return '<div class="mood-day"><div class="' + bubbleClass + '">' + emoji + '</div>' +
+           '<div class="' + lblClass + '">' + d.dayLbl + '</div></div>';
+  }).join('');
+}
+
+function setMood(val) {
+  localStorage.setItem(moodKey(), String(val));
+  renderMood();
+}
+
+// ── PERSONAL CHECKLIST ───────────────────────────────────────────────────────
+function clListKey()  { return pfx() + 'custom_tasks_' + currentDate; }
+function clCheckKey() { return pfx() + 'custom_checks_' + currentDate; }
+function getClList()   { return JSON.parse(localStorage.getItem(clListKey()) || '[]'); }
+function getClChecks() { return JSON.parse(localStorage.getItem(clCheckKey()) || '[]'); }
+function saveClList(l)  { localStorage.setItem(clListKey(), JSON.stringify(l)); }
+function saveClChecks(c){ localStorage.setItem(clCheckKey(), JSON.stringify(c)); }
+
+function renderChecklist() {
+  var list = getClList(), checks = getClChecks();
+  var el = document.getElementById('cl-list');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-hint">No tasks for this day — add one above</div>';
+    return;
+  }
+  el.innerHTML = list.map(function(t, i) {
+    var done = checks.indexOf(i) >= 0;
+    var oid = 'co' + i;
+    return '<div class="ci-wrap" id="cw' + i + '">' +
+      '<div class="check-item' + (done?' done':'') + '" onclick="toggleCl(' + i + ')">' +
+        '<div class="ci-box">' + (done?'✓':'') + '</div>' +
+        '<span class="ci-text">' + esc(t) + '</span>' +
+        '<button class="ci-more" onclick="event.stopPropagation();toggleOpts(\'' + oid + '\',\'cw' + i + '\')" title="More options">···</button>' +
+        '<button class="ci-del"  onclick="event.stopPropagation();deleteCl(' + i + ')" title="Remove from today">✕</button>' +
+      '</div>' +
+      '<div class="ci-opts" id="' + oid + '">' +
+        '<button class="ci-opt" onclick="applyOptByIdx(\'cl\',' + i + ',\'past\')">← Apply to past 90 days</button>' +
+        '<button class="ci-opt" onclick="applyOptByIdx(\'cl\',' + i + ',\'future\')">→ Apply to next 90 days</button>' +
+        '<button class="ci-opt rm" onclick="removeOptByIdx(\'cl\',' + i + ',\'past\')">← Remove from past 90 days</button>' +
+        '<button class="ci-opt rm" onclick="removeOptByIdx(\'cl\',' + i + ',\'future\')">→ Remove from next 90 days</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function addCustomTask() {
+  var inp = document.getElementById('cl-input');
+  var val = inp.value.trim();
+  if (!val) return;
+  var list = getClList(); list.push(val); saveClList(list);
+  inp.value = ''; renderChecklist();
+}
+
+function toggleCl(i) {
+  var checks = getClChecks();
+  var idx = checks.indexOf(i);
+  if (idx >= 0) checks.splice(idx, 1); else checks.push(i);
+  saveClChecks(checks); renderChecklist();
+}
+
+function deleteCl(i) {
+  var list = getClList(), checks = getClChecks();
+  list.splice(i, 1);
+  var nc = checks.filter(function(c){return c!==i;}).map(function(c){return c>i?c-1:c;});
+  saveClList(list); saveClChecks(nc); renderChecklist();
+}
+
+// ── SLEEP LOGGER ─────────────────────────────────────────────────────────────
+function sleepKey() { return pfx() + 'sleep_' + currentDate; }
+
+function loadSleep() {
+  var saved = localStorage.getItem(sleepKey());
+  if (!saved) {
+    document.getElementById('sleep-bed').value  = '';
+    document.getElementById('sleep-wake').value = '';
+    document.getElementById('sleep-duration').textContent = '—';
+    document.getElementById('sleep-quality').textContent  = isViewingToday() ? 'Enter your times above' : 'No sleep logged for this day';
+    return;
+  }
+  try {
+    var data = JSON.parse(saved);
+    document.getElementById('sleep-bed').value  = data.bed  || '';
+    document.getElementById('sleep-wake').value = data.wake || '';
+    updateSleepPreview();
+  } catch(e) {}
+}
+
+function updateSleepPreview() {
+  var bed  = document.getElementById('sleep-bed').value;
+  var wake = document.getElementById('sleep-wake').value;
+  if (!bed || !wake) {
+    document.getElementById('sleep-duration').textContent = '—';
+    document.getElementById('sleep-quality').textContent = 'Enter your times above';
+    return;
+  }
+  var bParts = bed.split(':').map(Number),  wParts = wake.split(':').map(Number);
+  var bedMins  = bParts[0] * 60 + bParts[1];
+  var wakeMins = wParts[0] * 60 + wParts[1];
+  if (wakeMins <= bedMins) wakeMins += 24 * 60;
+  var total = wakeMins - bedMins;
+  var h = Math.floor(total / 60), m = total % 60;
+  document.getElementById('sleep-duration').textContent = h + 'h' + (m ? ' ' + m + 'm' : '');
+  var q = '';
+  if      (total < 300) q = 'Very short — under 5 hours, try to rest more';
+  else if (total < 360) q = 'Under 6 hours — aim for at least 7';
+  else if (total < 420) q = 'Decent — aim for 7–9 hours for optimal recovery';
+  else if (total <= 540) q = 'Great — you\'re in the optimal sleep window';
+  else                   q = 'Over 9 hours — make sure it\'s quality rest';
+  document.getElementById('sleep-quality').textContent = q;
+}
+
+function saveSleep() {
+  var bed  = document.getElementById('sleep-bed').value;
+  var wake = document.getElementById('sleep-wake').value;
+  if (!bed || !wake) return;
+  localStorage.setItem(sleepKey(), JSON.stringify({ bed: bed, wake: wake }));
+  var btn = document.getElementById('sleep-save-btn');
+  btn.textContent = 'Saved ✓';
+  setTimeout(function(){ btn.textContent = 'Save Sleep Log'; }, 1600);
+}
+
+// ── TOAST ────────────────────────────────────────────────────────────────────
+var ttToastTimer;
+function ttToast(msg) {
+  var el = document.getElementById('tt-toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(ttToastTimer);
+  ttToastTimer = setTimeout(function(){ el.classList.remove('show'); }, 2400);
+}
+
+// ── OPTS TOGGLE ──────────────────────────────────────────────────────────────
+var openOptsId = null;
+function toggleOpts(optsId, wrapId) {
+  if (openOptsId === optsId) {
+    document.getElementById(optsId).classList.remove('open');
+    document.getElementById(wrapId).classList.remove('open');
+    openOptsId = null;
+    return;
+  }
+  if (openOptsId) {
+    var prev = document.getElementById(openOptsId);
+    if (prev) prev.classList.remove('open');
+    // also remove open from its wrap — find by replacing 'so'/'co' prefix
+    var prevWrap = document.getElementById(openOptsId.replace(/^(so|co)/, function(m){ return m==='so'?'sw':'cw'; }));
+    if (prevWrap) prevWrap.classList.remove('open');
+  }
+  document.getElementById(optsId).classList.add('open');
+  document.getElementById(wrapId).classList.add('open');
+  openOptsId = optsId;
+}
+
+// ── APPLY / REMOVE ACROSS DAYS ───────────────────────────────────────────────
+function iterateDays(from, to, cb) {
+  var d = new Date(from + 'T00:00:00');
+  var end = new Date(to + 'T00:00:00');
+  while (d <= end) {
+    var iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    cb(iso);
+    d.setDate(d.getDate() + 1);
+  }
+}
+
+function applyOptByIdx(type, idx, dir) {
+  var name = type === 'supp' ? getSupps()[idx] : getClList()[idx];
+  if (!name) return;
+  var baseKey = type === 'supp' ? 'supps_' : 'custom_tasks_';
+  var from = dir === 'past' ? offsetDate(currentDate, -90) : offsetDate(currentDate, 1);
+  var to   = dir === 'past' ? offsetDate(currentDate, -1)  : offsetDate(currentDate, 90);
+  var count = 0;
+  iterateDays(from, to, function(date) {
+    var k = pfx() + baseKey + date;
+    var list = JSON.parse(localStorage.getItem(k) || '[]');
+    if (list.indexOf(name) < 0) { list.push(name); localStorage.setItem(k, JSON.stringify(list)); count++; }
+  });
+  ttToast((dir === 'past' ? '← Added to past 90 days' : '→ Added to next 90 days') + ' ✓');
+}
+
+function removeOptByIdx(type, idx, dir) {
+  var name = type === 'supp' ? getSupps()[idx] : getClList()[idx];
+  if (!name) return;
+  var baseKey = type === 'supp' ? 'supps_' : 'custom_tasks_';
+  var from = dir === 'past' ? offsetDate(currentDate, -90) : offsetDate(currentDate, 1);
+  var to   = dir === 'past' ? offsetDate(currentDate, -1)  : offsetDate(currentDate, 90);
+  iterateDays(from, to, function(date) {
+    var k = pfx() + baseKey + date;
+    var list = JSON.parse(localStorage.getItem(k) || '[]');
+    var i = list.indexOf(name);
+    if (i >= 0) { list.splice(i, 1); localStorage.setItem(k, JSON.stringify(list)); }
+  });
+  ttToast((dir === 'past' ? '← Removed from past 90 days' : '→ Removed from next 90 days') + ' ✓');
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+(function init() {
+  applyTheme();
+  renderProfilePill();
+  renderDayNav();
+  renderAll();
+
+  var resizeTimer;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(renderWater, 100);
+  });
+})();
+</script>
+</body>
+</html>

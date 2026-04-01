@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daily Optimal Health</title>
+  <script src="health-notifications.js" defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -89,6 +90,27 @@
       display: flex; align-items: center; gap: 5px;
     }
     .stat-pill .lbl { color: var(--muted); font-weight: 400; }
+    .stat-pill-lvl { cursor: pointer; transition: var(--trans); }
+    .stat-pill-lvl:hover { border-color: var(--acc); box-shadow: 0 0 10px var(--glow); }
+
+    .lvl-list { display: flex; flex-direction: column; gap: 8px; }
+    .lvl-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 14px; border-radius: 10px;
+      background: var(--glass); border: 1px solid var(--glass-b);
+      opacity: .45;
+    }
+    .lvl-row.lvl-done { opacity: .75; }
+    .lvl-row.lvl-cur {
+      opacity: 1; border-color: var(--acc);
+      background: var(--checked); box-shadow: 0 0 14px var(--glow);
+    }
+    .lvl-num { width: 20px; font-size: .76rem; font-weight: 800; color: var(--muted); flex-shrink: 0; text-align: center; }
+    .lvl-info { flex: 1; }
+    .lvl-name { font-size: .9rem; font-weight: 700; }
+    .lvl-xp { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+    .lvl-badge { font-size: .72rem; font-weight: 800; color: var(--acc); flex-shrink: 0; }
+    .lvl-badge-done { color: var(--muted); }
 
     .xp-wrap { max-width: 380px; margin: 10px auto 0; }
     .xp-meta { display: flex; justify-content: space-between; font-size: .75rem; color: var(--muted); margin-bottom: 5px; }
@@ -385,9 +407,31 @@
     .pf-since   { font-size: .78rem; color: var(--muted); }
 
     .pf-color-picker {
-      display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+      display: flex; flex-direction: column; gap: 12px;
       margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--glass-b); width: 100%;
     }
+    .pf-picker-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .pf-picker-label { font-size: .64rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); text-align: center; }
+    .avatar-icon-wrap { position: relative; }
+    .avatar-icon-btn {
+      width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; background: var(--glass); border: 2px solid transparent;
+      transition: var(--trans);
+    }
+    .avatar-icon-btn:hover { transform: scale(1.12); border-color: rgba(255,255,255,.2); }
+    .avatar-icon-btn.active { border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,.4); transform: scale(1.1); }
+    .avatar-icon-btn.locked { opacity: 0.25; cursor: not-allowed; filter: grayscale(1); }
+    .avatar-icon-btn.locked:hover { transform: none; border-color: transparent; }
+    .avatar-icon-tip {
+      position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%);
+      background: rgba(5,10,15,0.95); color: rgba(255,255,255,0.88);
+      font-size: .65rem; white-space: nowrap; padding: 5px 9px;
+      border-radius: 7px; pointer-events: none;
+      opacity: 0; transition: opacity .15s; z-index: 100;
+      border: 1px solid var(--glass-b);
+    }
+    .avatar-icon-wrap:hover .avatar-icon-tip { opacity: 1; }
     .color-swatch {
       width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
       transition: var(--trans); border: 2px solid transparent;
@@ -395,7 +439,7 @@
     .color-swatch:hover  { transform: scale(1.2); }
     .color-swatch.active { border-color: #fff; box-shadow: 0 0 8px rgba(255,255,255,.5); transform: scale(1.15); }
 
-    .pf-section { margin-bottom: 20px; }
+    .pf-section { margin-bottom: 20px; overflow: visible; }
     .pf-section-label {
       font-size: .7rem; font-weight: 700; letter-spacing: 2px;
       text-transform: uppercase; color: var(--muted); margin-bottom: 10px; padding-left: 2px;
@@ -423,14 +467,36 @@
     }
     .pf-row-select option { background: #1a0028; color: #fff; }
 
-    .pf-stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+    .pf-stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; overflow: visible; }
     .pf-stat-card {
       background: var(--glass); border: 1px solid var(--glass-b);
-      border-radius: var(--r-sm); padding: 16px 12px; text-align: center;
-      backdrop-filter: blur(8px);
+      border-radius: var(--r-sm); padding: 14px 14px;
+      backdrop-filter: blur(8px); position: relative;
+      cursor: pointer; user-select: none; transition: border-color .2s, background .2s;
+      display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 10px;
     }
-    .pf-stat-val  { font-size: 1.6rem; font-weight: 900; color: var(--acc); line-height: 1; margin-bottom: 4px; }
-    .pf-stat-lbl  { font-size: .72rem; color: var(--muted); letter-spacing: .5px; }
+    .pf-stat-card:active { transform: scale(.97); }
+    .pf-stat-toggle { position: absolute; top: 6px; right: 7px; font-size: .65rem; color: var(--muted); opacity: .6; }
+    .pf-stat-num { font-size: 1.2rem; font-weight: 900; color: var(--acc); line-height: 1.1; }
+    .pf-stat-tip {
+      display: none; position: absolute;
+      top: 50%; left: calc(100% + 10px); transform: translateY(-50%);
+      width: 210px; min-height: 110px; background: #0b1f12;
+      border: 1px solid var(--acc); border-radius: 10px;
+      padding: 14px 16px; z-index: 9999;
+      font-size: .78rem; color: var(--text); line-height: 1.8;
+      text-align: left; flex-direction: column; justify-content: center; gap: 6px;
+      box-shadow: 0 6px 24px rgba(0,0,0,.7);
+    }
+    .pf-stats-grid > .pf-stat-card:nth-child(3n) .pf-stat-tip,
+    .pf-stats-grid > .pf-stat-card:nth-child(3n+3) .pf-stat-tip {
+      left: auto; right: calc(100% + 10px);
+    }
+    .pf-stat-card:hover { z-index: 9999; }
+    .pf-stat-card:hover .pf-stat-tip { display: flex; }
+    .pf-stat-val  { font-size: 1.6rem; line-height: 1; flex-shrink: 0; }
+    .pf-stat-body { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .pf-stat-lbl  { font-size: .65rem; color: var(--muted); letter-spacing: .5px; text-transform: uppercase; line-height: 1; }
 
     .pf-save {
       width: 100%; padding: 14px; background: var(--acc); color: #000;
@@ -453,7 +519,37 @@
     }
     .hm-day:hover { transform: scale(1.5); z-index: 2; position: relative; }
     .hm-legend { display: flex; align-items: center; gap: 5px; margin-top: 10px; font-size: .7rem; color: var(--muted); }
+    #hm-tooltip {
+      position: fixed; z-index: 99999; pointer-events: none;
+      background: rgba(10,10,20,.97); border: 1px solid var(--acc);
+      border-radius: 8px; padding: 7px 12px;
+      font-size: .78rem; color: var(--text); white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,.6);
+      opacity: 0; transition: opacity .1s;
+    }
+    #hm-tooltip.show { opacity: 1; }
     .hm-lswatch { width: 11px; height: 11px; border-radius: 2px; flex-shrink: 0; }
+
+    /* ── REMINDERS PANEL ── */
+    .notif-count { font-size: .72rem; font-weight: 400; color: var(--muted); margin-left: 6px; }
+    .notif-panel {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); padding: 4px 16px;
+      backdrop-filter: blur(8px); margin-bottom: 20px;
+    }
+    .notif-empty { color: var(--muted); font-size: .85rem; text-align: center; padding: 14px 0; }
+    .notif-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 0; border-bottom: 1px solid var(--glass-b);
+    }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item-name { flex: 1; font-size: .88rem; color: var(--text); }
+    .notif-off-btn {
+      background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.3);
+      border-radius: 6px; color: rgba(248,113,113,0.8);
+      cursor: pointer; font-size: .75rem; padding: 4px 10px; transition: all .15s;
+    }
+    .notif-off-btn:hover { background: rgba(248,113,113,0.18); color: #f87171; }
   </style>
 </head>
 <body>
@@ -464,6 +560,7 @@
     <div id="profile-view" class="view"></div>
   </div>
   <div id="toast"></div>
+  <div id="hm-tooltip"></div>
   <button id="profile-btn" onclick="toggleDropdown()" title="Profile"></button>
   <div id="modal-wrap"></div>
 
@@ -480,7 +577,13 @@ const LEVELS = {
     {name:'Health Enthusiast',  min:800},
     {name:'Optimizer',          min:1400},
     {name:'Biohacker',          min:2200},
-    {name:'Longevity Legend',   min:3500},
+    {name:'Longevity Legend',      min:3500},
+    {name:'Elite Performer',       min:5500},
+    {name:'Peak Human',            min:8500},
+    {name:'Longevity Architect',   min:13000},
+    {name:'Centenarian Candidate', min:20000},
+    {name:'Demigod',               min:30000},
+    {name:'Transcendent',          min:45000},
   ],
   degen: [
     {name:'Absolute Degenerate',    min:0},
@@ -489,7 +592,13 @@ const LEVELS = {
     {name:'Functioning Adult',      min:800},
     {name:'Respectable Person',     min:1400},
     {name:'Reformed',               min:2200},
-    {name:'Devil Is Disappointed',  min:3500},
+    {name:'Devil Is Disappointed',   min:3500},
+    {name:'Suspicious Improvement',  min:5500},
+    {name:'Unrecognizable',          min:8500},
+    {name:'Mom Is Proud',            min:13000},
+    {name:'Dealer Lost A Customer',  min:20000},
+    {name:'Certified Ex-Degenerate', min:30000},
+    {name:'A Different Species',     min:45000},
   ]
 };
 
@@ -793,17 +902,46 @@ const S = {
 
 // ─── PROFILE SYSTEM ──────────────────────────────────────────────────────────
 const AVATAR_COLORS = ['#2dd46e','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316'];
+const AVATAR_ICONS = [
+  { icon:'🥚', minRank:0 },
+  { icon:'🐛', minRank:0 },
+  { icon:'🐌', minRank:0 },
+  { icon:'🐣', minRank:0 },
+  { icon:'🐢', minRank:0 },
+  { icon:'🦊', minRank:3  },
+  { icon:'🐺', minRank:4  },
+  { icon:'🦁', minRank:5  },
+  { icon:'🦅', minRank:6  },
+  { icon:'🐉', minRank:7  },
+  { icon:'🦈', minRank:8  },
+  { icon:'🦋', minRank:9  },
+  { icon:'🧙', minRank:10 },
+  { icon:'🤖', minRank:11 },
+  { icon:'🔱', minRank:12 },
+  { icon:'☀️', minRank:13 },
+];
 
 function getProfiles()      { return JSON.parse(localStorage.getItem('doh_profiles') || '{}'); }
 function getActiveId()      { return localStorage.getItem('doh_active_profile') || null; }
 function getActiveProfile() { const id=getActiveId(); return id ? getProfiles()[id] : null; }
+
+function getFreezes() {
+  const id = getActiveId(); if (!id) return 0;
+  return parseInt(getProfiles()[id]?.freezes || 0);
+}
+function setFreezes(val) {
+  const id = getActiveId(); if (!id) return;
+  const profiles = getProfiles(); if (!profiles[id]) return;
+  profiles[id].freezes = Math.max(0, Math.min(3, val));
+  localStorage.setItem('doh_profiles', JSON.stringify(profiles));
+}
 
 function createProfile(name) {
   const profiles = getProfiles();
   const id = 'p_' + Date.now();
   const used = Object.values(profiles).map(p=>p.color);
   const color = AVATAR_COLORS.find(c=>!used.includes(c)) || AVATAR_COLORS[0];
-  profiles[id] = { id, name: name.trim(), color, created: new Date().toISOString() };
+  profiles[id] = { id, name: name.trim(), color, created: new Date().toISOString(), freezes: 0 };
   localStorage.setItem('doh_profiles', JSON.stringify(profiles));
   return profiles[id];
 }
@@ -881,8 +1019,24 @@ function saveChecked(goalId, set) {
 }
 
 function addXP(amount) {
+  const xpBefore = STATE.xp;
   STATE.xp = Math.max(0, STATE.xp + amount);
   localStorage.setItem(`${storagePrefix()}xp`, STATE.xp);
+  if (amount > 0) {
+    const isDegen = STATE.mode === 'degen';
+    const lvls = LEVELS[isDegen ? 'degen' : 'health'];
+    const idxFor = xp => { for(let i=lvls.length-1;i>=0;i--) if(xp>=lvls[i].min) return i; return 0; };
+    if (idxFor(STATE.xp) > idxFor(xpBefore)) {
+      const lv = getLevel(isDegen);
+      const freezes = getFreezes();
+      if (freezes < 3) {
+        setFreezes(freezes + 1);
+        toast(`🎉 Rank up: ${lv.name}! +1 ❄️ streak freeze (${freezes + 1}/3)`);
+      } else {
+        toast(`🎉 Rank up: ${lv.name}!`);
+      }
+    }
+  }
 }
 
 function touchStreak() {
@@ -890,9 +1044,26 @@ function touchStreak() {
   if (STATE.streak.last === today) return;
   const d = new Date(); d.setDate(d.getDate()-1);
   const yd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  if (STATE.streak.last !== yd && STATE.streak.last !== '') {
+    // Missed at least one day — try to use a freeze
+    const freezes = getFreezes();
+    if (freezes > 0) {
+      setFreezes(freezes - 1);
+      incFreezeUses();
+      STATE.streak.count += 1;
+      STATE.streak.last = today;
+      localStorage.setItem(`${storagePrefix()}streak`, JSON.stringify(STATE.streak));
+      toast(`❄️ Streak freeze used — streak protected! (${freezes - 1} left)`);
+      return;
+    }
+  }
   STATE.streak.count = (STATE.streak.last === yd) ? STATE.streak.count + 1 : 1;
   STATE.streak.last = today;
   localStorage.setItem(`${storagePrefix()}streak`, JSON.stringify(STATE.streak));
+  // Track best streak
+  if (STATE.streak.count > getBestStreak()) {
+    localStorage.setItem(`${storagePrefix()}best_streak`, STATE.streak.count);
+  }
 }
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
@@ -970,6 +1141,31 @@ function showModal(html) {
 function closeModal() { document.getElementById('modal-wrap').innerHTML = ''; }
 function handleOverlayClick(e) { if(e.target.classList.contains('modal-overlay')) closeModal(); }
 
+function showLevelsModal() {
+  const isDegen = STATE.mode === 'degen';
+  const lvls = LEVELS[isDegen ? 'degen' : 'health'];
+  const curIdx = getLevel(isDegen).idx;
+  const rows = lvls.map((l, i) => {
+    const isCur = i === curIdx;
+    const isUnlocked = STATE.xp >= l.min;
+    return `<div class="lvl-row${isCur ? ' lvl-cur' : isUnlocked ? ' lvl-done' : ''}">
+      <div class="lvl-num">${i + 1}</div>
+      <div class="lvl-info">
+        <div class="lvl-name">${l.name}</div>
+        <div class="lvl-xp">${i === 0 ? 'Starting rank' : l.min + ' XP to unlock'}</div>
+      </div>
+      ${isCur ? '<div class="lvl-badge">▶ You</div>' : isUnlocked ? '<div class="lvl-badge lvl-badge-done">✓</div>' : ''}
+    </div>`;
+  }).join('');
+  showModal(`<div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon">${isDegen ? '💀' : '🏆'}</div>
+    <div class="modal-title">${isDegen ? 'Degen Ranks' : 'Health Ranks'}</div>
+    <div class="modal-sub">Earn XP by checking off daily tasks to climb the ranks.</div>
+    <div class="lvl-list">${rows}</div>
+  </div>`);
+}
+
 function showLoginModal() {
   const profiles = Object.values(getProfiles());
   const existingHTML = profiles.length ? `
@@ -977,7 +1173,7 @@ function showLoginModal() {
     <div class="profile-list">
       ${profiles.map(p=>`
         <div class="profile-item" onclick="switchProfile('${p.id}')">
-          <div class="p-avatar" style="background:${p.color}">${initials(p.name)}</div>
+          <div class="p-avatar" style="background:${p.color};font-size:${p.avatar?'1.1rem':'.82rem'}">${p.avatar || initials(p.name)}</div>
           <div>
             <div class="p-item-name">${p.name}</div>
             <div class="p-item-meta">Since ${new Date(p.created).toLocaleDateString()}</div>
@@ -1045,7 +1241,7 @@ function showSwitchModal() {
     <div class="profile-list" style="margin-bottom:14px">
       ${profiles.map(p=>`
         <div class="profile-item ${p.id===activeId?'active-profile':''}" onclick="switchProfile('${p.id}')">
-          <div class="p-avatar" style="background:${p.color}">${initials(p.name)}</div>
+          <div class="p-avatar" style="background:${p.color};font-size:${p.avatar?'1.1rem':'.82rem'}">${p.avatar || initials(p.name)}</div>
           <div>
             <div class="p-item-name">${p.name}${p.id===activeId?' ✓':''}</div>
             <div class="p-item-meta">Since ${new Date(p.created).toLocaleDateString()}</div>
@@ -1123,11 +1319,22 @@ function buildHeatmapData() {
   const pfx = `doh_${pid}_`;
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (!k.startsWith(pfx)) continue;
-    const dateMatch = k.slice(pfx.length).match(/^(\d{4}-\d{2}-\d{2})_/);
-    if (!dateMatch) continue;
-    const date = dateMatch[1];
-    try { result[date] = (result[date] || 0) + JSON.parse(localStorage.getItem(k)).length; } catch {}
+    // SPA task keys: doh_{pid}_{YYYY-MM-DD}_{goalId}
+    if (k.startsWith(pfx)) {
+      const dateMatch = k.slice(pfx.length).match(/^(\d{4}-\d{2}-\d{2})_/);
+      if (!dateMatch) continue;
+      const date = dateMatch[1];
+      try { result[date] = (result[date] || 0) + JSON.parse(localStorage.getItem(k)).length; } catch {}
+    }
+    // Individual page task keys: ht:{pageKey}:{YYYY-MM-DD}
+    const htMatch = k.match(/^ht:[^:]+:(\d{4}-\d{2}-\d{2})$/);
+    if (htMatch) {
+      const date = htMatch[1];
+      try {
+        const val = JSON.parse(localStorage.getItem(k));
+        if (Array.isArray(val)) result[date] = (result[date] || 0) + val.filter(Boolean).length;
+      } catch {}
+    }
   }
   return result;
 }
@@ -1188,7 +1395,7 @@ function renderHeatmap() {
     `<div class="hm-week">${days.map(d =>
       `<div class="hm-day"
         style="background:${d.isFuture ? 'rgba(255,255,255,0.03)' : heatColor(d.count, isDegen)}"
-        title="${d.key}${d.count ? ': ' + d.count + ' task' + (d.count!==1?'s':'') + ' done' : ': no activity'}"></div>`
+        data-tip="${(()=>{ const dt=new Date(d.key+'T00:00:00'); const lbl=dt.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'}); return lbl + (d.isFuture ? ' · future' : d.count ? ' · '+d.count+' task'+(d.count!==1?'s':'')+' done' : ' · no activity'); })()}"></div>`
     ).join('')}</div>`
   ).join('');
 
@@ -1207,26 +1414,79 @@ function renderHeatmap() {
 }
 
 // ─── PROFILE PAGE ────────────────────────────────────────────────────────────
-let pfDraftColor = null; // tracks selected color before save
+let pfDraftColor  = null;
+let pfDraftAvatar = null;
+let pfStatFlipped = {};
+
+function getBestStreak() {
+  const stored = parseInt(localStorage.getItem(`${storagePrefix()}best_streak`) || '0');
+  return Math.max(stored, STATE.streak.count);
+}
+function getFreezeUses() {
+  return parseInt(localStorage.getItem(`${storagePrefix()}freeze_uses`) || '0');
+}
+function incFreezeUses() {
+  localStorage.setItem(`${storagePrefix()}freeze_uses`, getFreezeUses() + 1);
+}
+function toggleStatCard(name) {
+  pfStatFlipped[name] = !pfStatFlipped[name];
+  renderProfilePage();
+}
 
 function allTimeStats() {
   const pid = getActiveId();
-  if (!pid) return { tasks: 0 };
-  let tasks = 0;
+  if (!pid) return { tasks: 0, daysActive: 0, tasksThisWeek: 0, daysThisMonth: 0 };
+  let tasks = 0, tasksThisWeek = 0;
+  const activeDays = new Set(), activeDaysThisMonth = new Set();
+  const now = new Date();
+  const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
+  const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const pfx = `doh_${pid}_`;
+  // Count SPA task keys (format: doh_{pid}_{YYYY-MM-DD}_{goalId})
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (k.startsWith(`doh_${pid}_`) && k.includes('_2')) { // date keys contain year
-      try { tasks += JSON.parse(localStorage.getItem(k)).length; } catch {}
-    }
+    if (!k.startsWith(pfx)) continue;
+    const dateMatch = k.slice(pfx.length).match(/^(\d{4}-\d{2}-\d{2})_/);
+    if (!dateMatch) continue;
+    try {
+      const val = JSON.parse(localStorage.getItem(k));
+      if (Array.isArray(val) && val.length > 0) {
+        const d = dateMatch[1];
+        tasks += val.length;
+        activeDays.add(d);
+        if (new Date(d + 'T00:00:00') >= weekAgo) tasksThisWeek += val.length;
+        if (d.startsWith(thisMonth)) activeDaysThisMonth.add(d);
+      }
+    } catch {}
   }
-  return { tasks };
+  // Count individual page task keys (format: ht:{pageKey}:{YYYY-MM-DD})
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    const htMatch = k.match(/^ht:[^:]+:(\d{4}-\d{2}-\d{2})$/);
+    if (!htMatch) continue;
+    try {
+      const val = JSON.parse(localStorage.getItem(k));
+      if (Array.isArray(val)) {
+        const done = val.filter(Boolean).length;
+        if (done > 0) {
+          const d = htMatch[1];
+          tasks += done;
+          activeDays.add(d);
+          if (new Date(d + 'T00:00:00') >= weekAgo) tasksThisWeek += done;
+          if (d.startsWith(thisMonth)) activeDaysThisMonth.add(d);
+        }
+      }
+    } catch {}
+  }
+  return { tasks, daysActive: activeDays.size, tasksThisWeek, daysThisMonth: activeDaysThisMonth.size };
 }
 
 function openProfile() {
   closeDropdown();
   const p = getActiveProfile();
   if (!p) { showLoginModal(); return; }
-  pfDraftColor = p.color;
+  pfDraftColor  = p.color;
+  pfDraftAvatar = p.avatar || null;
   document.getElementById('hub-view').classList.remove('active');
   document.getElementById('sch-view').classList.remove('active');
   document.getElementById('profile-view').classList.add('active');
@@ -1240,6 +1500,18 @@ function renderProfilePage() {
   const stats = allTimeStats();
   const lv = getLevel(STATE.mode === 'degen');
   const since = new Date(p.created).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  const currentRank = getLevel(STATE.mode === 'degen').idx + 1;
+  const iconBtns = AVATAR_ICONS.map(({icon, minRank}) => {
+    const locked = minRank > currentRank;
+    const rankName = minRank > 0 ? (LEVELS.health[minRank - 1]?.name || `Rank ${minRank}`) : '';
+    const tip = locked ? `<div class="avatar-icon-tip">Rank ${minRank} — ${rankName}</div>` : '';
+    return `<div class="avatar-icon-wrap">
+      <div class="avatar-icon-btn ${pfDraftAvatar===icon?'active':''} ${locked?'locked':''}"
+        onclick="${locked?'':` pickAvatar('${icon}')`}">${icon}</div>
+      ${tip}
+    </div>`;
+  }).join('');
 
   const swatches = AVATAR_COLORS.map(c =>
     `<div class="color-swatch ${pfDraftColor===c?'active':''}"
@@ -1265,12 +1537,17 @@ function renderProfilePage() {
 
     <div class="pf-hero">
       <div class="pf-avatar-wrap" onclick="document.getElementById('pf-color-picker').style.display='flex'">
-        <div class="pf-avatar" id="pf-avatar-preview" style="background:${pfDraftColor}">${initials(p.name)}</div>
+        <div class="pf-avatar" id="pf-avatar-preview" style="background:${pfDraftColor};font-size:${pfDraftAvatar?'2.2rem':'1.8rem'}">${pfDraftAvatar || initials(p.name)}</div>
         <div class="pf-avatar-edit">✏️</div>
       </div>
       <div class="pf-name">${p.name}</div>
       <div class="pf-since">Member since ${since} · ${lv.name}</div>
-      <div class="pf-color-picker" id="pf-color-picker" style="display:none">${swatches}</div>
+      <div class="pf-color-picker" id="pf-color-picker" style="display:none">
+        <div class="pf-picker-label">Avatar</div>
+        <div class="pf-picker-row">${iconBtns}</div>
+        <div class="pf-picker-label">Color</div>
+        <div class="pf-picker-row">${swatches}</div>
+      </div>
     </div>
 
     <div class="pf-section">
@@ -1317,25 +1594,119 @@ function renderProfilePage() {
     </div>
 
     <div class="pf-section">
-      <div class="pf-section-label">Your Stats</div>
-      <div class="pf-stats-grid">
-        <div class="pf-stat-card">
-          <div class="pf-stat-val">🔥 ${STATE.streak.count}</div>
-          <div class="pf-stat-lbl">Day Streak</div>
-        </div>
-        <div class="pf-stat-card">
-          <div class="pf-stat-val">⚡ ${STATE.xp}</div>
-          <div class="pf-stat-lbl">Total XP</div>
-        </div>
-        <div class="pf-stat-card">
-          <div class="pf-stat-val">✅ ${stats.tasks}</div>
-          <div class="pf-stat-lbl">Tasks Done</div>
-        </div>
-      </div>
+      <div class="pf-section-label">Your Stats <span style="font-size:.62rem;color:var(--muted);font-weight:400;margin-left:6px;opacity:.4">tap to flip</span></div>
+      <div class="pf-stats-grid">${(()=>{
+        const isDegen = STATE.mode === 'degen';
+        const lvls = LEVELS[isDegen ? 'degen' : 'health'];
+        const nextLv = lvls[lv.idx + 1];
+        const xpToNext = nextLv ? nextLv.min - STATE.xp : null;
+        const rankPct = nextLv ? Math.min(100, Math.round((STATE.xp - lv.min) / (nextLv.min - lv.min) * 100)) : 100;
+        const bestStreak = getBestStreak();
+        const freezeUses = getFreezeUses();
+        const f = pfStatFlipped;
+        return [
+          // Streak
+          `<div class="pf-stat-card" onclick="toggleStatCard('streak')">
+            <span class="pf-stat-toggle">↕</span>
+            <div class="pf-stat-tip">
+              ${!f.streak
+                ? `<span style="font-weight:700;color:var(--acc)">🔥 Day Streak</span>
+                   <span>Check off at least one task per day to keep your streak alive.</span>
+                   <span style="color:#f87171;margin-top:2px">Missing a day resets it to zero — unless you have a freeze.</span>`
+                : `<span style="font-weight:700;color:var(--acc)">🏅 Best Streak</span>
+                   <span>Your highest streak ever achieved. Can you beat it?</span>
+                   <span style="color:#f59e0b;margin-top:2px">Best streaks are earned through consistency, not perfection.</span>`}
+            </div>
+            ${!f.streak
+              ? `<div class="pf-stat-val" style="font-size:2.4rem;margin-left:-12px;margin-top:-6px">🔥</div><div class="pf-stat-body" style="margin-top:-6px"><div class="pf-stat-num" style="font-size:1.7rem">${STATE.streak.count}</div><div class="pf-stat-lbl">Day Streak</div></div>`
+              : `<div class="pf-stat-val" style="font-size:2.4rem;margin-left:-12px;margin-top:-6px">🏅</div><div class="pf-stat-body" style="margin-top:-6px"><div class="pf-stat-num" style="font-size:1.7rem">${bestStreak}</div><div class="pf-stat-lbl">Best Streak</div></div>`}
+          </div>`,
+          // Tasks
+          `<div class="pf-stat-card" onclick="toggleStatCard('tasks')">
+            <span class="pf-stat-toggle">↕</span>
+            <div class="pf-stat-tip">
+              ${!f.tasks
+                ? `<span style="font-weight:700;color:var(--acc)">✅ Tasks Done</span>
+                   <span>Your all-time total of completed tasks across every schedule.</span>
+                   <span style="color:#34d399;margin-top:2px">Every task counts, no matter how small.</span>`
+                : `<span style="font-weight:700;color:var(--acc)">📆 Tasks This Week</span>
+                   <span>Tasks completed in the last 7 days.</span>
+                   <span style="color:#34d399;margin-top:2px">A strong week builds an unstoppable habit.</span>`}
+            </div>
+            ${!f.tasks
+              ? `<div class="pf-stat-val" style="font-size:2rem;margin-left:-12px;margin-top:-6px">✅</div><div class="pf-stat-body" style="margin-top:-6px"><div class="pf-stat-num" style="font-size:1.7rem">${stats.tasks}</div><div class="pf-stat-lbl">Tasks Done</div></div>`
+              : `<div class="pf-stat-val" style="font-size:2rem">📆</div><div class="pf-stat-body"><div class="pf-stat-num">${stats.tasksThisWeek}</div><div class="pf-stat-lbl">Tasks This Week</div></div>`}
+          </div>`,
+          // Rank
+          `<div class="pf-stat-card" onclick="toggleStatCard('rank')">
+            <span class="pf-stat-toggle">↕</span>
+            <div class="pf-stat-tip">
+              ${!f.rank
+                ? `<span style="font-weight:700;color:var(--acc)">${isDegen ? '💀' : '🏆'} Current Rank</span>
+                   <span>Your rank is determined by total XP earned across all schedules.</span>
+                   <span style="color:#a78bfa;margin-top:2px">Rank ${lv.idx + 1} of 13 — keep earning XP to climb higher.</span>`
+                : `<span style="font-weight:700;color:var(--acc)">📈 Next Rank Progress</span>
+                   <span>${nextLv ? `${rankPct}% of the way to ${nextLv.name}.` : 'You\'ve reached the top rank.'}</span>
+                   <span style="color:#a78bfa;margin-top:2px">${nextLv ? `${STATE.xp} / ${nextLv.min} XP` : '🌟 Maximum rank achieved.'}</span>`}
+            </div>
+            ${!f.rank
+              ? `<div class="pf-stat-val" style="font-size:2rem;margin-left:-6px">${isDegen ? '💀' : '🏆'}</div><div class="pf-stat-body" style="margin-left:-6px"><div class="pf-stat-num" style="font-size:${lv.name.length>12?'.72rem':'.85rem'}">${lv.name}</div><div class="pf-stat-lbl">Current Rank</div></div>`
+              : `<div class="pf-stat-val" style="font-size:2rem;margin-left:12px">📈</div><div class="pf-stat-body" style="align-items:center;margin-left:-18px;text-align:center"><div class="pf-stat-num" style="font-size:1.2rem">${nextLv ? rankPct+'%' : '🌟'}</div><div class="pf-stat-lbl">Next Rank Progress</div></div>`}
+          </div>`,
+          // Freezes
+          `<div class="pf-stat-card" onclick="toggleStatCard('freeze')">
+            <span class="pf-stat-toggle">↕</span>
+            <div class="pf-stat-tip">
+              ${!f.freeze
+                ? `<span style="font-weight:700;color:var(--acc)">❄️ Streak Freezes</span>
+                   <span>If you miss a day, a freeze is spent automatically — your streak stays intact.</span>
+                   <span style="color:#f59e0b;margin-top:2px">Level up to earn one. Max 3 at a time.</span>`
+                : `<span style="font-weight:700;color:var(--acc)">🛡️ Days Protected</span>
+                   <span>Total times a streak freeze automatically saved your streak.</span>
+                   <span style="color:#60a5fa;margin-top:2px">Each one represents a day you almost gave up — but didn't.</span>`}
+            </div>
+            ${!f.freeze
+              ? `<div class="pf-stat-val" style="font-size:2rem">❄️</div><div class="pf-stat-body"><div class="pf-stat-num">${getFreezes()}/3</div><div class="pf-stat-lbl">Streak Freezes</div></div>`
+              : `<div class="pf-stat-val" style="font-size:2rem">🛡️</div><div class="pf-stat-body"><div class="pf-stat-num">${freezeUses}</div><div class="pf-stat-lbl">Days Protected</div></div>`}
+          </div>`,
+          // Days Active
+          `<div class="pf-stat-card" onclick="toggleStatCard('days')">
+            <span class="pf-stat-toggle">↕</span>
+            <div class="pf-stat-tip">
+              ${!f.days
+                ? `<span style="font-weight:700;color:var(--acc)">📅 Days Active</span>
+                   <span>Total unique days you've completed at least one task.</span>
+                   <span style="color:#60a5fa;margin-top:2px">Consistency over time is the real secret to progress.</span>`
+                : `<span style="font-weight:700;color:var(--acc)">🗓️ Active This Month</span>
+                   <span>Days with at least one task completed so far this month.</span>
+                   <span style="color:#60a5fa;margin-top:2px">Aim to make every day count this month.</span>`}
+            </div>
+            ${!f.days
+              ? `<div class="pf-stat-val" style="font-size:1.8rem;margin-left:-12px;margin-top:-6px">📅</div><div class="pf-stat-body" style="margin-left:0px;margin-top:-6px"><div class="pf-stat-num" style="font-size:1.7rem">${stats.daysActive}</div><div class="pf-stat-lbl">Days Active</div></div>`
+              : `<div class="pf-stat-val" style="font-size:1.8rem">🗓️</div><div class="pf-stat-body"><div class="pf-stat-num" style="font-size:1.7rem">${stats.daysThisMonth}</div><div class="pf-stat-lbl">Active This Month</div></div>`}
+          </div>`,
+          // XP
+          `<div class="pf-stat-card" onclick="toggleStatCard('xp')">
+            <span class="pf-stat-toggle">↕</span>
+            <div class="pf-stat-tip">
+              ${!f.xp
+                ? `<span style="font-weight:700;color:var(--acc)">⚡ Total XP</span>
+                   <span>Earned by completing tasks. +10 XP for health tasks, +15 XP for degen tasks.</span>
+                   <span style="color:#f59e0b;margin-top:2px">XP determines your rank and unlocks profile icons.</span>`
+                : `<span style="font-weight:700;color:var(--acc)">🎯 XP to Next Rank</span>
+                   <span>${nextLv ? `Earn ${xpToNext} more XP to reach ${nextLv.name}.` : 'You have reached the maximum rank.'}</span>
+                   <span style="color:#f59e0b;margin-top:2px">${nextLv ? 'Keep going — you\'re almost there.' : '🌟 Nothing left to prove.'}</span>`}
+            </div>
+            ${!f.xp
+              ? `<div class="pf-stat-val" style="font-size:2rem;margin-left:-18px;margin-top:-6px">⚡</div><div class="pf-stat-body" style="margin-left:-18px;margin-top:-6px"><div class="pf-stat-num">${STATE.xp} XP</div><div class="pf-stat-lbl">Total XP</div></div>`
+              : `<div class="pf-stat-val" style="font-size:1.8rem;margin-left:-6px;margin-top:-6px">${xpToNext !== null ? '🎯' : '🌟'}</div><div class="pf-stat-body" style="margin-left:-6px;margin-top:-6px"><div class="pf-stat-num" style="font-size:${xpToNext!==null&&xpToNext>9999?'.85rem':'1.2rem'}">${xpToNext !== null ? xpToNext+' XP' : 'MAX'}</div><div class="pf-stat-lbl">XP to Next Rank</div></div>`}
+          </div>`
+        ].join('');
+      })()}</div>
     </div>
 
     <div class="pf-section">
-      <div class="pf-section-label">Activity — last 16 weeks</div>
+      <div class="pf-section-label">Activity — last 20 weeks</div>
       <div class="pf-card" style="padding:16px 18px">
         ${renderHeatmap()}
       </div>
@@ -1347,13 +1718,25 @@ function renderProfilePage() {
 
 function pickColor(color) {
   pfDraftColor = color;
-  // Update swatches
   document.querySelectorAll('.color-swatch').forEach(s => {
     s.classList.toggle('active', s.style.background === color || s.style.backgroundColor === color);
   });
-  // Update avatar preview live
   const preview = document.getElementById('pf-avatar-preview');
   if (preview) preview.style.background = color;
+}
+
+function pickAvatar(icon) {
+  const data = AVATAR_ICONS.find(i => i.icon === icon);
+  if (data && data.minRank > getLevel(STATE.mode === 'degen').idx + 1) return;
+  pfDraftAvatar = pfDraftAvatar === icon ? null : icon; // tap same icon to deselect
+  document.querySelectorAll('.avatar-icon-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent === pfDraftAvatar);
+  });
+  const preview = document.getElementById('pf-avatar-preview');
+  if (preview) {
+    preview.textContent = pfDraftAvatar || initials(getActiveProfile()?.name || '');
+    preview.style.fontSize = pfDraftAvatar ? '2.2rem' : '1.8rem';
+  }
 }
 
 function saveProfile() {
@@ -1368,7 +1751,7 @@ function saveProfile() {
   if (!name) { toast('Name cannot be empty ✗'); return; }
 
   const profiles = getProfiles();
-  profiles[p.id] = { ...p, name, email, primaryGoal: goal, reminderTime: reminder, color: pfDraftColor || p.color };
+  profiles[p.id] = { ...p, name, email, primaryGoal: goal, reminderTime: reminder, color: pfDraftColor || p.color, avatar: pfDraftAvatar };
   localStorage.setItem('doh_profiles', JSON.stringify(profiles));
 
   if (mode !== STATE.mode) setMode(mode);
@@ -1384,9 +1767,10 @@ function renderProfileBtn() {
   const btn = document.getElementById('profile-btn');
   const p = getActiveProfile();
   if (p) {
-    btn.textContent = initials(p.name);
+    btn.textContent = p.avatar || initials(p.name);
     btn.style.background = p.color;
     btn.style.color = '#000';
+    btn.style.fontSize = p.avatar ? '1.2rem' : '.82rem';
     btn.title = p.name;
     btn.style.border = `2px solid ${p.color}`;
   } else {
@@ -1421,6 +1805,13 @@ function toggleDropdown() {
 function closeDropdown() { document.getElementById('profile-dropdown')?.remove(); }
 
 // ─── RENDER HUB ──────────────────────────────────────────────────────────────
+function disableNotifFromHub(pageKey) {
+  localStorage.removeItem('notif:' + pageKey + ':enabled');
+  localStorage.removeItem('notif:' + pageKey + ':tasks');
+  if (window.dohNotifications) window.dohNotifications.schedule();
+  renderHub();
+}
+
 function renderHub() {
   const isDegen = STATE.mode==='degen';
   const lv = getLevel(isDegen);
@@ -1430,6 +1821,29 @@ function renderHub() {
   const done = todayDone();
   const hGoals = ['longevity','muscle','cardio','bone','brain','digestive'];
   const dGoals = ['degenerates','degenerates-plus','super-degenerate'];
+
+  const NOTIF_NAMES = {
+    'bone-health':           { name: 'Bone Health',          icon: '🦴' },
+    'brain-health':          { name: 'Brain Health',          icon: '🧠' },
+    'cardiovascular-health': { name: 'Cardiovascular Health', icon: '❤️' },
+    'digestive-health':      { name: 'Digestive Health',      icon: '🌿' },
+    'longevity':             { name: 'Longevity',             icon: '🌿' },
+    'muscle-building':       { name: 'Muscle Building',       icon: '💪' },
+  };
+  const enabledKeys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('notif:') && k.endsWith(':enabled')) enabledKeys.push(k.slice(6,-8));
+  }
+  const notifItems = enabledKeys.length === 0
+    ? '<div class="notif-empty">No reminders set — open a schedule and tap 🔔</div>'
+    : enabledKeys.map(pk => {
+        const info = NOTIF_NAMES[pk] || { name: pk, icon: '🔔' };
+        return `<div class="notif-item">
+          <div class="notif-item-name">${info.icon} ${info.name}</div>
+          <button class="notif-off-btn" onclick="disableNotifFromHub('${pk}')">Turn off</button>
+        </div>`;
+      }).join('');
 
   const card = id => {
     const g=S[id], p=pct(id), r=22, circ=2*Math.PI*r;
@@ -1464,8 +1878,9 @@ function renderHub() {
       <p class="hub-sub">Choose a goal. Check off your day. Stack wins.</p>
       <div class="stats-row">
         <div class="stat-pill">🔥 ${STATE.streak.count} <span class="lbl">day streak</span></div>
+        ${getFreezes()>0?`<div class="stat-pill" title="Streak freeze tokens — if you miss a day, one is spent automatically to protect your streak. Earn more by leveling up (max 3).">❄️ ${getFreezes()} <span class="lbl">freeze${getFreezes()!==1?'s':''}</span></div>`:''}
         <div class="stat-pill">⚡ ${STATE.xp} <span class="lbl">XP</span></div>
-        <div class="stat-pill">🏆 ${lv.name}</div>
+        <div class="stat-pill stat-pill-lvl" onclick="showLevelsModal()">🏆 ${lv.name}</div>
         ${done>0?`<div class="stat-pill">✅ ${done} <span class="lbl">done today</span></div>`:''}
       </div>
       ${lv.next?`<div class="xp-wrap">
@@ -1478,6 +1893,24 @@ function renderHub() {
     <div class="degen-div"><span class="degen-label">Degenerate Fucks</span></div>
     <div class="sec-label">Recovery Tiers</div>
     <div class="goal-grid">${dGoals.map(card).join('')}</div>
+    <div class="sec-label" style="margin-top:28px">Tools &amp; Trackers</div>
+    <div class="goal-grid">
+      <div class="goal-card" onclick="window.location.href='tools.html'">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 50 50">
+            <circle class="r-track" cx="25" cy="25" r="22"/>
+          </svg>
+          <div class="ring-icon">🛠️</div>
+        </div>
+        <div class="card-info">
+          <div class="card-title">Tools &amp; Trackers</div>
+          <div class="card-desc">Journal, water, mood, supplements, sleep log, and your personal checklist</div>
+          <div class="card-pct">Open →</div>
+        </div>
+      </div>
+    </div>
+    <div class="sec-label" style="margin-top:28px">🔔 Reminders <span class="notif-count">${enabledKeys.length}/3</span></div>
+    <div class="notif-panel">${notifItems}</div>
   </div>`;
 }
 
@@ -1630,6 +2063,27 @@ function setMode(mode) {
   if (!getActiveId()) showLoginModal();
   document.addEventListener('click', e => {
     if (!e.target.closest('#profile-btn') && !e.target.closest('#profile-dropdown')) closeDropdown();
+  });
+})();
+
+// ── HEATMAP TOOLTIP ──────────────────────────────────────────────────────────
+(function() {
+  const tip = document.getElementById('hm-tooltip');
+  document.addEventListener('mouseover', function(e) {
+    const el = e.target.closest('[data-tip]');
+    if (!el) return;
+    tip.textContent = el.dataset.tip;
+    tip.classList.add('show');
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (!tip.classList.contains('show')) return;
+    const x = e.clientX + 14, y = e.clientY - 36;
+    tip.style.left = Math.min(x, window.innerWidth - tip.offsetWidth - 10) + 'px';
+    tip.style.top  = Math.max(y, 6) + 'px';
+  });
+  document.addEventListener('mouseout', function(e) {
+    if (!e.target.closest('[data-tip]')) return;
+    tip.classList.remove('show');
   });
 })();
 </script>

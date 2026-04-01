@@ -7,7 +7,13 @@
     {name:'Health Enthusiast', min:800},
     {name:'Optimizer',         min:1400},
     {name:'Biohacker',         min:2200},
-    {name:'Longevity Legend',  min:3500},
+    {name:'Longevity Legend',       min:3500},
+    {name:'Elite Performer',        min:5500},
+    {name:'Peak Human',             min:8500},
+    {name:'Longevity Architect',    min:13000},
+    {name:'Centenarian Candidate',  min:20000},
+    {name:'Demigod',                min:30000},
+    {name:'Transcendent',           min:45000},
   ];
 
   // ── PROFILE HELPERS ───────────────────────────────────────────────────────
@@ -20,6 +26,34 @@
 
   function setXP(val)     { const p = pfx(); if(p) localStorage.setItem(p+'xp', Math.max(0,val)); }
   function setStreak(obj) { const p = pfx(); if(p) localStorage.setItem(p+'streak', JSON.stringify(obj)); }
+
+  function getFreezes() {
+    const id = getActiveId(); if (!id) return 0;
+    return parseInt(getProfiles()[id]?.freezes || 0);
+  }
+  function setFreezes(val) {
+    const id = getActiveId(); if (!id) return;
+    const profiles = getProfiles(); if (!profiles[id]) return;
+    profiles[id].freezes = Math.max(0, Math.min(3, val));
+    localStorage.setItem('doh_profiles', JSON.stringify(profiles));
+  }
+
+  // Award XP and check for level-up (awards a freeze token on rank-up)
+  function awardXP(amount) {
+    const xpBefore = getXP();
+    setXP(xpBefore + amount);
+    const lvBefore = levelFor(xpBefore);
+    const lvAfter  = levelFor(getXP());
+    if (lvAfter.idx > lvBefore.idx) {
+      const freezes = getFreezes();
+      if (freezes < 3) {
+        setFreezes(freezes + 1);
+        showToast('\uD83C\uDF89 Rank up: ' + lvAfter.name + '! +1 \u2744\uFE0F freeze (' + (freezes + 1) + '/3)');
+      } else {
+        showToast('\uD83C\uDF89 Rank up: ' + lvAfter.name + '!');
+      }
+    }
+  }
 
   function levelFor(xp) {
     for (let i = LEVELS.length - 1; i >= 0; i--) if (xp >= LEVELS[i].min) return {idx:i, ...LEVELS[i], next: LEVELS[i+1]||null};
@@ -41,6 +75,18 @@
     if (s.last === today) return;
     const yd = new Date(); yd.setDate(yd.getDate()-1);
     const ydStr = `${yd.getFullYear()}-${String(yd.getMonth()+1).padStart(2,'0')}-${String(yd.getDate()).padStart(2,'0')}`;
+    if (s.last !== ydStr && s.last !== '') {
+      // Missed at least one day — try to use a freeze
+      const freezes = getFreezes();
+      if (freezes > 0) {
+        setFreezes(freezes - 1);
+        s.count += 1;
+        s.last = today;
+        setStreak(s);
+        showToast('\u2744\uFE0F Streak freeze used \u2014 streak protected! (' + (freezes - 1) + ' left)');
+        return;
+      }
+    }
     s.count = (s.last === ydStr) ? s.count + 1 : 1;
     s.last = today;
     setStreak(s);
@@ -67,6 +113,50 @@
   }
 
   function storageKey() { return 'ht:' + pageKey + ':' + toISO(currentDate); }
+
+  // ── NOTIFICATIONS ─────────────────────────────────────────────────────────
+  function isNotifEnabled() {
+    return localStorage.getItem('notif:' + pageKey + ':enabled') === '1';
+  }
+
+  function savePageTasks() {
+    var tasks = [];
+    document.querySelectorAll('tbody tr').forEach(function (row) {
+      var mins = parseRowMinutes(row);
+      if (mins === null) return;
+      var summary = row.querySelector('.summary');
+      var label = summary ? summary.textContent.trim() : (row.cells[1] ? row.cells[1].textContent.trim() : '');
+      if (!label) return;
+      tasks.push({ label: label, mins: mins });
+    });
+    localStorage.setItem('notif:' + pageKey + ':tasks', JSON.stringify(tasks));
+  }
+
+  function toggleNotif() {
+    if (isNotifEnabled()) {
+      localStorage.removeItem('notif:' + pageKey + ':enabled');
+      localStorage.removeItem('notif:' + pageKey + ':tasks');
+      updateProfileBar();
+      if (window.dohNotifications) window.dohNotifications.schedule();
+      showToast('Reminders off.');
+    } else {
+      if (!window.dohNotifications) { showToast('Notifications not available.'); return; }
+      var enabledCount = 0;
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('notif:') === 0 && k.slice(-8) === ':enabled') enabledCount++;
+      }
+      if (enabledCount >= 3) { showToast('Max 3 reminders — turn one off first.'); return; }
+      window.dohNotifications.requestPermission(function (granted) {
+        if (!granted) { showToast('Permission denied — check browser settings.'); return; }
+        localStorage.setItem('notif:' + pageKey + ':enabled', '1');
+        savePageTasks();
+        updateProfileBar();
+        window.dohNotifications.schedule();
+        showToast('Reminders on! \uD83D\uDD14');
+      });
+    }
+  }
 
   // ── BUILD PROFILE BAR ─────────────────────────────────────────────────────
   function buildProfileBar() {
@@ -99,7 +189,7 @@
 
     bar.innerHTML = `
       <a href="index.html" class="pf-home">← Home</a>
-      <div class="pf-avatar" style="background:${profile.color}">${initials(profile.name)}</div>
+      <div class="pf-avatar pf-avatar--clickable" style="background:${profile.color};font-size:${profile.avatar?'1.2rem':'0.78rem'}" title="Profile options">${profile.avatar || initials(profile.name)}</div>
       <div class="pf-info">
         <div class="pf-name">${profile.name}</div>
         <div class="pf-level">${lv.name}</div>
@@ -109,7 +199,52 @@
         </div>
       </div>
       <div class="pf-streak">🔥 ${streak.count}</div>
+      <button class="pf-notif-btn${isNotifEnabled() ? ' pf-notif-on' : ''}" id="pf-notif-btn" title="${isNotifEnabled() ? 'Reminders on — click to disable' : 'Enable reminders'}">🔔</button>
     `;
+
+    bar.querySelector('.pf-avatar--clickable').addEventListener('click', function (e) {
+      e.stopPropagation();
+      toggleProfilePopup();
+    });
+
+    var notifBtn = bar.querySelector('#pf-notif-btn');
+    if (notifBtn) {
+      notifBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        toggleNotif();
+      });
+    }
+  }
+
+  function toggleProfilePopup() {
+    var existing = document.getElementById('pf-popup');
+    if (existing) { existing.remove(); return; }
+
+    var popup = document.createElement('div');
+    popup.id = 'pf-popup';
+    popup.innerHTML =
+      '<button class="pf-pop-btn" id="pf-switch-btn">⇄ Switch Profile</button>' +
+      '<div class="pf-pop-divider"></div>' +
+      '<button class="pf-pop-btn pf-pop-logout" id="pf-logoff-btn">← Log Off</button>';
+
+    document.getElementById('pf-bar').appendChild(popup);
+
+    document.getElementById('pf-switch-btn').addEventListener('click', function () {
+      localStorage.removeItem('doh_active_profile');
+      window.location.href = 'index.html';
+    });
+
+    document.getElementById('pf-logoff-btn').addEventListener('click', function () {
+      window.location.href = 'index.html';
+    });
+
+    setTimeout(function () {
+      document.addEventListener('click', function closePopup() {
+        var p = document.getElementById('pf-popup');
+        if (p) p.remove();
+        document.removeEventListener('click', closePopup);
+      });
+    }, 0);
   }
 
   // ── BUILD DAY BAR ─────────────────────────────────────────────────────────
@@ -176,7 +311,7 @@
         cb.checked = true;
         row.classList.add('row-done');
         if (isToday()) {
-          setXP(getXP() + 10);
+          awardXP(10);
           touchStreak();
         }
       });
@@ -222,9 +357,7 @@
         }
         row.classList.toggle('row-done', cb.checked);
         if (isToday()) {
-          const xp = getXP();
-          setXP(cb.checked ? xp + 10 : xp - 10);
-          if (cb.checked) touchStreak();
+          if (cb.checked) { awardXP(10); touchStreak(); } else { setXP(getXP() - 10); }
           updateProfileBar();
         }
         saveDay();
@@ -360,6 +493,8 @@
     buildDayBar();
     addCheckboxColumn();
     renderDay();
+    if (isNotifEnabled()) savePageTasks();
+    if (window.dohNotifications) window.dohNotifications.schedule();
     setInterval(function () { updateNowIndicator(); updateCheckboxStates(); }, 60000);
     document.body.style.opacity = '1';
   }

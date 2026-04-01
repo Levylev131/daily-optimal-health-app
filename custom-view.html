@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Schedule — Daily Optimal Health</title>
+  <script src="health-notifications.js" defer></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --checked: rgba(45,212,110,0.15);
+      --r: 14px; --r-sm: 10px;
+      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
+    }
+    body.degen {
+      --acc: #c800ff; --acc2: #7a00aa; --glow: rgba(200,0,255,0.35);
+      --bg1: #060008; --bg2: #180028; --bg3: #060008;
+      --glass: rgba(100,0,160,0.1); --glass-b: rgba(200,0,255,0.18);
+      --glass-h: rgba(100,0,160,0.2);
+      --text: #eedeff; --muted: rgba(220,190,255,0.55);
+      --checked: rgba(200,0,255,0.14);
+    }
+    html { min-height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+      color: var(--text); min-height: 100vh;
+    }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+    /* ── TOP BAR ── */
+    .top-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 24px; max-width: 740px; margin: 0 auto;
+      border-bottom: 1px solid var(--glass-b);
+    }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: .88rem; font-weight: 600; transition: color .2s; white-space: nowrap; }
+    .back-btn:hover { color: var(--acc); }
+    .top-spacer { flex: 1; }
+    .pf-pill { display: flex; align-items: center; gap: 7px; background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px; padding: 4px 11px 4px 5px; font-size: .8rem; color: var(--muted); white-space: nowrap; }
+    .pf-av { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: .66rem; font-weight: 800; color: #000; }
+
+    /* ── MAIN ── */
+    .wrap { max-width: 740px; margin: 0 auto; padding: 24px 20px 80px; }
+
+    /* ── SCHEDULE HEADER ── */
+    .sch-head {
+      display: flex; align-items: flex-start; gap: 18px;
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); padding: 20px; margin-bottom: 16px;
+      backdrop-filter: blur(12px);
+    }
+    .sch-icon-wrap { flex-shrink: 0; position: relative; width: 72px; height: 72px; }
+    .sch-icon-wrap svg { width: 72px; height: 72px; transform: rotate(-90deg); }
+    .r-track { fill: none; stroke: rgba(255,255,255,.1); stroke-width: 5; }
+    .r-fill  { fill: none; stroke: var(--acc); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset .7s ease; filter: drop-shadow(0 0 3px var(--acc)); }
+    .sch-icon-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
+    .sch-info { flex: 1; }
+    .sch-title { font-size: clamp(1.2rem,4vw,1.7rem); font-weight: 900; margin-bottom: 3px; text-shadow: 0 0 30px var(--glow); }
+    .sch-subtitle { color: var(--muted); font-size: .8rem; font-style: italic; margin-bottom: 10px; line-height: 1.45; }
+    .sch-stats { display: flex; gap: 14px; flex-wrap: wrap; }
+    .sch-stat { font-size: .8rem; font-weight: 700; color: var(--acc); }
+    .sch-stat span { color: var(--muted); font-weight: 400; }
+
+    /* ── DAY NAV ── */
+    .day-nav {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); padding: 10px 14px; margin-bottom: 14px;
+      backdrop-filter: blur(8px);
+    }
+    .dn-btn {
+      background: none; border: 1px solid var(--glass-b); color: var(--acc);
+      padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: .84rem;
+      transition: background .15s, color .15s; flex-shrink: 0; font-family: inherit;
+    }
+    .dn-btn:hover:not(:disabled) { background: var(--glass-h); }
+    .dn-btn:disabled { opacity: .3; cursor: not-allowed; }
+    .dn-center { flex: 1; text-align: center; }
+    .dn-label { font-size: .87rem; font-weight: 700; margin-bottom: 4px; }
+    .dn-progress { display: flex; align-items: center; gap: 8px; justify-content: center; }
+    .dn-count { font-size: .74rem; color: var(--muted); white-space: nowrap; }
+    .dn-track { flex: 1; max-width: 160px; height: 4px; background: rgba(255,255,255,.1); border-radius: 2px; overflow: hidden; }
+    .dn-fill  { height: 100%; background: var(--acc); border-radius: 2px; transition: width .35s ease; }
+
+    /* ── TASK LIST ── */
+    .task-list { display: flex; flex-direction: column; gap: 7px; }
+    .task-card {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: var(--r-sm);
+      padding: 13px 15px; backdrop-filter: blur(8px);
+      display: flex; gap: 12px; align-items: center;
+      transition: var(--trans); cursor: pointer;
+    }
+    .task-card:hover { background: var(--glass-h); border-color: var(--acc); }
+    .task-card.checked { background: var(--checked); border-color: var(--acc); opacity: .72; }
+    .task-card.current {
+      background: var(--checked); border-color: var(--acc);
+      box-shadow: 0 0 18px var(--glow); position: relative;
+    }
+    .task-card.current::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: var(--acc); border-radius: 3px 0 0 3px;
+      box-shadow: 0 0 8px var(--acc);
+    }
+    .t-time-col { flex-shrink: 0; width: 70px; }
+    .t-time { font-size: .75rem; font-weight: 700; color: var(--acc); }
+    .t-now  { font-size: .62rem; font-weight: 700; color: var(--acc); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .t-text { flex: 1; font-size: .88rem; line-height: 1.5; }
+    .task-card.checked .t-text { text-decoration: line-through; opacity: .7; }
+    .t-check {
+      flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
+      border: 2px solid var(--glass-b); background: var(--glass);
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s; color: #000; font-size: .65rem; font-weight: 900;
+    }
+    .task-card.checked .t-check { background: var(--acc); border-color: var(--acc); box-shadow: 0 0 10px var(--glow); }
+    body.degen .t-check { color: #fff; }
+
+    /* ── ERROR STATE ── */
+    .error-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .error-state .big { font-size: 3rem; margin-bottom: 12px; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--acc); color: #000; padding: 9px 20px; border-radius: 22px;
+      font-size: .86rem; font-weight: 700; transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+      z-index: 200; box-shadow: 0 4px 20px var(--glow); pointer-events: none; white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+    body.degen #toast { color: #fff; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="schedule-builder.html" class="back-btn" id="back-btn">← My Schedules</a>
+  <div class="top-spacer"></div>
+  <div class="pf-pill" id="pf-pill"><span style="font-size:.85rem">👤</span><span>Guest</span></div>
+</div>
+
+<div class="wrap" id="wrap">
+  <div class="error-state" id="error-state" style="display:none">
+    <div class="big">😕</div>
+    <strong>Schedule not found</strong><br><br>
+    <a href="schedule-builder.html" style="color:var(--acc)">← Back to My Schedules</a>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function getActiveId() { return localStorage.getItem('doh_active_profile') || null; }
+function getProfiles() { return JSON.parse(localStorage.getItem('doh_profiles') || '{}'); }
+function pfx()         { var id = getActiveId(); return id ? 'doh_' + id + '_' : 'doh_guest_'; }
+function initials(n)   { return n.split(' ').slice(0,2).map(function(w){return w[0]?w[0].toUpperCase():'';}).join(''); }
+
+function applyTheme() {
+  if (localStorage.getItem('doh_mode') === 'degen') document.body.classList.add('degen');
+}
+
+function renderProfilePill() {
+  var id = getActiveId(); if (!id) return;
+  var p = getProfiles()[id]; if (!p) return;
+  document.getElementById('pf-pill').innerHTML =
+    '<div class="pf-av" style="background:' + p.color + '">' + initials(p.name) + '</div><span>' + p.name.replace(/</g,'&lt;') + '</span>';
+}
+
+function todayKey() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function offsetDate(iso, days) {
+  var dt = new Date(iso + 'T00:00:00');
+  dt.setDate(dt.getDate() + days);
+  return dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
+}
+function formatDateLabel(iso) {
+  if (iso === todayKey()) return '▶ Today';
+  var yd = offsetDate(todayKey(), -1);
+  if (iso === yd) return 'Yesterday';
+  var dt = new Date(iso + 'T00:00:00');
+  return dt.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+}
+
+function parseTimeMins(timeStr) {
+  var m = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!m) return null;
+  var h = parseInt(m[1]), min = parseInt(m[2]), ampm = m[3].toUpperCase();
+  if (ampm === 'PM' && h !== 12) h += 12;
+  if (ampm === 'AM' && h === 12) h = 0;
+  return h * 60 + min;
+}
+
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+
+// ── XP + STREAK ──────────────────────────────────────────────────────────────
+function getXP()     { return parseInt(localStorage.getItem(pfx()+'xp') || '0'); }
+function setXP(v)    { localStorage.setItem(pfx()+'xp', Math.max(0,v)); }
+function getStreak() { return JSON.parse(localStorage.getItem(pfx()+'streak') || '{"count":0,"last":""}'); }
+
+function touchStreak() {
+  var today = todayKey(), s = getStreak();
+  if (s.last === today) return;
+  var yd = offsetDate(today, -1);
+  s.count = (s.last === yd) ? s.count + 1 : 1;
+  s.last = today;
+  localStorage.setItem(pfx()+'streak', JSON.stringify(s));
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+var SCH = null;
+var viewDate = todayKey();
+
+function checkKey() { return 'ht:' + SCH.id + ':' + viewDate; }
+function getChecked() { return JSON.parse(localStorage.getItem(checkKey()) || '[]'); }
+function saveChecked(arr) { localStorage.setItem(checkKey(), JSON.stringify(arr)); }
+function isToday() { return viewDate === todayKey(); }
+
+// ── CURRENT TASK ─────────────────────────────────────────────────────────────
+function currentTaskIdx() {
+  var now = new Date().getHours() * 60 + new Date().getMinutes();
+  var best = -1, diff = Infinity;
+  SCH.tasks.forEach(function(t, i) {
+    var tm = parseTimeMins(t.time);
+    if (tm === null) return;
+    var d = now - tm;
+    if (d >= 0 && d < diff) { diff = d; best = i; }
+  });
+  return best;
+}
+
+// ── RING PROGRESS ─────────────────────────────────────────────────────────────
+function updateRing(pct) {
+  var r = 30, circ = 2 * Math.PI * r;
+  var fill = document.getElementById('ring-fill');
+  if (fill) {
+    fill.setAttribute('stroke-dasharray', circ.toFixed(2));
+    fill.setAttribute('stroke-dashoffset', (circ * (1 - Math.min(1, pct))).toFixed(2));
+  }
+}
+
+// ── RENDER DAY ────────────────────────────────────────────────────────────────
+function renderDay() {
+  var checked = getChecked();
+  var total = SCH.tasks.length;
+  var done = checked.filter(Boolean).length;
+  var pct = total ? done / total : 0;
+  var curIdx = isToday() ? currentTaskIdx() : -1;
+
+  // Stats
+  document.getElementById('stat-done').textContent = done + '/' + total;
+  document.getElementById('stat-pct').textContent = Math.round(pct * 100) + '%';
+  document.getElementById('stat-streak').textContent = '🔥 ' + getStreak().count;
+  updateRing(pct);
+
+  // Day nav
+  document.getElementById('dn-label').textContent = formatDateLabel(viewDate);
+  document.getElementById('dn-count').textContent = done + '/' + total + ' tasks';
+  document.getElementById('dn-fill').style.width = Math.round(pct * 100) + '%';
+  document.getElementById('dn-next').disabled = isToday();
+
+  // Tasks
+  var html = SCH.tasks.map(function(t, i) {
+    var isChk = !!checked[i];
+    var isCur = i === curIdx;
+    return '<div class="task-card' + (isChk ? ' checked' : '') + (isCur ? ' current' : '') + '" onclick="toggleTask(' + i + ')" id="tc' + i + '">' +
+      '<div class="t-time-col">' +
+        '<div class="t-time">' + t.time + '</div>' +
+        (isCur ? '<div class="t-now">▶ NOW</div>' : '') +
+      '</div>' +
+      '<div class="t-text">' + t.text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>' +
+      '<div class="t-check">' + (isChk ? '✓' : '') + '</div>' +
+    '</div>';
+  }).join('');
+
+  document.getElementById('task-list').innerHTML = html;
+
+  // Scroll to current task
+  if (curIdx >= 0) {
+    setTimeout(function() {
+      var el = document.getElementById('tc' + curIdx);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
+  }
+}
+
+// ── TOGGLE TASK ───────────────────────────────────────────────────────────────
+var futureClickCount = 0;
+var futureClickTimer = null;
+
+function toggleTask(i) {
+  // Block future tasks when viewing today
+  if (isToday()) {
+    var taskMins = parseTimeMins(SCH.tasks[i].time);
+    var nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+    if (taskMins !== null && taskMins > nowMins) {
+      futureClickCount++;
+      clearTimeout(futureClickTimer);
+      futureClickTimer = setTimeout(function(){ futureClickCount = 0; }, 3000);
+      if (futureClickCount === 2) {
+        showToast("Bro, it's not time yet. Chill. ⏳");
+      } else if (futureClickCount >= 3) {
+        showToast("OK you need to go touch some grass. 🌿");
+        futureClickCount = 0;
+      } else {
+        showToast("This task hasn't started yet!");
+      }
+      return;
+    }
+  }
+
+  var checked = getChecked();
+  while (checked.length <= i) checked.push(false);
+  var wasChecked = !!checked[i];
+  checked[i] = !wasChecked;
+  saveChecked(checked);
+
+  if (isToday()) {
+    setXP(getXP() + (wasChecked ? -10 : 10));
+    if (!wasChecked) { touchStreak(); showToast('+10 XP ⚡'); }
+  }
+  renderDay();
+}
+
+// ── DAY NAVIGATION ────────────────────────────────────────────────────────────
+function prevDay() { viewDate = offsetDate(viewDate, -1); renderDay(); window.scrollTo(0,0); }
+function nextDay() {
+  if (isToday()) return;
+  viewDate = offsetDate(viewDate, 1);
+  if (viewDate > todayKey()) viewDate = todayKey();
+  renderDay(); window.scrollTo(0,0);
+}
+
+// ── LOAD + RENDER SCHEDULE ────────────────────────────────────────────────────
+function loadSchedule() {
+  var schId = location.hash.slice(1);
+  if (!schId) { showError(); return; }
+
+  var id = getActiveId();
+  var key = (id ? 'doh_' + id + '_' : 'doh_guest_') + 'cscheds';
+  var list = JSON.parse(localStorage.getItem(key) || '[]');
+  SCH = list.find(function(s){ return s.id === schId; }) || null;
+
+  if (!SCH) { showError(); return; }
+
+  // Update page title
+  document.title = SCH.title + ' — Daily Optimal Health';
+
+  var r = 30, circ = 2 * Math.PI * r;
+  var wrap = document.getElementById('wrap');
+  wrap.innerHTML =
+    '<div class="sch-head">' +
+      '<div class="sch-icon-wrap">' +
+        '<svg viewBox="0 0 72 72"><circle class="r-track" cx="36" cy="36" r="' + r + '"/>' +
+        '<circle class="r-fill" id="ring-fill" cx="36" cy="36" r="' + r + '"' +
+        ' stroke-dasharray="' + circ.toFixed(2) + '" stroke-dashoffset="' + circ.toFixed(2) + '"/></svg>' +
+        '<div class="sch-icon-label">' + SCH.icon + '</div>' +
+      '</div>' +
+      '<div class="sch-info">' +
+        '<div class="sch-title">' + SCH.title.replace(/</g,'&lt;') + '</div>' +
+        (SCH.subtitle ? '<div class="sch-subtitle">' + SCH.subtitle.replace(/</g,'&lt;') + '</div>' : '') +
+        '<div class="sch-stats">' +
+          '<div class="sch-stat" id="stat-done">0/0 <span>done</span></div>' +
+          '<div class="sch-stat" id="stat-pct">0% <span>complete</span></div>' +
+          '<div class="sch-stat" id="stat-streak">🔥 0 <span>streak</span></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="day-nav">' +
+      '<button class="dn-btn" onclick="prevDay()">◀ Prev</button>' +
+      '<div class="dn-center">' +
+        '<div class="dn-label" id="dn-label">Today</div>' +
+        '<div class="dn-progress">' +
+          '<span class="dn-count" id="dn-count">0/0 tasks</span>' +
+          '<div class="dn-track"><div class="dn-fill" id="dn-fill" style="width:0%"></div></div>' +
+        '</div>' +
+      '</div>' +
+      '<button class="dn-btn" id="dn-next" onclick="nextDay()" disabled>Next ▶</button>' +
+    '</div>' +
+    '<div class="task-list" id="task-list"></div>';
+
+  renderDay();
+  setInterval(renderDay, 60000);
+}
+
+function showError() {
+  document.getElementById('error-state').style.display = 'block';
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+(function init() {
+  applyTheme();
+  renderProfilePill();
+  loadSchedule();
+})();
+</script>
+</body>
+</html>
