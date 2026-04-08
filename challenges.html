@@ -518,6 +518,9 @@
 (function() {
   'use strict';
 
+  function getActiveId() { return localStorage.getItem('doh_active_profile') || null; }
+  function store()       { return getActiveId() ? localStorage : sessionStorage; }
+
   /* ── Preset challenges ── */
   var CHALLENGES = [
     { id:'no-sugar',    icon:'🍬', name:'No Added Sugar',          desc:'Cut out added sugar completely for 30 days.' },
@@ -549,22 +552,22 @@
 
   /* ── Storage helpers ── */
   function getActive() {
-    try { return JSON.parse(localStorage.getItem('ch:active') || '[]'); } catch(e) { return []; }
+    try { return JSON.parse(store().getItem('ch:active') || '[]'); } catch(e) { return []; }
   }
   function setActive(arr) {
-    localStorage.setItem('ch:active', JSON.stringify(arr));
+    store().setItem('ch:active', JSON.stringify(arr));
   }
   function getCompleted() {
-    try { return JSON.parse(localStorage.getItem('ch:completed') || '[]'); } catch(e) { return []; }
+    try { return JSON.parse(store().getItem('ch:completed') || '[]'); } catch(e) { return []; }
   }
   function setCompleted(arr) {
-    localStorage.setItem('ch:completed', JSON.stringify(arr));
+    store().setItem('ch:completed', JSON.stringify(arr));
   }
   function getDayChecked(challengeId, date) {
-    return localStorage.getItem('ch:' + challengeId + ':' + date) === '1';
+    return store().getItem('ch:' + challengeId + ':' + date) === '1';
   }
   function setDayChecked(challengeId, date) {
-    localStorage.setItem('ch:' + challengeId + ':' + date, '1');
+    store().setItem('ch:' + challengeId + ':' + date, '1');
   }
 
   /* ── Core logic ── */
@@ -682,12 +685,12 @@
       for (var i = 0; i < 30; i++) {
         // We can't know the startDate here so we'll clear for the next 60 days
         var d = offsetDate(todayKey(), -60 + i);
-        localStorage.removeItem('ch:' + challengeId + ':' + d);
+        store().removeItem('ch:' + challengeId + ':' + d);
       }
       // Also clear from today forward
       for (var j = 0; j < 30; j++) {
         var d2 = offsetDate(todayKey(), j);
-        localStorage.removeItem('ch:' + challengeId + ':' + d2);
+        store().removeItem('ch:' + challengeId + ':' + d2);
       }
       showToast('Challenge abandoned.', 2000);
       render();

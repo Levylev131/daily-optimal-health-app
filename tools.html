@@ -584,6 +584,7 @@
 function getActiveId()  { return localStorage.getItem('doh_active_profile') || null; }
 function getProfiles()  { return JSON.parse(localStorage.getItem('doh_profiles') || '{}'); }
 function pfx()          { var id = getActiveId(); return id ? 'doh_' + id + '_' : 'doh_guest_'; }
+function store()        { return getActiveId() ? localStorage : sessionStorage; }
 
 function todayKey() {
   var d = new Date();
@@ -700,7 +701,7 @@ var journalTimer = null;
 function journalKey() { return pfx() + 'journal_' + currentDate; }
 
 function renderJournal() {
-  var text = localStorage.getItem(journalKey()) || '';
+  var text = store().getItem(journalKey()) || '';
   document.getElementById('journal-text').value = text;
   document.getElementById('journal-status').textContent = text.trim() ? 'Saved ✓' : '';
   document.getElementById('journal-text').placeholder = isViewingToday()
@@ -713,18 +714,18 @@ function journalChanged() {
   document.getElementById('journal-status').textContent = 'Saving...';
   journalTimer = setTimeout(function() {
     var val = document.getElementById('journal-text').value;
-    if (val.trim()) localStorage.setItem(journalKey(), val);
-    else localStorage.removeItem(journalKey());
+    if (val.trim()) store().setItem(journalKey(), val);
+    else store().removeItem(journalKey());
     document.getElementById('journal-status').textContent = val.trim() ? 'Saved ✓' : '';
   }, 600);
 }
 
 // ── WATER TRACKER ────────────────────────────────────────────────────────────
 function waterGoalKey() { return pfx() + 'water_goal'; }
-function getWaterGoal() { return parseInt(localStorage.getItem(waterGoalKey()) || '8'); }
+function getWaterGoal() { return parseInt(store().getItem(waterGoalKey()) || '8'); }
 
 function waterKey() { return pfx() + 'water_' + currentDate; }
-function getWater() { return parseInt(localStorage.getItem(waterKey()) || '0'); }
+function getWater() { return parseInt(store().getItem(waterKey()) || '0'); }
 
 function renderWater() {
   var count = getWater();
@@ -776,12 +777,12 @@ function setWaterGoal(val) {
     return;
   }
   var goal = Math.max(0, unlocked ? Math.min(48, parsed) : Math.min(24, parsed));
-  localStorage.setItem(waterGoalKey(), String(goal));
+  store().setItem(waterGoalKey(), String(goal));
   renderWater();
 }
 
 function unlockWaterGoal() {
-  localStorage.setItem(waterGoalKey(), String(getWaterGoal() + 1));
+  store().setItem(waterGoalKey(), String(getWaterGoal() + 1));
   renderWater();
 }
 
@@ -793,7 +794,7 @@ function adjustWater(delta) {
     return;
   }
   var count = Math.max(0, Math.min(48, prev + delta));
-  localStorage.setItem(waterKey(), count);
+  store().setItem(waterKey(), count);
   renderWater();
   if (count === goal && prev < goal) {
     triggerConfetti();
@@ -828,10 +829,10 @@ function triggerConfetti() {
 // ── SUPPLEMENT REMINDERS ─────────────────────────────────────────────────────
 function suppListKey()  { return pfx() + 'supps_' + currentDate; }
 function suppCheckKey() { return pfx() + 'supp_checks_' + currentDate; }
-function getSupps()       { return JSON.parse(localStorage.getItem(suppListKey()) || '[]'); }
-function getSuppChecks()  { return JSON.parse(localStorage.getItem(suppCheckKey()) || '[]'); }
-function saveSupps(l)     { localStorage.setItem(suppListKey(), JSON.stringify(l)); }
-function saveSuppChecks(c){ localStorage.setItem(suppCheckKey(), JSON.stringify(c)); }
+function getSupps()       { return JSON.parse(store().getItem(suppListKey()) || '[]'); }
+function getSuppChecks()  { return JSON.parse(store().getItem(suppCheckKey()) || '[]'); }
+function saveSupps(l)     { store().setItem(suppListKey(), JSON.stringify(l)); }
+function saveSuppChecks(c){ store().setItem(suppCheckKey(), JSON.stringify(c)); }
 
 function renderSupps() {
   var list = getSupps(), checks = getSuppChecks();
@@ -896,7 +897,7 @@ function moodKey() { return pfx() + 'mood_' + currentDate; }
 var MOOD_EMOJIS = ['😔','😕','😐','🙂','😄'];
 
 function renderMood() {
-  var saved = localStorage.getItem(moodKey());
+  var saved = store().getItem(moodKey());
   var val = saved !== null ? parseInt(saved) : -1;
   document.querySelectorAll('.mood-btn').forEach(function(btn, i) {
     btn.classList.toggle('selected', i === val);
@@ -916,7 +917,7 @@ function renderMood() {
   var days = [];
   for (var d = 6; d >= 0; d--) {
     var date = offsetDate(currentDate, -d);
-    var dayMood = localStorage.getItem(pfx() + 'mood_' + date);
+    var dayMood = store().getItem(pfx() + 'mood_' + date);
     var moodVal = dayMood !== null ? parseInt(dayMood) : -1;
     var isToday = (date === currentDate && isViewingToday() && d === 0) || date === (function(){var n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');})();
     // day label: Mon, Tue, etc.
@@ -935,17 +936,17 @@ function renderMood() {
 }
 
 function setMood(val) {
-  localStorage.setItem(moodKey(), String(val));
+  store().setItem(moodKey(), String(val));
   renderMood();
 }
 
 // ── PERSONAL CHECKLIST ───────────────────────────────────────────────────────
 function clListKey()  { return pfx() + 'custom_tasks_' + currentDate; }
 function clCheckKey() { return pfx() + 'custom_checks_' + currentDate; }
-function getClList()   { return JSON.parse(localStorage.getItem(clListKey()) || '[]'); }
-function getClChecks() { return JSON.parse(localStorage.getItem(clCheckKey()) || '[]'); }
-function saveClList(l)  { localStorage.setItem(clListKey(), JSON.stringify(l)); }
-function saveClChecks(c){ localStorage.setItem(clCheckKey(), JSON.stringify(c)); }
+function getClList()   { return JSON.parse(store().getItem(clListKey()) || '[]'); }
+function getClChecks() { return JSON.parse(store().getItem(clCheckKey()) || '[]'); }
+function saveClList(l)  { store().setItem(clListKey(), JSON.stringify(l)); }
+function saveClChecks(c){ store().setItem(clCheckKey(), JSON.stringify(c)); }
 
 function renderChecklist() {
   var list = getClList(), checks = getClChecks();
@@ -1000,7 +1001,7 @@ function deleteCl(i) {
 function sleepKey() { return pfx() + 'sleep_' + currentDate; }
 
 function loadSleep() {
-  var saved = localStorage.getItem(sleepKey());
+  var saved = store().getItem(sleepKey());
   if (!saved) {
     document.getElementById('sleep-bed').value  = '';
     document.getElementById('sleep-wake').value = '';
@@ -1044,7 +1045,7 @@ function saveSleep() {
   var bed  = document.getElementById('sleep-bed').value;
   var wake = document.getElementById('sleep-wake').value;
   if (!bed || !wake) return;
-  localStorage.setItem(sleepKey(), JSON.stringify({ bed: bed, wake: wake }));
+  store().setItem(sleepKey(), JSON.stringify({ bed: bed, wake: wake }));
   var btn = document.getElementById('sleep-save-btn');
   btn.textContent = 'Saved ✓';
   setTimeout(function(){ btn.textContent = 'Save Sleep Log'; }, 1600);
@@ -1100,8 +1101,8 @@ function applyOptByIdx(type, idx, dir) {
   var count = 0;
   iterateDays(from, to, function(date) {
     var k = pfx() + baseKey + date;
-    var list = JSON.parse(localStorage.getItem(k) || '[]');
-    if (list.indexOf(name) < 0) { list.push(name); localStorage.setItem(k, JSON.stringify(list)); count++; }
+    var list = JSON.parse(store().getItem(k) || '[]');
+    if (list.indexOf(name) < 0) { list.push(name); store().setItem(k, JSON.stringify(list)); count++; }
   });
   ttToast((dir === 'past' ? '← Added to past 90 days' : '→ Added to next 90 days') + ' ✓');
 }
@@ -1114,9 +1115,9 @@ function removeOptByIdx(type, idx, dir) {
   var to   = dir === 'past' ? offsetDate(currentDate, -1)  : offsetDate(currentDate, 90);
   iterateDays(from, to, function(date) {
     var k = pfx() + baseKey + date;
-    var list = JSON.parse(localStorage.getItem(k) || '[]');
+    var list = JSON.parse(store().getItem(k) || '[]');
     var i = list.indexOf(name);
-    if (i >= 0) { list.splice(i, 1); localStorage.setItem(k, JSON.stringify(list)); }
+    if (i >= 0) { list.splice(i, 1); store().setItem(k, JSON.stringify(list)); }
   });
   ttToast((dir === 'past' ? '← Removed from past 90 days' : '→ Removed from next 90 days') + ' ✓');
 }

@@ -112,7 +112,13 @@
     return longLabel;
   }
 
-  function storageKey() { return 'ht:' + pageKey + ':' + toISO(currentDate); }
+  function storageKey() {
+    const id = getActiveId() || 'guest';
+    return 'ht:' + id + ':' + pageKey + ':' + toISO(currentDate);
+  }
+
+  // Named profiles use localStorage; guests use sessionStorage (clears on browser close)
+  function taskStorage() { return getActiveId() ? localStorage : sessionStorage; }
 
   // ── NOTIFICATIONS ─────────────────────────────────────────────────────────
   function isNotifEnabled() {
@@ -175,7 +181,7 @@
     const profile  = activeId ? profiles[activeId] : null;
 
     if (!profile) {
-      bar.innerHTML = `<a href="index.html" class="pf-home-btn">🏠 Home — set up profile there</a>`;
+      bar.innerHTML = `<a href="index.html" class="pf-home-btn">🏠 Home</a>`;
       return;
     }
 
@@ -368,12 +374,12 @@
   function saveDay() {
     const cbs = document.querySelectorAll('tbody input[type=checkbox]');
     const state = Array.from(cbs).map(function (cb) { return cb.checked; });
-    localStorage.setItem(storageKey(), JSON.stringify(state));
+    taskStorage().setItem(storageKey(), JSON.stringify(state));
     updateProgress();
   }
 
   function loadDay() {
-    const raw = localStorage.getItem(storageKey());
+    const raw = taskStorage().getItem(storageKey());
     const state = raw ? JSON.parse(raw) : null;
     document.querySelectorAll('tbody tr').forEach(function (row, i) {
       const cb = row.querySelector('input[type=checkbox]');

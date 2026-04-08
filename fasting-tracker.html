@@ -27,21 +27,24 @@
     }
     @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
 
-    .page { max-width: 720px; margin: 0 auto; padding: 28px 20px 80px; }
+    .page { max-width: 720px; margin: 0 auto; padding: 0 20px 80px; }
 
     .back-btn {
       background: none; border: none; color: var(--muted);
       font-size: .88rem; font-weight: 600; cursor: pointer;
-      padding: 6px 0; margin-bottom: 22px; display: inline-flex;
+      padding: 6px 0; margin-bottom: 12px; margin-top: 28px; display: inline-flex;
       align-items: center; gap: 6px; transition: var(--trans);
     }
     .back-btn:hover { color: var(--text); }
 
     .page-title {
-      text-align: center; font-size: 1.7rem; font-weight: 800;
-      margin-bottom: 28px; letter-spacing: -0.3px;
+      text-align: center; font-size: 2.8rem; font-weight: 900;
+      margin-bottom: 7px; letter-spacing: -1px; line-height: 1.2; padding-bottom: 4px; margin-top: 12px; transform: translateX(-12px);
+      background: linear-gradient(135deg, #fff 40%, var(--acc));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .page-title span { font-size: 1.5rem; }
+    .page-title span { font-size: 3.2rem; -webkit-text-fill-color: initial; display: inline-block; transform: translateX(6px); }
 
     /* ── GLASS CARD ── */
     .card {
@@ -49,15 +52,20 @@
       border-radius: var(--r); backdrop-filter: blur(12px);
       padding: 28px; margin-bottom: 18px;
     }
+    #main-card { padding-top: 10px; }
     .card-title {
       font-size: .78rem; font-weight: 700; text-transform: uppercase;
       letter-spacing: 1.2px; color: var(--muted); margin-bottom: 18px;
+    }
+    .card-title.goal-link {
+      color: var(--acc); text-shadow: 0 0 8px var(--glow);
     }
 
     /* ── CIRCULAR TIMER ── */
     .timer-wrap {
       display: flex; flex-direction: column; align-items: center; gap: 20px;
     }
+    .timer-wrap:has(.idle-icon) { margin-top: -22px; }
     .circle-container {
       position: relative; width: 220px; height: 220px;
     }
@@ -85,9 +93,26 @@
     }
 
     /* idle state */
-    .idle-icon { font-size: 3.5rem; margin-bottom: 4px; }
+    .idle-icon { font-size: 6.75rem; margin-bottom: 4px; transform: translateY(12px); }
     .idle-label {
       font-size: 1rem; color: var(--muted); font-weight: 600; margin-bottom: 8px;
+    }
+    .idle-goal-preview {
+      display: flex; flex-direction: column; align-items: center;
+      background: var(--glass); border: 1px solid var(--acc);
+      border-radius: 14px; padding: 12px 28px; margin-bottom: 16px;
+      box-shadow: 0 0 18px var(--glow);
+    }
+    .idle-goal-label {
+      font-size: .7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.2px; color: var(--acc); margin-bottom: 4px;
+    }
+    .idle-goal-hours {
+      font-size: 2.4rem; font-weight: 900; color: var(--text);
+      line-height: 1;
+    }
+    .idle-goal-sub {
+      font-size: .75rem; color: var(--muted); margin-top: 3px;
     }
 
     /* ── INFO ROWS ── */
@@ -99,6 +124,11 @@
       background: var(--glass); border: 1px solid var(--glass-b);
       border-radius: var(--r-sm); padding: 14px 16px;
     }
+    .info-box-tap {
+      cursor: pointer; border-color: var(--acc);
+      transition: var(--trans);
+    }
+    .info-box-tap:hover { background: var(--glass-h); box-shadow: 0 0 14px var(--glow); }
     .info-label { font-size: .72rem; color: var(--muted); font-weight: 700;
       text-transform: uppercase; letter-spacing: .8px; margin-bottom: 4px; }
     .info-val { font-size: 1rem; font-weight: 700; }
@@ -107,13 +137,21 @@
     .prog-bar-wrap { width: 100%; }
     .prog-bar-track {
       height: 8px; background: var(--glass-b); border-radius: 999px;
-      overflow: hidden; margin-top: 6px;
+      overflow: visible; margin-top: 6px; position: relative; cursor: pointer;
     }
     .prog-bar-fill {
       height: 100%; background: var(--acc); border-radius: 999px;
       transition: width 1s linear;
-      max-width: 100%;
+      max-width: 100%; pointer-events: none;
     }
+    .prog-bar-tooltip {
+      position: absolute; bottom: 16px; transform: translateX(-50%);
+      background: rgba(0,0,0,0.85); color: var(--text);
+      font-size: .78rem; font-weight: 700; white-space: nowrap;
+      padding: 5px 10px; border-radius: 8px; pointer-events: none;
+      border: 1px solid var(--glass-b); display: none;
+    }
+    .prog-bar-track:hover .prog-bar-tooltip { display: block; }
 
     /* ── GOAL PRESETS ── */
     .presets-row {
@@ -159,6 +197,42 @@
       width: 100%;
     }
     .btn-danger:hover { background: #f06060; transform: translateY(-1px); }
+
+    /* ── CONFETTI ── */
+    .confetti-piece {
+      position: fixed; top: -10px; width: 8px; height: 12px;
+      border-radius: 2px; opacity: 1; pointer-events: none; z-index: 9999;
+      animation: confetti-fall linear forwards;
+    }
+    @keyframes confetti-fall {
+      0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+      80%  { opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg) scale(.5); opacity: 0; }
+    }
+
+    /* ── WARNING MODAL ── */
+    .warn-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999; backdrop-filter: blur(4px);
+    }
+    .warn-box {
+      background: #0d2e18; border: 1px solid var(--danger);
+      border-radius: var(--r); padding: 28px 24px; max-width: 360px; width: 90%;
+      box-shadow: 0 0 40px rgba(224,85,85,0.3);
+    }
+    .warn-icon { font-size: 2rem; text-align: center; margin-bottom: 12px; }
+    .warn-title { font-size: 1rem; font-weight: 800; margin-bottom: 10px; color: var(--danger); }
+    .warn-body { font-size: .88rem; color: var(--muted); line-height: 1.6; margin-bottom: 22px; }
+    .warn-actions { display: flex; gap: 10px; }
+    .warn-actions button {
+      flex: 1; padding: 11px; border-radius: 10px; font-weight: 700;
+      font-size: .9rem; cursor: pointer; border: none; transition: var(--trans);
+    }
+    .warn-yes { background: var(--danger); color: #fff; }
+    .warn-yes:hover { background: #f06060; }
+    .warn-no { background: var(--glass); color: var(--text); border: 1px solid var(--glass-b) !important; }
+    .warn-no:hover { background: var(--glass-h); }
     .btn-secondary {
       background: var(--glass); color: var(--text);
       border: 1px solid var(--glass-b); border-radius: 10px;
@@ -195,6 +269,12 @@
       text-align: right; min-width: 44px;
     }
     .hist-pct.miss { color: var(--muted); }
+    .hist-del {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 1rem; padding: 4px 6px;
+      border-radius: 6px; transition: var(--trans); line-height: 1; flex-shrink: 0;
+    }
+    .hist-del:hover { background: var(--danger-glass); color: var(--danger); }
     .empty-hist {
       text-align: center; color: var(--muted); padding: 28px 0;
       font-size: .9rem;
@@ -235,11 +315,11 @@
 
   <!-- GOAL PRESETS CARD -->
   <div class="card" id="goal-card">
-    <div class="card-title">Fasting Goal</div>
+    <div class="card-title goal-link">Fasting Goal</div>
     <div class="presets-row" id="presets-row"></div>
     <div class="custom-row">
       <label>Custom:</label>
-      <input type="number" id="custom-hrs" min="1" max="72" placeholder="hours" />
+      <input type="number" id="custom-hrs" min="1" max="168" step="1" placeholder="hours" oninput="onCustomInput(this)" />
       <button class="btn-secondary" onclick="setCustomGoal()">Set</button>
     </div>
   </div>
@@ -255,6 +335,17 @@
 </div>
 
 <div id="toast"></div>
+<div id="warn-overlay" class="warn-overlay" style="display:none" onclick="if(event.target===this)dismissWarn()">
+  <div class="warn-box">
+    <div class="warn-icon">⚠️</div>
+    <div class="warn-title">Medical Supervision Recommended</div>
+    <div class="warn-body">Fasts longer than 72 hours carry real health risks and are considered extended fasting. It is strongly recommended that you consult a doctor or have medical supervision before attempting this.</div>
+    <div class="warn-actions">
+      <button class="warn-no" onclick="dismissWarn()">No, go back</button>
+      <button class="warn-yes" onclick="confirmWarn()">Yes, I understand</button>
+    </div>
+  </div>
+</div>
 
 <script>
 (function() {
@@ -266,6 +357,9 @@
   var timerInterval = null;
 
   /* ── HELPERS ── */
+  function getActiveId() { return localStorage.getItem('doh_active_profile') || null; }
+  function store()       { return getActiveId() ? localStorage : sessionStorage; }
+
   function pad(n) { return String(n).padStart(2, '0'); }
 
   function fmtHMS(ms) {
@@ -277,7 +371,8 @@
   }
 
   function fmtGoal(h) {
-    return pad(h) + ':00';
+    if (!h) return '—';
+    return h + 'h';
   }
 
   function fmtDateTime(iso) {
@@ -312,21 +407,21 @@
 
   /* ── STORAGE ── */
   function getActive() {
-    try { return JSON.parse(localStorage.getItem('ft:active')); } catch(e) { return null; }
+    try { return JSON.parse(store().getItem('ft:active')); } catch(e) { return null; }
   }
   function setActive(obj) {
-    if (obj === null) localStorage.removeItem('ft:active');
-    else localStorage.setItem('ft:active', JSON.stringify(obj));
+    if (obj === null) store().removeItem('ft:active');
+    else store().setItem('ft:active', JSON.stringify(obj));
   }
   function getHistory() {
-    try { return JSON.parse(localStorage.getItem('ft:history')) || []; } catch(e) { return []; }
+    try { return JSON.parse(store().getItem('ft:history')) || []; } catch(e) { return []; }
   }
-  function setHistory(arr) { localStorage.setItem('ft:history', JSON.stringify(arr)); }
+  function setHistory(arr) { store().setItem('ft:history', JSON.stringify(arr)); }
   function getGoal() {
-    var g = localStorage.getItem('ft:goal');
-    return g ? parseInt(g) : 16;
+    var g = store().getItem('ft:goal');
+    return g ? parseFloat(g) : 16;
   }
-  function saveGoal(h) { localStorage.setItem('ft:goal', String(h)); }
+  function saveGoal(h) { store().setItem('ft:goal', String(h)); }
 
   /* ── GOAL PRESETS ── */
   function renderPresets() {
@@ -336,17 +431,27 @@
       var btn = document.createElement('button');
       btn.className = 'preset-btn' + (h === goalHours ? ' active' : '');
       btn.textContent = h + 'h';
-      btn.onclick = function() { setGoal(h); };
+      btn.onclick = function() { setGoal(goalHours === h ? 0 : h); };
       row.appendChild(btn);
     });
     // check if custom
     if (PRESETS.indexOf(goalHours) === -1) {
       var custEl = document.getElementById('custom-hrs');
-      if (custEl) custEl.value = goalHours;
+      if (custEl) custEl.value = goalHours > 0 ? goalHours : '';
     }
   }
 
+  function elapsedHours() {
+    var active = getActive();
+    if (!active) return 0;
+    return (Date.now() - new Date(active.start).getTime()) / 3600000;
+  }
+
   function setGoal(h) {
+    if (h > 0 && elapsedHours() >= h) {
+      showToast("You're already past that point!");
+      return;
+    }
     goalHours = h;
     saveGoal(h);
     renderPresets();
@@ -355,8 +460,14 @@
 
   function setCustomGoal() {
     var val = parseInt(document.getElementById('custom-hrs').value);
-    if (!val || val < 1 || val > 168) { showToast('Enter 1–168 hours'); return; }
+    if (isNaN(val) || val === 0) { document.getElementById('custom-hrs').value = ''; setGoal(0); showToast('Fasting goal cleared.'); return; }
+    if (val < 1 || val > 168) { showToast('Bro... how many hours? 👀'); return; }
+    if (val > 72 && !warnAcknowledged) {
+      showWarnFor(val);
+      return;
+    }
     setGoal(val);
+    if (goalHours === val) showToast('Goal set to ' + val + 'h ✓');
   }
 
   /* ── MAIN TIMER UI ── */
@@ -371,9 +482,17 @@
   }
 
   function renderIdleState(wrap) {
+    var goalBlock = goalHours > 0 ? [
+      '<div class="idle-goal-preview">',
+        '<div class="idle-goal-label">Fasting Goal</div>',
+        '<div class="idle-goal-hours">' + goalHours + 'h</div>',
+        '<div class="idle-goal-sub">ready when you are</div>',
+      '</div>'
+    ].join('') : '';
     wrap.innerHTML = [
       '<div class="idle-icon">🍽️</div>',
       '<div class="idle-label">Not currently fasting</div>',
+      goalBlock,
       '<button class="btn-primary" id="start-btn" onclick="startFast()">▶ Start Fast</button>'
     ].join('');
   }
@@ -395,10 +514,9 @@
           '<div class="info-label">Started</div>',
           '<div class="info-val" id="info-started">' + fmtDateTime(active.start) + '</div>',
         '</div>',
-        '<div class="info-box">',
-          '<div class="info-label">Goal</div>',
-          '<div class="info-val">' + fmtGoal(goalHours) + '</div>',
-        '</div>',
+        goalHours > 0
+          ? '<div class="info-box"><div class="card-title goal-link" style="margin-bottom:4px">Fasting Goal</div><div class="info-val">' + fmtGoal(goalHours) + '</div></div>'
+          : '<div class="info-box info-box-tap" onclick="focusGoalInput()" title="Set a fasting goal"><div class="card-title goal-link" style="margin-bottom:4px">Fasting Goal</div><div class="info-val" style="color:var(--muted);font-size:.85rem">Tap to set ↓</div></div>',
         '<div class="info-box" style="grid-column:1/-1">',
           '<div class="info-label">Projected End</div>',
           '<div class="info-val" id="info-end">' + fmtProjectedEnd(active.start, goalHours) + '</div>',
@@ -406,7 +524,10 @@
       '</div>',
       '<div class="prog-bar-wrap">',
         '<div class="info-label">Progress</div>',
-        '<div class="prog-bar-track"><div class="prog-bar-fill" id="prog-fill" style="width:0%"></div></div>',
+        '<div class="prog-bar-track" id="prog-track" onmousemove="updateProgTooltip(event)" onmouseleave="hideProgTooltip()">',
+          '<div class="prog-bar-fill" id="prog-fill" style="width:0%"></div>',
+          '<div class="prog-bar-tooltip" id="prog-tooltip"></div>',
+        '</div>',
       '</div>',
       '<button class="btn-danger" onclick="endFast()">&#9632; End Fast</button>'
     ].join('');
@@ -419,21 +540,26 @@
     function update() {
       var elapsed = Date.now() - new Date(active.start).getTime();
       var goalMs = goalHours * 3600 * 1000;
-      var pct = Math.min(100, (elapsed / goalMs) * 100);
+      var pct = goalHours > 0 ? Math.min(100, (elapsed / goalMs) * 100) : 0;
       var hmsEl = document.getElementById('timer-hms');
       var pctEl = document.getElementById('timer-pct');
       var progEl = document.getElementById('circle-prog');
       var fillEl = document.getElementById('prog-fill');
       if (!hmsEl) { clearInterval(timerInterval); return; }
       hmsEl.textContent = fmtHMS(elapsed);
-      pctEl.textContent = pct.toFixed(1) + '%';
+      pctEl.textContent = goalHours > 0 ? pct.toFixed(1) + '%' : '—';
       fillEl.style.width = pct + '%';
       // SVG arc: circumference = 2*pi*100 ≈ 628.318
       var circ = 628.318;
       progEl.style.strokeDashoffset = circ - (circ * pct / 100);
-      if (pct >= 100) {
+      if (goalHours > 0 && pct >= 100) {
         progEl.classList.add('complete');
         pctEl.textContent = '✓ Goal reached!';
+        if (!progEl.dataset.confettiFired) {
+          progEl.dataset.confettiFired = '1';
+          triggerConfetti();
+          playPartyHorn();
+        }
       } else {
         progEl.classList.remove('complete');
       }
@@ -476,21 +602,30 @@
       list.innerHTML = '<div class="empty-hist">No fasts yet. Start your first one above!</div>';
       return;
     }
-    list.innerHTML = history.map(function(entry) {
-      var hit = entry.duration_mins >= entry.goal_mins;
-      var pct = Math.min(100, Math.round((entry.duration_mins / entry.goal_mins) * 100));
+    list.innerHTML = history.map(function(entry, idx) {
+      var hasGoal = entry.goal_mins > 0;
+      var hit = hasGoal && entry.duration_mins >= entry.goal_mins;
+      var pct = hasGoal ? Math.min(100, Math.round((entry.duration_mins / entry.goal_mins) * 100)) : null;
       return [
         '<div class="history-entry">',
           '<div class="hist-badge ' + (hit ? 'hit' : 'miss') + '">' + (hit ? '✅' : '⏸️') + '</div>',
           '<div class="hist-info">',
             '<div class="hist-date">' + fmtDateTime(entry.start) + '</div>',
             '<div class="hist-dur">' + fmtDuration(entry.duration_mins) + ' completed</div>',
-            '<div class="hist-goal">Goal: ' + fmtDuration(entry.goal_mins) + '</div>',
+            '<div class="hist-goal">Goal: ' + (hasGoal ? fmtDuration(entry.goal_mins) : '—') + '</div>',
           '</div>',
-          '<div class="hist-pct ' + (hit ? '' : 'miss') + '">' + pct + '%</div>',
+          '<div class="hist-pct ' + (hit ? '' : 'miss') + '">' + (pct !== null ? pct + '%' : '—') + '</div>',
+          '<button class="hist-del" onclick="deleteHistoryEntry(' + idx + ')" title="Delete">✕</button>',
         '</div>'
       ].join('');
     }).join('');
+  }
+
+  function deleteHistoryEntry(idx) {
+    var history = getHistory();
+    history.splice(idx, 1);
+    setHistory(history);
+    renderHistory();
   }
 
   function clearHistory() {
@@ -498,6 +633,104 @@
     setHistory([]);
     renderHistory();
     showToast('History cleared.');
+  }
+
+  /* ── EXTENDED FAST WARNING ── */
+  var pendingGoal = null;
+  var warnAcknowledged = false;
+
+  function showWarnFor(val) {
+    pendingGoal = val;
+    document.getElementById('warn-overlay').style.display = 'flex';
+  }
+  function dismissWarn() {
+    // revert input back to 72 if they cancel
+    var input = document.getElementById('custom-hrs');
+    if (input && !warnAcknowledged) input.value = 72;
+    pendingGoal = null;
+    document.getElementById('warn-overlay').style.display = 'none';
+  }
+  function confirmWarn() {
+    warnAcknowledged = true;
+    document.getElementById('warn-overlay').style.display = 'none';
+    if (pendingGoal) {
+      var input = document.getElementById('custom-hrs');
+      if (input) input.value = pendingGoal;
+      setGoal(pendingGoal);
+      if (goalHours === pendingGoal) showToast('Goal set to ' + pendingGoal + 'h ✓');
+      pendingGoal = null;
+    }
+  }
+  function onCustomInput(el) {
+    var val = parseInt(el.value);
+    if (!isNaN(val) && val <= 72) warnAcknowledged = false;
+    if (!isNaN(val) && val > 72 && !warnAcknowledged) {
+      el.value = 72;
+      showWarnFor(val);
+    }
+  }
+
+  /* ── PARTY HORN ── */
+  function playPartyHorn() {
+    try {
+      var audio = new Audio('audio/Confetti.ogg');
+      audio.volume = 1.0;
+      audio.play();
+    } catch(e) {}
+  }
+
+  /* ── CONFETTI ── */
+  function triggerConfetti() {
+    var colors = ['#4ade80','#22d3ee','#f472b6','#facc15','#a78bfa','#fb923c','#fff'];
+    for (var i = 0; i < 80; i++) {
+      (function(i) {
+        setTimeout(function() {
+          var el = document.createElement('div');
+          el.className = 'confetti-piece';
+          el.style.left = Math.random() * 100 + 'vw';
+          el.style.background = colors[Math.floor(Math.random() * colors.length)];
+          el.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+          el.style.animationDelay = '0s';
+          el.style.width = (6 + Math.random() * 8) + 'px';
+          el.style.height = (10 + Math.random() * 8) + 'px';
+          el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+          document.body.appendChild(el);
+          setTimeout(function() { el.remove(); }, 3500);
+        }, i * 18);
+      })(i);
+    }
+  }
+
+  /* ── FOCUS GOAL INPUT ── */
+  function focusGoalInput() {
+    var el = document.getElementById('goal-card');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    var input = document.getElementById('custom-hrs');
+    if (input) setTimeout(function() { input.focus(); }, 400);
+  }
+
+  /* ── PROGRESS BAR TOOLTIP ── */
+  function updateProgTooltip(e) {
+    var tooltip = document.getElementById('prog-tooltip');
+    var track = document.getElementById('prog-track');
+    if (!tooltip || !track) return;
+    var active = getActive();
+    if (!active) return;
+    var remaining = (goalHours * 3600 * 1000) - (Date.now() - new Date(active.start).getTime());
+    var rect = track.getBoundingClientRect();
+    var x = e.clientX - rect.left;
+    tooltip.style.left = Math.max(20, Math.min(rect.width - 20, x)) + 'px';
+    if (remaining <= 0) {
+      tooltip.textContent = 'Goal reached!';
+    } else {
+      var h = Math.floor(remaining / 3600000);
+      var m = Math.floor((remaining % 3600000) / 60000);
+      tooltip.textContent = (h > 0 ? h + 'h ' : '') + m + 'm remaining';
+    }
+  }
+  function hideProgTooltip() {
+    var tooltip = document.getElementById('prog-tooltip');
+    if (tooltip) tooltip.style.display = '';
   }
 
   /* ── TOAST ── */
@@ -511,10 +744,26 @@
   }
 
   /* ── EXPOSE ── */
+  window.deleteHistoryEntry = deleteHistoryEntry;
   window.startFast = startFast;
   window.endFast = endFast;
   window.clearHistory = clearHistory;
   window.setCustomGoal = setCustomGoal;
+  window.updateProgTooltip = updateProgTooltip;
+  window.hideProgTooltip = hideProgTooltip;
+  window.focusGoalInput = focusGoalInput;
+  window.dismissWarn = dismissWarn;
+  window.confirmWarn = confirmWarn;
+  window.onCustomInput = onCustomInput;
+
+  /* ── DEV SHORTCUT ── */
+  document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'a' || e.key === 'A') {
+      setGoal(10 / 3600);
+      showToast('Test mode: 10s goal set');
+    }
+  });
 
   /* ── INIT ── */
   goalHours = getGoal();

@@ -163,6 +163,7 @@
 function getActiveId() { return localStorage.getItem('doh_active_profile') || null; }
 function getProfiles() { return JSON.parse(localStorage.getItem('doh_profiles') || '{}'); }
 function pfx()         { var id = getActiveId(); return id ? 'doh_' + id + '_' : 'doh_guest_'; }
+function store()       { return getActiveId() ? localStorage : sessionStorage; }
 function initials(n)   { return n.split(' ').slice(0,2).map(function(w){return w[0]?w[0].toUpperCase():'';}).join(''); }
 
 function applyTheme() {
@@ -211,9 +212,9 @@ function showToast(msg) {
 }
 
 // ── XP + STREAK ──────────────────────────────────────────────────────────────
-function getXP()     { return parseInt(localStorage.getItem(pfx()+'xp') || '0'); }
-function setXP(v)    { localStorage.setItem(pfx()+'xp', Math.max(0,v)); }
-function getStreak() { return JSON.parse(localStorage.getItem(pfx()+'streak') || '{"count":0,"last":""}'); }
+function getXP()     { return parseInt(store().getItem(pfx()+'xp') || '0'); }
+function setXP(v)    { store().setItem(pfx()+'xp', Math.max(0,v)); }
+function getStreak() { return JSON.parse(store().getItem(pfx()+'streak') || '{"count":0,"last":""}'); }
 
 function touchStreak() {
   var today = todayKey(), s = getStreak();
@@ -221,16 +222,16 @@ function touchStreak() {
   var yd = offsetDate(today, -1);
   s.count = (s.last === yd) ? s.count + 1 : 1;
   s.last = today;
-  localStorage.setItem(pfx()+'streak', JSON.stringify(s));
+  store().setItem(pfx()+'streak', JSON.stringify(s));
 }
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 var SCH = null;
 var viewDate = todayKey();
 
-function checkKey() { return 'ht:' + SCH.id + ':' + viewDate; }
-function getChecked() { return JSON.parse(localStorage.getItem(checkKey()) || '[]'); }
-function saveChecked(arr) { localStorage.setItem(checkKey(), JSON.stringify(arr)); }
+function checkKey() { return 'ht:' + (getActiveId() || 'guest') + ':' + SCH.id + ':' + viewDate; }
+function getChecked() { return JSON.parse(store().getItem(checkKey()) || '[]'); }
+function saveChecked(arr) { store().setItem(checkKey(), JSON.stringify(arr)); }
 function isToday() { return viewDate === todayKey(); }
 
 // ── CURRENT TASK ─────────────────────────────────────────────────────────────

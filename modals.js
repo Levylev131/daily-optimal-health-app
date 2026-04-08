@@ -53,6 +53,8 @@ function showLoginModal() {
     <input class="modal-input" id="login-name" type="text" placeholder="Your name..."
       maxlength="30" onkeydown="if(event.key==='Enter') submitLogin()">
     <button class="modal-btn" onclick="submitLogin()">Get Started →</button>
+    <button class="modal-btn-ghost" onclick="sessionStorage.setItem('doh_guest_ok','1');closeModal();renderHub()">Continue as Guest</button>
+    <div class="modal-guest-note">Guest progress won't be saved when you close the browser.</div>
     ${existingHTML}
   </div>`);
   setTimeout(()=>document.getElementById('login-name')?.focus(), 60);
@@ -64,6 +66,19 @@ function submitLogin() {
   if (!name) { if(el){el.style.borderColor='#ef4444'; el.placeholder='Enter a name first...';} return; }
   const profile = createProfile(name);
   localStorage.setItem('doh_active_profile', profile.id);
+
+  // Migrate any guest session task data to the new profile
+  const guestKeys = [];
+  for (let i = 0; i < sessionStorage.length; i++) {
+    const k = sessionStorage.key(i);
+    if (k && k.startsWith('ht:guest:')) guestKeys.push(k);
+  }
+  guestKeys.forEach(k => {
+    const newKey = k.replace('ht:guest:', `ht:${profile.id}:`);
+    localStorage.setItem(newKey, sessionStorage.getItem(k));
+    sessionStorage.removeItem(k);
+  });
+
   loadState();
   closeModal();
   renderProfileBtn();
@@ -71,6 +86,13 @@ function submitLogin() {
 }
 
 function switchProfile(id) {
+  // If switching away from guest, discard their session data
+  if (!getActiveId()) {
+    const keys = [];
+    for (let i = 0; i < sessionStorage.length; i++) keys.push(sessionStorage.key(i));
+    keys.forEach(k => { if (k && k.startsWith('ht:guest:')) sessionStorage.removeItem(k); });
+    sessionStorage.removeItem('doh_guest_ok');
+  }
   localStorage.setItem('doh_active_profile', id);
   loadState();
   closeModal();
@@ -105,11 +127,17 @@ function showSwitchModal() {
     <div class="modal-sub">Select a profile or create a new one.</div>
     <div class="profile-list" style="margin-bottom:14px">
       ${profiles.map(p=>`
-        <div class="profile-item ${p.id===activeId?'active-profile':''}" onclick="switchProfile('${p.id}')">
-          <div class="p-avatar" style="background:${p.color};font-size:${p.avatar?'1.1rem':'.82rem'}">${p.avatar || initials(p.name)}</div>
-          <div>
-            <div class="p-item-name">${p.name}${p.id===activeId?' ✓':''}</div>
-            <div class="p-item-meta">Since ${new Date(p.created).toLocaleDateString()}</div>
+        <div class="profile-item ${p.id===activeId?'active-profile':''}">
+          <div style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer" onclick="switchProfile('${p.id}')">
+            <div class="p-avatar" style="background:${p.color};font-size:${p.avatar?'1.1rem':'.82rem'}">${p.avatar || initials(p.name)}</div>
+            <div>
+              <div class="p-item-name">${p.name}${p.id===activeId?' ✓':''}</div>
+              <div class="p-item-meta">Since ${new Date(p.created).toLocaleDateString()}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="p-item-action" title="Reset data" onclick="showResetProfileModal('${p.id}')">↺</button>
+            <button class="p-item-action p-item-action--del" title="Delete profile" onclick="showDeleteProfileModal('${p.id}')">✕</button>
           </div>
         </div>`).join('')}
     </div>
@@ -174,4 +202,94 @@ function importData() {
     switchProfile(data.profile.id);
     toast(`Welcome back, ${data.profile.name}! ✓`);
   } catch { toast('Invalid code ✗'); }
+}
+
+// ─── DANGER ZONE MODALS ───────────────────────────────────────────────────────
+function showResetAllModal() {
+  showModal(`<div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon">🗑️</div>
+    <div class="modal-title" style="color:#ef4444">Reset All Data</div>
+    <div class="modal-sub">This will permanently delete <strong>every profile</strong>, all XP, streaks, task history, and settings. There is no undo.</div>
+    <div class="danger-confirm-box">Type <strong>RESET</strong> to confirm</div>
+    <input class="modal-input" id="reset-confirm-input" type="text" placeholder="Type RESET here..." autocomplete="off">
+    <button class="modal-btn modal-btn--danger" onclick="confirmResetAll()">Wipe Everything</button>
+    <button class="modal-btn-sec" onclick="closeModal()">Cancel</button>
+  </div>`);
+  setTimeout(() => document.getElementById('reset-confirm-input')?.focus(), 60);
+}
+
+function confirmResetAll() {
+  const val = document.getElementById('reset-confirm-input')?.value.trim();
+  if (val !== 'RESET') {
+    const el = document.getElementById('reset-confirm-input');
+    if (el) { el.style.borderColor = '#ef4444'; el.value = ''; el.placeholder = 'You must type RESET exactly...'; }
+    return;
+  }
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i));
+  keys.forEach(k => { if (k.startsWith('doh_') || k.startsWith('ht:')) localStorage.removeItem(k); });
+  closeModal();
+  location.reload();
+}
+
+function showResetProfileModal(id) {
+  const p = getProfiles()[id];
+  if (!p) return;
+  showModal(`<div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon">↺</div>
+    <div class="modal-title">Reset Profile</div>
+    <div class="modal-sub">Wipe all XP, streaks, and task history for <strong>${p.name}</strong>? The profile itself will remain.</div>
+    <button class="modal-btn modal-btn--danger" onclick="confirmResetProfile('${id}')">Yes, Reset</button>
+    <button class="modal-btn-sec" onclick="closeModal()">Cancel</button>
+  </div>`);
+}
+
+function confirmResetProfile(id) {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i));
+  keys.forEach(k => {
+    if (k.startsWith(`doh_${id}_`) || k.startsWith(`ht:${id}:`)) localStorage.removeItem(k);
+  });
+  // Also reset freezes on the profile object
+  const profiles = getProfiles();
+  if (profiles[id]) { profiles[id].freezes = 0; localStorage.setItem('doh_profiles', JSON.stringify(profiles)); }
+  closeModal();
+  if (getActiveId() === id) { loadState(); renderProfileBtn(); renderHub(); }
+  toast('Profile reset ✓');
+}
+
+function showDeleteProfileModal(id) {
+  const p = getProfiles()[id];
+  if (!p) return;
+  showModal(`<div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon">🗑️</div>
+    <div class="modal-title" style="color:#ef4444">Delete Profile</div>
+    <div class="modal-sub">Permanently delete <strong>${p.name}</strong> and all their data? This cannot be undone.</div>
+    <button class="modal-btn modal-btn--danger" onclick="confirmDeleteProfile('${id}')">Yes, Delete</button>
+    <button class="modal-btn-sec" onclick="closeModal()">Cancel</button>
+  </div>`);
+}
+
+function confirmDeleteProfile(id) {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i));
+  keys.forEach(k => {
+    if (k.startsWith(`doh_${id}_`) || k.startsWith(`ht:${id}:`)) localStorage.removeItem(k);
+  });
+  const profiles = getProfiles();
+  delete profiles[id];
+  localStorage.setItem('doh_profiles', JSON.stringify(profiles));
+  if (getActiveId() === id) localStorage.removeItem('doh_active_profile');
+  closeModal();
+  loadState();
+  renderProfileBtn();
+  document.getElementById('sch-view').classList.remove('active');
+  document.getElementById('profile-view').classList.remove('active');
+  document.getElementById('hub-view').classList.add('active');
+  renderHub();
+  window.scrollTo(0, 0);
+  if (!getActiveId()) showLoginModal();
 }

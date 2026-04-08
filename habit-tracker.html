@@ -308,6 +308,9 @@
 (function() {
   'use strict';
 
+  function getActiveId() { return localStorage.getItem('doh_active_profile') || null; }
+  function store()       { return getActiveId() ? localStorage : sessionStorage; }
+
   var EMOJIS = ['💧','🏃','🧘','📚','😴','🥗','💊','🧴','🚶','☀️','📝','🎯','🛁','🧠','💪','🌿'];
   var selectedEmoji = EMOJIS[0];
   var currentDate = todayKey();
@@ -340,13 +343,13 @@
 
   /* ── STORAGE ── */
   function getHabits() {
-    try { return JSON.parse(localStorage.getItem('hab:list')) || []; } catch(e) { return []; }
+    try { return JSON.parse(store().getItem('hab:list')) || []; } catch(e) { return []; }
   }
-  function saveHabits(arr) { localStorage.setItem('hab:list', JSON.stringify(arr)); }
-  function isCompleted(id, date) { return localStorage.getItem('hab:' + id + ':' + date) === '1'; }
+  function saveHabits(arr) { store().setItem('hab:list', JSON.stringify(arr)); }
+  function isCompleted(id, date) { return store().getItem('hab:' + id + ':' + date) === '1'; }
   function setCompleted(id, date, val) {
-    if (val) localStorage.setItem('hab:' + id + ':' + date, '1');
-    else localStorage.removeItem('hab:' + id + ':' + date);
+    if (val) store().setItem('hab:' + id + ':' + date, '1');
+    else store().removeItem('hab:' + id + ':' + date);
   }
 
   /* ── STREAK ── */
@@ -449,11 +452,11 @@
     saveHabits(habits);
     // Remove all history keys for this habit
     var toRemove = [];
-    for (var i = 0; i < localStorage.length; i++) {
-      var k = localStorage.key(i);
+    for (var i = 0; i < store().length; i++) {
+      var k = store().key(i);
       if (k && k.startsWith('hab:' + id + ':')) toRemove.push(k);
     }
-    toRemove.forEach(function(k) { localStorage.removeItem(k); });
+    toRemove.forEach(function(k) { store().removeItem(k); });
     render();
     showToast('Habit deleted.');
   }

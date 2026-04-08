@@ -266,6 +266,9 @@
 (function() {
   'use strict';
 
+  function getActiveId() { return localStorage.getItem('doh_active_profile') || null; }
+  function store()       { return getActiveId() ? localStorage : sessionStorage; }
+
   /* ── Day nav ── */
   var currentDate = todayKey();
 
@@ -300,11 +303,11 @@
   function storageKey() { return 'wl:' + currentDate; }
 
   function loadDay() {
-    try { return JSON.parse(localStorage.getItem(storageKey()) || '[]'); } catch(e) { return []; }
+    try { return JSON.parse(store().getItem(storageKey()) || '[]'); } catch(e) { return []; }
   }
 
   function saveDay(data) {
-    localStorage.setItem(storageKey(), JSON.stringify(data));
+    store().setItem(storageKey(), JSON.stringify(data));
   }
 
   function newId() { return 'ex_' + Date.now() + '_' + Math.random().toString(36).slice(2,6); }
@@ -430,7 +433,7 @@
     exercises[ei].sets.push({
       reps: '',
       weight: '',
-      unit: lastSet.unit || 'kg'
+      unit: lastSet.unit || 'lbs'
     });
     saveDay(exercises);
     render();

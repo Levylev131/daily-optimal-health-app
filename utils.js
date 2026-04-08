@@ -152,6 +152,7 @@ function todayDone() {
 function initParticles() {
   const c = document.getElementById('particles');
   c.innerHTML='';
+  if (STATE.mode === 'elder') return;
   const health=['🥦','🫐','🥑','🍇','🥬','🍋','🥕','🍓','🌿','🥝','🍅','🧄','🐟','🥚','🍒','🍊'];
   const degen =['🎮','💧','🫁','💀','🔥','🎯','⚡','🕹️','😤','🧃'];
   const pool = STATE.mode==='degen' ? degen : health;

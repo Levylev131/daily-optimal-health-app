@@ -1,6 +1,8 @@
 # Daily Optimal Health — TODO
 
 ## Version History
+- **v0.7** — Elder Mode: warm amber theme, larger fonts, no particles/animations
+- **v0.6** — Phase 3 refactor: extract profile.js (~270 lines) + stats.js (~95 lines) from index.html
 - **v0.5** — 5 new Tools pages + hub cards (commit 98fb823)
 - **v0.4** — Phase 1 & 2 refactor: index.html 2091 → 839 lines (commit cf10ca1)
 - **v0.3** — Tools & Trackers, Schedule Builder, Custom View (commit 5330dd7)
@@ -33,6 +35,7 @@
 ## Backlog / Ideas
 - **Stats/Dashboard page** — single page showing all data at a glance: streak, XP, active habits, fasting history, workout frequency. All data already in localStorage.
 - **Degenerate mode** (back burner) — concept is solid, currently hidden in `index.html` via `false` flags in `renderHub()`. Pages intact. Restore by flipping those flags to `true`.
-- **Phase 3 refactor** (back burner) — extract `profile.js` (~250 lines) and `stats.js` (~95 lines) from `index.html`. Sections are clearly marked, easy to pick up later.
+- ~~**Phase 3 refactor**~~ — done in v0.6.
 - Better notifications — browser notifications are unreliable on file:// URLs. Options: in-app chime/banner (easy), PWA install (medium), Electron desktop app (bigger lift).
 - More profile icon alternatives — especially for Transcendent (rank 13). Currently ☀️ placeholder.
+- ~~**Old People Mode**~~ — done in v0.7 as Elder Mode.

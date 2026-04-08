@@ -284,6 +284,9 @@
 (function() {
   'use strict';
 
+  function getActiveId() { return localStorage.getItem('doh_active_profile') || null; }
+  function store()       { return getActiveId() ? localStorage : sessionStorage; }
+
   var MEAL_TYPES = [
     { id: 'breakfast', label: 'Breakfast', icon: '🌅' },
     { id: 'lunch',     label: 'Lunch',     icon: '☀️' },
@@ -325,11 +328,11 @@
   function storageKey() { return 'nl:' + currentDate; }
 
   function loadDay() {
-    try { return JSON.parse(localStorage.getItem(storageKey()) || '[]'); } catch(e) { return []; }
+    try { return JSON.parse(store().getItem(storageKey()) || '[]'); } catch(e) { return []; }
   }
 
   function saveDay(data) {
-    localStorage.setItem(storageKey(), JSON.stringify(data));
+    store().setItem(storageKey(), JSON.stringify(data));
   }
 
   function newId() { return 'ni_' + Date.now() + '_' + Math.random().toString(36).slice(2,6); }
