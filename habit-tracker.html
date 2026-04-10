@@ -270,7 +270,7 @@
 
   <!-- PAST NOTICE -->
   <div class="past-notice" id="past-notice" style="display:none">
-    Viewing a past day — check marks are read-only.
+    You're looking at a past day — you can't check or uncheck habits here.
   </div>
 
   <!-- PROGRESS -->
@@ -427,13 +427,14 @@
 
   function saveHabit() {
     var name = document.getElementById('habit-name-input').value.trim();
+    if (name) name = name[0].toUpperCase() + name.slice(1);
     if (!name) { showToast('Enter a habit name.'); return; }
     var habits = getHabits();
     var newHabit = {
       id: 'h_' + Date.now() + '_' + Math.floor(Math.random()*1000),
       name: name,
       icon: selectedEmoji,
-      created: new Date().toISOString()
+      created: todayKey()
     };
     habits.push(newHabit);
     saveHabits(habits);
@@ -466,6 +467,12 @@
     if (!isToday(currentDate)) return; // read-only for past days
     var done = isCompleted(id, currentDate);
     setCompleted(id, currentDate, !done);
+    // Sync to water tracker if this is a water habit
+    var habit = getHabits().filter(function(h) { return h.id === id; })[0];
+    if (habit && habit.name && habit.name.toLowerCase().indexOf('water') !== -1) {
+      var waterGoal = parseInt(store().getItem(pfx() + 'water_goal') || '8');
+      store().setItem(pfx() + 'water_' + currentDate, !done ? String(waterGoal) : '0');
+    }
     render();
     if (!done) showToast('Done! Keep it up.');
   }
@@ -515,6 +522,8 @@
     var done = 0;
     var html = '<div class="habits-list">';
     habits.forEach(function(h) {
+      // Don't show habit on days before it was created
+      if (h.created && h.created.slice(0, 10) > currentDate) return;
       var completed = isCompleted(h.id, currentDate);
       if (completed) done++;
       var streak = calcStreak(h.id, currentDate);
@@ -540,7 +549,10 @@
     });
     html += '</div>';
     container.innerHTML = html;
-    renderProgress(done, habits.length);
+    var visibleTotal = habits.filter(function(h) {
+      return !h.created || h.created.slice(0, 10) <= currentDate;
+    }).length;
+    renderProgress(done, visibleTotal);
   }
 
   function renderProgress(done, total) {
@@ -583,6 +595,18 @@
   });
 
   /* ── INIT ── */
+  // Capitalise first letter of any existing habit names
+  (function migrateCapitals() {
+    var habits = getHabits();
+    var changed = false;
+    habits.forEach(function(h) {
+      if (h.name && h.name[0] !== h.name[0].toUpperCase()) {
+        h.name = h.name[0].toUpperCase() + h.name.slice(1);
+        changed = true;
+      }
+    });
+    if (changed) saveHabits(habits);
+  })();
   render();
 })();
 </script>

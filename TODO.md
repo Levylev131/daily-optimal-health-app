@@ -1,6 +1,7 @@
 # Daily Optimal Health — TODO
 
 ## Version History
+- **v0.8** — Dashboard (`dashboard.html`), body-map SVG overhaul, streak audit on load, water↔habit sync, habit name auto-capitalize
 - **v0.7** — Elder Mode: warm amber theme, larger fonts, no particles/animations
 - **v0.6** — Phase 3 refactor: extract profile.js (~270 lines) + stats.js (~95 lines) from index.html
 - **v0.5** — 5 new Tools pages + hub cards (commit 98fb823)
@@ -25,6 +26,11 @@
 - [x] Custom schedules shown as hub cards on index page with progress rings
 - [x] All new pages have working back buttons to index.html
 - [x] Phase 1 & 2 code refactor — CSS, constants, schedule data, utils, modals extracted
+- [x] Dashboard page (`dashboard.html`) — XP, streaks, habits, challenges, fasting, workouts, nutrition at a glance
+- [x] Body map SVG overhaul — detailed muscle/joint layer, body-part.html drill-down
+- [x] Streak audit on page load — freeze consumed automatically if day missed
+- [x] Water ↔ habit bidirectional sync (water goal met = water habit checked, and vice versa)
+- [x] Habit name auto-capitalizes on save
 
 ## In Progress
 <!-- Add what you're currently working on -->
@@ -33,7 +39,7 @@
 <!-- Add what's coming next -->
 
 ## Backlog / Ideas
-- **Stats/Dashboard page** — single page showing all data at a glance: streak, XP, active habits, fasting history, workout frequency. All data already in localStorage.
+- ~~**Stats/Dashboard page**~~ — done in v0.8 as `dashboard.html`.
 - **Degenerate mode** (back burner) — concept is solid, currently hidden in `index.html` via `false` flags in `renderHub()`. Pages intact. Restore by flipping those flags to `true`.
 - ~~**Phase 3 refactor**~~ — done in v0.6.
 - Better notifications — browser notifications are unreliable on file:// URLs. Options: in-app chime/banner (easy), PWA install (medium), Electron desktop app (bigger lift).

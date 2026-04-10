@@ -9,6 +9,28 @@ function loadState() {
   const pfx = storagePrefix();
   STATE.xp     = parseInt(localStorage.getItem(`${pfx}xp`) || '0');
   STATE.streak = JSON.parse(localStorage.getItem(`${pfx}streak`) || '{"count":0,"last":""}');
+  auditStreak();
+}
+
+function auditStreak() {
+  const today = dateKey();
+  if (!STATE.streak.last || STATE.streak.last === today) return;
+  const yd = new Date(); yd.setDate(yd.getDate()-1);
+  const ydStr = dateKey(yd);
+  if (STATE.streak.last === ydStr) return; // yesterday — still valid
+  // Missed at least one day
+  const freezes = getFreezes();
+  if (freezes > 0) {
+    setFreezes(freezes - 1);
+    incFreezeUses();
+    STATE.streak.count += 1;
+    STATE.streak.last = today;
+    localStorage.setItem(`${storagePrefix()}streak`, JSON.stringify(STATE.streak));
+    toast(`❄️ Streak freeze used — streak protected! (${freezes - 1} left)`);
+  } else {
+    STATE.streak.count = 0;
+    localStorage.setItem(`${storagePrefix()}streak`, JSON.stringify(STATE.streak));
+  }
 }
 
 // ─── DATE HELPERS ─────────────────────────────────────────────────────────────
@@ -86,24 +108,10 @@ function touchStreak() {
   const today = dateKey();
   if (STATE.streak.last === today) return;
   const d = new Date(); d.setDate(d.getDate()-1);
-  const yd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  if (STATE.streak.last !== yd && STATE.streak.last !== '') {
-    // Missed at least one day — try to use a freeze
-    const freezes = getFreezes();
-    if (freezes > 0) {
-      setFreezes(freezes - 1);
-      incFreezeUses();
-      STATE.streak.count += 1;
-      STATE.streak.last = today;
-      localStorage.setItem(`${storagePrefix()}streak`, JSON.stringify(STATE.streak));
-      toast(`❄️ Streak freeze used — streak protected! (${freezes - 1} left)`);
-      return;
-    }
-  }
+  const yd = dateKey(d);
   STATE.streak.count = (STATE.streak.last === yd) ? STATE.streak.count + 1 : 1;
   STATE.streak.last = today;
   localStorage.setItem(`${storagePrefix()}streak`, JSON.stringify(STATE.streak));
-  // Track best streak
   if (STATE.streak.count > getBestStreak()) {
     localStorage.setItem(`${storagePrefix()}best_streak`, STATE.streak.count);
   }

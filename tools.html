@@ -795,6 +795,7 @@ function adjustWater(delta) {
   }
   var count = Math.max(0, Math.min(48, prev + delta));
   store().setItem(waterKey(), count);
+  syncWaterToHabits(count, goal);
   renderWater();
   if (count === goal && prev < goal) {
     triggerConfetti();
@@ -802,6 +803,18 @@ function adjustWater(delta) {
   } else if (count > 48 && prev <= 48) {
     ttToast('⚠️ Over 48 cups?! Your kidneys are filing a complaint.');
   }
+}
+
+function syncWaterToHabits(count, goal) {
+  try {
+    var habits = JSON.parse(store().getItem('hab:list') || '[]');
+    habits.forEach(function(h) {
+      if (h.name && h.name.toLowerCase().indexOf('water') !== -1) {
+        if (count >= goal) store().setItem('hab:' + h.id + ':' + currentDate, '1');
+        else store().removeItem('hab:' + h.id + ':' + currentDate);
+      }
+    });
+  } catch(e) {}
 }
 
 function triggerConfetti() {

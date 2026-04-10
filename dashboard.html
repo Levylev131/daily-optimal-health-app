@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --r: 14px; --r-sm: 10px;
+      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
+      --acc-tint: rgba(45,212,110,0.10);
+      --acc-border: rgba(45,212,110,0.45);
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+    .page { max-width: 760px; margin: 0 auto; padding: 28px 20px 80px; }
+
+    .back-btn {
+      background: none; border: none; color: var(--muted);
+      font-size: .88rem; font-weight: 600; cursor: pointer;
+      padding: 6px 0; margin-bottom: 22px; display: inline-flex;
+      align-items: center; gap: 6px; transition: var(--trans);
+    }
+    .back-btn:hover { color: var(--text); }
+
+    .page-title {
+      text-align: center; font-size: 2.2rem; font-weight: 900;
+      margin-bottom: 6px; letter-spacing: -0.5px;
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+    }
+    .page-title-text {
+      background: linear-gradient(135deg, #fff 40%, var(--acc));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .page-title-icon {
+      width: 2.2rem; height: 2.2rem; flex-shrink: 0;
+    }
+    .page-sub {
+      text-align: center; color: var(--muted); font-size: .85rem; margin-bottom: 28px;
+    }
+
+    /* ── SECTION ── */
+    .section { margin-bottom: 22px; }
+    .sec-label {
+      font-size: .7rem; font-weight: 800; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 10px; padding-left: 2px;
+    }
+
+    /* ── GLASS CARD ── */
+    .card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px);
+      padding: 18px 20px; margin-bottom: 10px;
+    }
+    .card-link {
+      text-decoration: none; display: block;
+      transition: var(--trans);
+    }
+    .card-link:hover .card { background: var(--glass-h); border-color: var(--acc-border); }
+
+    /* ── HERO CARD ── */
+    .hero-card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px);
+      padding: 22px; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 18px;
+    }
+    .hero-avatar {
+      width: 56px; height: 56px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; flex-shrink: 0; border: 2px solid var(--acc-border);
+      background: var(--acc-tint);
+    }
+    .hero-info { flex: 1; min-width: 0; }
+    .hero-name { font-size: 1.15rem; font-weight: 800; }
+    .hero-level { font-size: .82rem; color: var(--muted); margin-top: 2px; }
+    .hero-stats {
+      display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap;
+    }
+    .stat-chip {
+      background: var(--glass-b); border-radius: 999px;
+      padding: 4px 12px; font-size: .78rem; font-weight: 700;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .xp-bar-wrap { margin-top: 10px; }
+    .xp-bar-meta {
+      display: flex; justify-content: space-between;
+      font-size: .72rem; color: var(--muted); margin-bottom: 4px;
+    }
+    .xp-track {
+      height: 7px; background: var(--glass-b); border-radius: 999px; overflow: hidden;
+    }
+    .xp-fill {
+      height: 100%; background: linear-gradient(90deg, var(--acc2), var(--acc));
+      border-radius: 999px; transition: width 0.4s;
+    }
+
+    /* ── SNAPSHOT GRID ── */
+    .snapshot-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px; margin-bottom: 10px;
+    }
+    .snap-card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); padding: 16px 14px;
+      text-align: center; backdrop-filter: blur(12px);
+    }
+    .snap-num {
+      font-size: 2rem; font-weight: 900; line-height: 1.1;
+      color: var(--acc);
+    }
+    .snap-num.muted { color: var(--muted); }
+    .snap-label { font-size: .72rem; color: var(--muted); margin-top: 4px; font-weight: 600; }
+
+    /* ── PROGRESS BAR ── */
+    .prog-track { height: 6px; background: var(--glass-b); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+    .prog-fill { height: 100%; background: var(--acc); border-radius: 999px; transition: width 0.4s; }
+
+    /* ── SCHEDULES GRID ── */
+    .sched-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+    }
+    .sched-card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+      backdrop-filter: blur(12px);
+    }
+    .sched-icon { font-size: 1.5rem; flex-shrink: 0; width: 32px; text-align: center; }
+    .sched-info { flex: 1; min-width: 0; }
+    .sched-name { font-size: .88rem; font-weight: 700; }
+    .sched-pct { font-size: .75rem; color: var(--muted); margin-top: 2px; }
+    .sched-card.active { border-color: var(--acc-border); background: var(--acc-tint); }
+
+    /* ── HABITS ── */
+    .habit-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid var(--glass-b);
+    }
+    .habit-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .habit-row:first-child { padding-top: 0; }
+    .habit-ico { font-size: 1.4rem; flex-shrink: 0; width: 28px; text-align: center; }
+    .habit-text { flex: 1; min-width: 0; }
+    .habit-name { font-size: .9rem; font-weight: 700; }
+    .habit-streak { font-size: .73rem; color: var(--muted); margin-top: 2px; }
+    .habit-done {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .85rem; flex-shrink: 0;
+    }
+    .habit-done.yes { background: var(--acc); color: #000; box-shadow: 0 0 8px var(--glow); }
+    .habit-done.no { background: var(--glass-b); color: var(--muted); }
+
+    /* ── CHALLENGES ── */
+    .ch-row {
+      padding: 12px 0; border-bottom: 1px solid var(--glass-b);
+    }
+    .ch-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .ch-row:first-child { padding-top: 0; }
+    .ch-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .ch-icon { font-size: 1.3rem; }
+    .ch-name { font-size: .9rem; font-weight: 700; flex: 1; }
+    .ch-day { font-size: .75rem; color: var(--muted); }
+    .ch-dots {
+      display: flex; flex-wrap: wrap; gap: 3px;
+    }
+    .ch-dot {
+      width: 10px; height: 10px; border-radius: 2px;
+      background: var(--glass-b);
+    }
+    .ch-dot.done { background: var(--acc); }
+    .ch-dot.today { box-shadow: 0 0 0 1.5px var(--acc); }
+
+    /* ── FASTING ── */
+    .fast-active {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px; background: var(--acc-tint);
+      border: 1px solid var(--acc-border); border-radius: var(--r);
+      margin-bottom: 10px;
+    }
+    .fast-icon { font-size: 1.8rem; }
+    .fast-info { flex: 1; }
+    .fast-time { font-size: 1.5rem; font-weight: 900; color: var(--acc); }
+    .fast-label { font-size: .75rem; color: var(--muted); margin-top: 2px; }
+    .fast-history-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid var(--glass-b);
+      font-size: .85rem;
+    }
+    .fast-history-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .fast-history-row:first-child { padding-top: 0; }
+    .fast-dur { font-weight: 700; }
+    .fast-date { color: var(--muted); font-size: .78rem; }
+    .fast-met { font-size: .75rem; padding: 2px 8px; border-radius: 999px; font-weight: 700; }
+    .fast-met.yes { background: var(--acc-tint); color: var(--acc); border: 1px solid var(--acc-border); }
+    .fast-met.no  { background: var(--glass-b); color: var(--muted); }
+
+    /* ── WORKOUT DOTS ── */
+    .wk-row {
+      display: flex; gap: 6px; align-items: flex-end; margin-top: 4px;
+    }
+    .wk-col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+    .wk-bar {
+      width: 100%; border-radius: 4px 4px 0 0;
+      min-height: 6px; background: var(--glass-b);
+      transition: var(--trans);
+    }
+    .wk-bar.active { background: var(--acc); box-shadow: 0 0 6px var(--glow); }
+    .wk-day-lbl { font-size: .65rem; color: var(--muted); font-weight: 600; }
+    .wk-count { font-size: .7rem; color: var(--muted); }
+
+    /* ── NUTRITION ── */
+    .macro-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    }
+    .macro-cell { text-align: center; }
+    .macro-val { font-size: 1.25rem; font-weight: 900; color: var(--acc); }
+    .macro-lbl { font-size: .7rem; color: var(--muted); margin-top: 2px; font-weight: 600; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center; color: var(--muted); font-size: .83rem;
+      padding: 20px 0; font-style: italic;
+    }
+
+    /* ── REFRESH ── */
+    .refresh-btn {
+      display: block; margin: 0 auto; background: none;
+      border: 1px solid var(--glass-b); color: var(--muted);
+      border-radius: 20px; padding: 6px 20px;
+      font-size: .78rem; cursor: pointer; transition: var(--trans);
+    }
+    .refresh-btn:hover { border-color: var(--acc); color: var(--text); }
+  </style>
+</head>
+<body>
+<div class="page">
+  <button class="back-btn" onclick="window.location.href='index.html'">← Back</button>
+  <h1 class="page-title">
+    <svg class="page-title-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="18" width="7" height="14" rx="2" fill="#2dd46e"/>
+      <rect x="14" y="10" width="7" height="22" rx="2" fill="#2dd46e" opacity=".75"/>
+      <rect x="26" y="4" width="7" height="28" rx="2" fill="#2dd46e" opacity=".5"/>
+    </svg>
+    <span class="page-title-text">Dashboard</span>
+  </h1>
+  <p class="page-sub" id="dash-date"></p>
+  <div id="dash-content"></div>
+  <button class="refresh-btn" onclick="render()">↺ Refresh</button>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  /* ─── INLINE DATA ───────────────────────────────────────────────────────── */
+  var LEVELS = [
+    {name:'Couch Potato',min:0},{name:'Weekend Warrior',min:150},
+    {name:'Health Curious',min:400},{name:'Health Enthusiast',min:800},
+    {name:'Optimizer',min:1400},{name:'Biohacker',min:2200},
+    {name:'Longevity Legend',min:3500},{name:'Elite Performer',min:5500},
+    {name:'Peak Human',min:8500},{name:'Longevity Architect',min:13000},
+    {name:'Centenarian Candidate',min:20000},{name:'Demigod',min:30000},
+    {name:'Transcendent',min:45000}
+  ];
+  var LEVELS_DEGEN = [
+    {name:'Absolute Degenerate',min:0},{name:'Slightly Less Bad',min:150},
+    {name:'Attempting Human',min:400},{name:'Functioning Adult',min:800},
+    {name:'Respectable Person',min:1400},{name:'Reformed',min:2200},
+    {name:'Devil Is Disappointed',min:3500},{name:'Suspicious Improvement',min:5500},
+    {name:'Unrecognizable',min:8500},{name:'Mom Is Proud',min:13000},
+    {name:'Dealer Lost A Customer',min:20000},{name:'Certified Ex-Degenerate',min:30000},
+    {name:'A Different Species',min:45000}
+  ];
+  var GOALS = [
+    {id:'longevity', icon:'🌿', title:'Longevity',    total:33},
+    {id:'muscle',    icon:'💪', title:'Muscle',       total:29},
+    {id:'cardio',    icon:'❤️', title:'Cardio',       total:27},
+    {id:'bone',      icon:'🦴', title:'Bone Health',  total:25},
+    {id:'brain',     icon:'🧠', title:'Brain Health', total:27},
+    {id:'digestive', icon:'🌿', title:'Digestive',    total:25},
+  ];
+  var CHALLENGES_META = {
+    'no-sugar':    {icon:'🍬', name:'No Added Sugar'},
+    'daily-walk':  {icon:'🚶', name:'Daily Walk'},
+    'cold-shower': {icon:'🚿', name:'Cold Showers'},
+    'no-alcohol':  {icon:'🚫', name:'No Alcohol'},
+    '8k-steps':    {icon:'👟', name:'8,000 Steps'},
+    'meditation':  {icon:'🧘', name:'Daily Meditation'},
+    'read-daily':  {icon:'📚', name:'Read Every Day'},
+    'no-phone-am': {icon:'📵', name:'No Phone in AM'},
+    'journaling':  {icon:'📝', name:'Daily Journaling'},
+    'early-sleep': {icon:'😴', name:'Lights Out by 11 PM'}
+  };
+
+  /* ─── HELPERS ───────────────────────────────────────────────────────────── */
+  function getActiveId() { return localStorage.getItem('doh_active_profile') || null; }
+  function store()       { return getActiveId() ? localStorage : sessionStorage; }
+
+  function todayKey() {
+    var d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+  }
+  function pad(n) { return String(n).padStart(2,'0'); }
+  function offsetDate(iso, n) {
+    var d = new Date(iso + 'T00:00:00');
+    d.setDate(d.getDate() + n);
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+  }
+  function fmtDate(iso) {
+    var d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+  }
+  function fmtDur(mins) {
+    var h = Math.floor(mins/60), m = Math.round(mins%60);
+    return h > 0 ? h + 'h ' + (m>0?m+'m':'') : m + 'm';
+  }
+
+  function getLevel(xp, isDegen) {
+    var arr = isDegen ? LEVELS_DEGEN : LEVELS;
+    var lv = arr[0];
+    for (var i = 0; i < arr.length; i++) {
+      if (xp >= arr[i].min) lv = arr[i]; else break;
+    }
+    var idx = arr.indexOf(lv);
+    return { name: lv.name, min: lv.min, next: arr[idx+1] || null };
+  }
+
+  /* ─── DATA READERS ──────────────────────────────────────────────────────── */
+  function getProfile() {
+    var id = getActiveId();
+    if (!id) return null;
+    var profiles = JSON.parse(localStorage.getItem('doh_profiles') || '{}');
+    return profiles[id] || null;
+  }
+
+  function getXP() {
+    var id = getActiveId();
+    if (!id) return parseInt(sessionStorage.getItem('doh_guest_xp') || '0');
+    return parseInt(localStorage.getItem('doh_' + id + '_xp') || '0');
+  }
+
+  function getStreak() {
+    var id = getActiveId();
+    var raw = id
+      ? localStorage.getItem('doh_' + id + '_streak')
+      : sessionStorage.getItem('doh_guest_streak');
+    try { return JSON.parse(raw || '{"count":0,"last":""}'); } catch(e) { return {count:0,last:''}; }
+  }
+
+  function getBestStreak() {
+    var id = getActiveId();
+    if (!id) return 0;
+    return parseInt(localStorage.getItem('doh_' + id + '_best_streak') || '0');
+  }
+
+  function getMode() { return localStorage.getItem('doh_mode') || 'health'; }
+
+  function getSchedulePct(goalId, total) {
+    var id = getActiveId() || 'guest';
+    var pfx = id === 'guest' ? 'doh_guest_' : 'doh_' + id + '_';
+    try {
+      var raw = (id === 'guest' ? sessionStorage : localStorage).getItem(pfx + todayKey() + '_' + goalId);
+      var arr = JSON.parse(raw || '[]');
+      return arr.length / total;
+    } catch(e) { return 0; }
+  }
+
+  function getHabits() {
+    try { return JSON.parse(store().getItem('hab:list') || '[]'); } catch(e) { return []; }
+  }
+  function isHabitDone(id, date) {
+    return store().getItem('hab:' + id + ':' + date) === '1';
+  }
+  function getWaterCount(date) {
+    var id = getActiveId(); var pfx = id ? 'doh_' + id + '_' : 'doh_guest_';
+    return parseInt((id ? localStorage : sessionStorage).getItem(pfx + 'water_' + date) || '0');
+  }
+  function getWaterGoal() {
+    var id = getActiveId(); var pfx = id ? 'doh_' + id + '_' : 'doh_guest_';
+    return parseInt((id ? localStorage : sessionStorage).getItem(pfx + 'water_goal') || '8');
+  }
+  function calcHabitStreak(id) {
+    var today = todayKey();
+    var count = 0;
+    for (var i = 0; i < 365; i++) {
+      var d = offsetDate(today, -i);
+      if (isHabitDone(id, d)) {
+        count++;
+      } else {
+        if (i === 0) continue; // allow today not yet done
+        break;
+      }
+    }
+    return count;
+  }
+
+  function getActiveFast() {
+    try { return JSON.parse(store().getItem('ft:active')); } catch(e) { return null; }
+  }
+  function getFastHistory() {
+    try { return JSON.parse(store().getItem('ft:history') || '[]'); } catch(e) { return []; }
+  }
+  function getFastGoalHours() {
+    var g = store().getItem('ft:goal');
+    return g ? parseFloat(g) : 16;
+  }
+
+  function getActiveChallenges() {
+    try { return JSON.parse(store().getItem('ch:active') || '[]'); } catch(e) { return []; }
+  }
+  function isChallengeChecked(challengeId, date) {
+    return store().getItem('ch:' + challengeId + ':' + date) === '1';
+  }
+  function getChallengeCheckedCount(challengeId, startDate) {
+    var count = 0;
+    for (var i = 0; i < 30; i++) {
+      if (isChallengeChecked(challengeId, offsetDate(startDate, i))) count++;
+    }
+    return count;
+  }
+
+  function getWorkoutDays(n) {
+    // Returns array of {date, count} for last n days (today first reversed = today last)
+    var result = [];
+    for (var i = n-1; i >= 0; i--) {
+      var d = offsetDate(todayKey(), -i);
+      try {
+        var data = JSON.parse(store().getItem('wl:' + d) || '[]');
+        result.push({date: d, count: data.length});
+      } catch(e) { result.push({date: d, count: 0}); }
+    }
+    return result;
+  }
+
+  function getNutritionToday() {
+    try {
+      var meals = JSON.parse(store().getItem('nl:' + todayKey()) || '[]');
+      var p=0, c=0, f=0, k=0, hasData=false;
+      meals.forEach(function(meal) {
+        (meal.items||[]).forEach(function(item) {
+          p += parseFloat(item.protein)||0;
+          c += parseFloat(item.carbs)||0;
+          f += parseFloat(item.fat)||0;
+          k += parseFloat(item.cals)||0;
+          hasData = true;
+        });
+      });
+      return hasData ? {p:p, c:c, f:f, k:k} : null;
+    } catch(e) { return null; }
+  }
+
+  function fmt(n) {
+    if (n === 0) return '0';
+    return n % 1 === 0 ? String(Math.round(n)) : n.toFixed(1).replace(/\.0$/,'');
+  }
+
+  /* ─── ACTIVE FAST TIMER ─────────────────────────────────────────────────── */
+  var timerInterval = null;
+  function fmtElapsed(ms) {
+    var totalSec = Math.floor(ms/1000);
+    var h = Math.floor(totalSec/3600);
+    var m = Math.floor((totalSec%3600)/60);
+    var s = totalSec%60;
+    return pad(h) + ':' + pad(m) + ':' + pad(s);
+  }
+  function startTimer(startMs) {
+    if (timerInterval) clearInterval(timerInterval);
+    var el = document.getElementById('fast-timer');
+    if (!el) return;
+    timerInterval = setInterval(function() {
+      var el2 = document.getElementById('fast-timer');
+      if (!el2) { clearInterval(timerInterval); return; }
+      el2.textContent = fmtElapsed(Date.now() - startMs);
+    }, 1000);
+  }
+
+  /* ─── RENDER ─────────────────────────────────────────────────────────────── */
+  function render() {
+    var today = todayKey();
+    var d = new Date();
+    document.getElementById('dash-date').textContent =
+      d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+
+    var profile = getProfile();
+    var xp      = getXP();
+    var streak  = getStreak();
+    var best    = getBestStreak();
+    var isDegen = getMode() === 'degen';
+    var lv      = getLevel(xp, isDegen);
+    var habits  = getHabits();
+    var activeFast = getActiveFast();
+    var fastHistory = getFastHistory();
+    var activeChallenges = getActiveChallenges();
+    var nutrition = getNutritionToday();
+    var workoutDays = getWorkoutDays(7);
+
+    /* ─ XP bar ─ */
+    var xpIn = xp - lv.min;
+    var xpFor = lv.next ? lv.next.min - lv.min : 1;
+    var xpPct = lv.next ? Math.min(100, xpIn/xpFor*100) : 100;
+
+    /* ─ Schedule totals today ─ */
+    var schedDoneCount = 0, schedTotal = 0;
+    GOALS.forEach(function(g) {
+      var pct = getSchedulePct(g.id, g.total);
+      schedDoneCount += Math.round(pct * g.total);
+      schedTotal += g.total;
+    });
+
+    /* ─ Habits today ─ */
+    var habitsDone = habits.filter(function(h) { return isHabitDone(h.id, today); }).length;
+
+    /* ─ Challenges today ─ */
+    var challengesTodayDone = activeChallenges.filter(function(a) {
+      return isChallengeChecked(a.challengeId, today);
+    }).length;
+
+    var html = [];
+
+    /* ── HERO ── */
+    var avatarColor = (profile && profile.color) || '#2dd46e';
+    var profileName = profile ? profile.name : 'Guest';
+    html.push('<div class="section">');
+    html.push('<div class="hero-card">');
+    html.push('<div class="hero-avatar" style="border-color:' + avatarColor + ';background:' + avatarColor + '22">');
+    html.push(isDegen ? '💀' : '🌿');
+    html.push('</div>');
+    html.push('<div class="hero-info">');
+    html.push('<div class="hero-name">' + esc(profileName) + '</div>');
+    html.push('<div class="hero-level">🏆 ' + esc(lv.name) + '</div>');
+    html.push('<div class="hero-stats">');
+    html.push('<div class="stat-chip">🔥 ' + streak.count + ' day streak</div>');
+    if (best > streak.count) html.push('<div class="stat-chip">⭐ ' + best + ' best</div>');
+    html.push('<div class="stat-chip">⚡ ' + xp + ' XP</div>');
+    html.push('</div>');
+    if (lv.next) {
+      html.push('<div class="xp-bar-wrap">');
+      html.push('<div class="xp-bar-meta"><span>' + esc(lv.name) + '</span><span>' + xpIn + '/' + xpFor + ' XP → ' + esc(lv.next.name) + '</span></div>');
+      html.push('<div class="xp-track"><div class="xp-fill" style="width:' + xpPct.toFixed(1) + '%"></div></div>');
+      html.push('</div>');
+    }
+    html.push('</div></div>'); // hero-info + hero-card
+
+    /* ── SNAPSHOT ── */
+    html.push('<div class="section">');
+    html.push('<div class="sec-label">Today at a Glance</div>');
+    html.push('<div class="snapshot-grid">');
+
+    html.push('<div class="snap-card">');
+    html.push('<div class="snap-num' + (schedDoneCount===0?' muted':'') + '">' + schedDoneCount + '</div>');
+    html.push('<div class="snap-label">Schedule tasks<br>done today</div>');
+    html.push('</div>');
+
+    html.push('<div class="snap-card">');
+    if (habits.length === 0) {
+      html.push('<div class="snap-num muted">—</div>');
+      html.push('<div class="snap-label">No habits set yet</div>');
+    } else {
+      html.push('<div class="snap-num' + (habitsDone===0?' muted':'') + '">' + habitsDone + '/' + habits.length + '</div>');
+      html.push('<div class="snap-label">Habits done<br>today</div>');
+    }
+    html.push('</div>');
+
+    html.push('<div class="snap-card">');
+    if (activeChallenges.length === 0) {
+      html.push('<div class="snap-num muted">—</div>');
+      html.push('<div class="snap-label">No active<br>challenges</div>');
+    } else {
+      html.push('<div class="snap-num' + (challengesTodayDone===0?' muted':'') + '">' + challengesTodayDone + '/' + activeChallenges.length + '</div>');
+      html.push('<div class="snap-label">Challenges<br>checked today</div>');
+    }
+    html.push('</div>');
+
+    html.push('<div class="snap-card">');
+    if (activeFast) {
+      var elapsedMs = Date.now() - new Date(activeFast.start).getTime();
+      var goalMs = getFastGoalHours() * 3600000;
+      var pctFast = goalMs > 0 ? Math.min(100, elapsedMs/goalMs*100) : 0;
+      html.push('<div class="snap-num" style="font-size:1.3rem" id="fast-snap">' + fmtElapsed(elapsedMs) + '</div>');
+      html.push('<div class="snap-label">Fast in progress</div>');
+      html.push('<div class="prog-track"><div class="prog-fill" style="width:' + pctFast.toFixed(1) + '%"></div></div>');
+    } else {
+      var lastFast = fastHistory[0];
+      if (lastFast) {
+        html.push('<div class="snap-num">' + fmtDur(lastFast.duration_mins) + '</div>');
+        html.push('<div class="snap-label">Last fast<br>' + fmtDate(lastFast.end.split('T')[0]) + '</div>');
+      } else {
+        html.push('<div class="snap-num muted">—</div>');
+        html.push('<div class="snap-label">No fasting<br>data yet</div>');
+      }
+    }
+    html.push('</div>');
+
+    html.push('</div>'); // snapshot-grid
+    html.push('</div>'); // section
+
+    /* ── SCHEDULES ── */
+    html.push('<div class="section">');
+    html.push('<div class="sec-label">Health Schedules — Today</div>');
+    html.push('<div class="sched-grid">');
+    GOALS.forEach(function(g) {
+      var pct = getSchedulePct(g.id, g.total);
+      var done = Math.round(pct * g.total);
+      var isActive = done > 0;
+      html.push('<div class="sched-card' + (isActive?' active':'') + '">');
+      html.push('<div class="sched-icon">' + g.icon + '</div>');
+      html.push('<div class="sched-info">');
+      html.push('<div class="sched-name">' + g.title + '</div>');
+      html.push('<div class="sched-pct">' + (isActive ? done + '/' + g.total + ' tasks' : 'Not started') + '</div>');
+      html.push('<div class="prog-track"><div class="prog-fill" style="width:' + (pct*100).toFixed(1) + '%"></div></div>');
+      html.push('</div></div>');
+    });
+    html.push('</div></div>'); // sched-grid + section
+
+    /* ── HABITS ── */
+    html.push('<div class="section">');
+    html.push('<div class="sec-label">Habits</div>');
+    html.push('<div class="card">');
+    if (habits.length === 0) {
+      html.push('<div class="empty-state">No habits yet — add some in the Habit Tracker.</div>');
+    } else {
+      habits.forEach(function(h) {
+        var done = isHabitDone(h.id, today);
+        var streak = calcHabitStreak(h.id);
+        var isWater = h.name && h.name.toLowerCase().indexOf('water') !== -1;
+        var waterCount = isWater ? getWaterCount(today) : 0;
+        var waterGoal  = isWater ? getWaterGoal() : 0;
+        html.push('<div class="habit-row">');
+        html.push('<div class="habit-ico">' + (h.icon || '✅') + '</div>');
+        html.push('<div class="habit-text">');
+        html.push('<div class="habit-name">' + esc(h.name) + '</div>');
+        if (isWater) {
+          html.push('<div class="habit-streak">💧 ' + waterCount + ' / ' + waterGoal + ' cups</div>');
+        } else if (streak > 0) {
+          var label = streak >= 3 ? '🔥 ' : '⚡ ';
+          html.push('<div class="habit-streak">' + label + streak + ' day streak</div>');
+        }
+        html.push('</div>');
+        html.push('<div class="habit-done ' + (done?'yes':'no') + '">' + (done?'✓':'·') + '</div>');
+        html.push('</div>');
+      });
+    }
+    html.push('</div></div>'); // card + section
+
+    /* ── CHALLENGES ── */
+    html.push('<div class="section">');
+    html.push('<div class="sec-label">30-Day Challenges</div>');
+    html.push('<div class="card">');
+    if (activeChallenges.length === 0) {
+      html.push('<div class="empty-state">No active challenges — start one in the Challenges page.</div>');
+    } else {
+      activeChallenges.forEach(function(a, idx) {
+        var meta = CHALLENGES_META[a.challengeId] || {icon:'🏆', name: a.challengeId};
+        var checkedCount = getChallengeCheckedCount(a.challengeId, a.startDate);
+        var dayNum = Math.min(Math.max(Math.floor((Date.now() - new Date(a.startDate+'T00:00:00').getTime()) / 86400000) + 1, 1), 30);
+        html.push('<div class="ch-row">');
+        html.push('<div class="ch-header">');
+        html.push('<div class="ch-icon">' + meta.icon + '</div>');
+        html.push('<div class="ch-name">' + esc(meta.name) + '</div>');
+        html.push('<div class="ch-day">Day ' + dayNum + '/30 · ' + checkedCount + ' ✓</div>');
+        html.push('</div>');
+        html.push('<div class="ch-dots">');
+        for (var i = 0; i < 30; i++) {
+          var dotDate = offsetDate(a.startDate, i);
+          var isDone = isChallengeChecked(a.challengeId, dotDate);
+          var isToday = dotDate === today;
+          html.push('<div class="ch-dot' + (isDone?' done':'') + (isToday?' today':'') + '" title="' + fmtDate(dotDate) + '"></div>');
+        }
+        html.push('</div></div>');
+      });
+    }
+    html.push('</div></div>');
+
+    /* ── FASTING ── */
+    html.push('<div class="section">');
+    html.push('<div class="sec-label">Fasting</div>');
+    if (activeFast) {
+      var startMs = new Date(activeFast.start).getTime();
+      var goalH = getFastGoalHours();
+      var goalMs2 = goalH * 3600000;
+      var elapsed2 = Date.now() - startMs;
+      var pct2 = goalMs2 > 0 ? Math.min(100, elapsed2/goalMs2*100) : 0;
+      html.push('<div class="fast-active">');
+      html.push('<div class="fast-icon">⏱️</div>');
+      html.push('<div class="fast-info">');
+      html.push('<div class="fast-time" id="fast-timer">' + fmtElapsed(elapsed2) + '</div>');
+      html.push('<div class="fast-label">Fast in progress' + (goalH > 0 ? ' · Goal: ' + goalH + 'h (' + pct2.toFixed(0) + '%)' : '') + '</div>');
+      html.push('<div class="prog-track" style="margin-top:8px"><div class="prog-fill" style="width:' + pct2.toFixed(1) + '%"></div></div>');
+      html.push('</div></div>');
+    }
+    if (fastHistory.length === 0 && !activeFast) {
+      html.push('<div class="card"><div class="empty-state">No fasting history yet.</div></div>');
+    } else if (fastHistory.length > 0) {
+      html.push('<div class="card">');
+      fastHistory.slice(0,5).forEach(function(f) {
+        var metGoal = f.goal_mins > 0 && f.duration_mins >= f.goal_mins;
+        var dateStr = f.end ? fmtDate(f.end.split('T')[0]) : '?';
+        html.push('<div class="fast-history-row">');
+        html.push('<div>');
+        html.push('<div class="fast-dur">' + fmtDur(f.duration_mins) + '</div>');
+        html.push('<div class="fast-date">' + dateStr + (f.goal_mins>0 ? ' · Goal: '+fmtDur(f.goal_mins):'') + '</div>');
+        html.push('</div>');
+        if (f.goal_mins > 0) {
+          html.push('<div class="fast-met ' + (metGoal?'yes':'no') + '">' + (metGoal?'✓ Met':'✗ Short') + '</div>');
+        }
+        html.push('</div>');
+      });
+      html.push('</div>');
+    }
+    html.push('</div>'); // section
+
+    /* ── WORKOUT LOG ── */
+    html.push('<div class="section">');
+    html.push('<div class="sec-label">Workout Log — Last 7 Days</div>');
+    html.push('<div class="card">');
+    var maxCount = workoutDays.reduce(function(m, w) { return Math.max(m, w.count); }, 0);
+    var hasAnyWorkout = maxCount > 0;
+    if (!hasAnyWorkout) {
+      html.push('<div class="empty-state">No workouts logged in the past 7 days.</div>');
+    } else {
+      html.push('<div class="wk-row">');
+      workoutDays.forEach(function(w) {
+        var barH = w.count > 0 ? Math.max(20, Math.round(w.count/maxCount*60)) : 6;
+        var d = new Date(w.date + 'T00:00:00');
+        var lbl = d.toLocaleDateString('en-US',{weekday:'short'}).slice(0,1);
+        var isToday = w.date === today;
+        html.push('<div class="wk-col">');
+        html.push('<div class="wk-count">' + (w.count>0?w.count:'') + '</div>');
+        html.push('<div class="wk-bar' + (w.count>0?' active':'') + '" style="height:' + barH + 'px' + (isToday?';box-shadow:0 0 0 1.5px var(--acc),0 0 6px var(--glow)':'') + '"></div>');
+        html.push('<div class="wk-day-lbl">' + lbl + (isToday?' ▲':'') + '</div>');
+        html.push('</div>');
+      });
+      html.push('</div>');
+    }
+    html.push('</div></div>');
+
+    /* ── NUTRITION ── */
+    html.push('<div class="section">');
+    html.push('<div class="sec-label">Nutrition — Today</div>');
+    html.push('<div class="card">');
+    if (!nutrition) {
+      html.push('<div class="empty-state">No nutrition logged today.</div>');
+    } else {
+      html.push('<div class="macro-grid">');
+      html.push('<div class="macro-cell"><div class="macro-val">' + fmt(nutrition.p) + 'g</div><div class="macro-lbl">Protein</div></div>');
+      html.push('<div class="macro-cell"><div class="macro-val">' + fmt(nutrition.c) + 'g</div><div class="macro-lbl">Carbs</div></div>');
+      html.push('<div class="macro-cell"><div class="macro-val">' + fmt(nutrition.f) + 'g</div><div class="macro-lbl">Fat</div></div>');
+      html.push('<div class="macro-cell"><div class="macro-val">' + fmt(nutrition.k) + '</div><div class="macro-lbl">Calories</div></div>');
+      html.push('</div>');
+    }
+    html.push('</div></div>');
+
+    /* ── INJECT ── */
+    document.getElementById('dash-content').innerHTML = html.join('');
+
+    /* start timer if fast is active */
+    if (activeFast) {
+      startTimer(new Date(activeFast.start).getTime());
+    }
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── INIT ── */
+  render();
+
+})();
+</script>
+</body>
+</html>

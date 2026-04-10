@@ -69,24 +69,35 @@
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
 
+  function auditStreak() {
+    const today = todayISO();
+    const s = getStreak();
+    if (!s.last || s.last === today) return;
+    const yd = new Date(); yd.setDate(yd.getDate()-1);
+    const ydStr = `${yd.getFullYear()}-${String(yd.getMonth()+1).padStart(2,'0')}-${String(yd.getDate()).padStart(2,'0')}`;
+    if (s.last === ydStr) return; // yesterday — still valid
+    // Missed at least one day
+    const freezes = getFreezes();
+    if (freezes > 0) {
+      setFreezes(freezes - 1);
+      const p = pfx();
+      if (p) localStorage.setItem(p + 'freeze_uses', parseInt(localStorage.getItem(p + 'freeze_uses') || '0') + 1);
+      s.count += 1;
+      s.last = today;
+      setStreak(s);
+      showToast('❄️ Streak freeze used — streak protected! (' + (freezes - 1) + ' left)');
+    } else {
+      s.count = 0;
+      setStreak(s);
+    }
+  }
+
   function touchStreak() {
     const today = todayISO();
     const s = getStreak();
     if (s.last === today) return;
     const yd = new Date(); yd.setDate(yd.getDate()-1);
     const ydStr = `${yd.getFullYear()}-${String(yd.getMonth()+1).padStart(2,'0')}-${String(yd.getDate()).padStart(2,'0')}`;
-    if (s.last !== ydStr && s.last !== '') {
-      // Missed at least one day — try to use a freeze
-      const freezes = getFreezes();
-      if (freezes > 0) {
-        setFreezes(freezes - 1);
-        s.count += 1;
-        s.last = today;
-        setStreak(s);
-        showToast('\u2744\uFE0F Streak freeze used \u2014 streak protected! (' + (freezes - 1) + ' left)');
-        return;
-      }
-    }
     s.count = (s.last === ydStr) ? s.count + 1 : 1;
     s.last = today;
     setStreak(s);
@@ -494,6 +505,7 @@
 
   // ── INIT ──────────────────────────────────────────────────────────────────
   function init() {
+    auditStreak();
     buildProfileBar();
     buildDayBar();
     addCheckboxColumn();

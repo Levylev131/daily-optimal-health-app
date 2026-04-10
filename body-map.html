@@ -22,22 +22,75 @@
     .bm-sub { text-align: center; color: var(--muted); font-size: .88rem; font-style: italic; margin-bottom: 36px; }
     .bm-figure-wrap { display: flex; justify-content: center; }
 
-    /* The SVG is ~360 wide × ~505 tall in viewBox units.
-       We cap at 420px wide so it fits without scrolling horizontally. */
-    .bm-svg { width: 100%; max-width: 420px; height: auto; overflow: visible; }
+    .bm-svg { width: 100%; max-width: 600px; height: auto; overflow: visible; }
 
-    /* Clickable region groups */
-    .bp { cursor: pointer; transition: filter 0.15s ease; }
-    .bp:hover { filter: brightness(1.48) saturate(1.1); }
+    /* Clickable body parts */
+    .bp {
+      cursor: pointer;
+      stroke: var(--acc);
+      stroke-opacity: 0.65;
+      transition: stroke-opacity 0.15s ease, filter 0.15s ease;
+    }
+    .bp:hover {
+      stroke-opacity: 1;
+      filter: drop-shadow(0 0 7px var(--acc));
+    }
+    .bp.active {
+      stroke-opacity: 1;
+      filter: drop-shadow(0 0 12px var(--acc));
+    }
 
-    /* Region fills — set via SVG attribute, not CSS, so gradients work */
-    .bp-region { stroke: #4a1008; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
-    .bp-skin   { stroke: #6a3818; stroke-width: 1.4; stroke-linejoin: round; stroke-linecap: round; }
+    /* Filled nodes (head, hands, feet) */
+    .bp-node {
+      fill: var(--acc);
+      fill-opacity: 0.18;
+      stroke-width: 2.5;
+    }
+    .bp-node:hover { fill-opacity: 0.35; }
 
-    /* Non-clickable decorative overlays */
-    .d-hi { pointer-events: none; }
-    .d-sh { pointer-events: none; }
-    .d-ln { pointer-events: none; fill: none; stroke: #5a1208; stroke-width: 1.1; stroke-linejoin: round; }
+    /* Line-based limbs */
+    .bp-limb {
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Joint dots — decorative, not clickable */
+    .jt {
+      fill: var(--acc);
+      fill-opacity: 0.35;
+      pointer-events: none;
+    }
+
+    /* Face details — decorative */
+    .face {
+      fill: none;
+      stroke: var(--acc);
+      stroke-opacity: 0.5;
+      stroke-linecap: round;
+      pointer-events: none;
+    }
+    .face-dot {
+      fill: var(--acc);
+      fill-opacity: 0.5;
+      pointer-events: none;
+    }
+
+    /* Muscle toggle button */
+    .bm-controls { display: flex; justify-content: center; margin-top: 22px; }
+    .muscle-btn {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      color: var(--muted); font-size: .85rem; font-weight: 700; letter-spacing: .5px;
+      padding: 10px 28px; border-radius: 10px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .muscle-btn:hover { border-color: var(--acc); color: var(--text); box-shadow: 0 0 12px var(--glow); }
+    .muscle-btn.active { background: var(--acc); color: #000; border-color: var(--acc); box-shadow: 0 0 18px var(--glow); }
+
+    /* Muscle layer */
+    .muscle-layer { display: none; }
+    .muscles .muscle-layer { display: block; }
+    .ms { fill: var(--acc); fill-opacity: 0.28; stroke: var(--acc); stroke-opacity: 0.5; stroke-width: 1; }
 
     /* Hover label */
     .bp-label {
@@ -58,346 +111,251 @@
       <p class="bm-sub">Select a region to explore</p>
 
       <div class="bm-figure-wrap">
-        <!--
-          ViewBox: x=-80 to x=280 (360 wide), y=5 to y=510 (505 tall)
-          Arms spread at ~45° like an anatomical reference diagram.
-          Body center: x=100.
-        -->
-        <svg class="bm-svg" viewBox="-80 5 360 505" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <!-- ── PEC RADIALS ─────────────────────────────────── -->
-            <radialGradient id="g-pec-l" gradientUnits="userSpaceOnUse" cx="70" cy="132" r="38">
-              <stop offset="0%"   stop-color="#e88050"/>
-              <stop offset="55%"  stop-color="#c44830"/>
-              <stop offset="100%" stop-color="#7a2015"/>
-            </radialGradient>
-            <radialGradient id="g-pec-r" gradientUnits="userSpaceOnUse" cx="130" cy="132" r="38">
-              <stop offset="0%"   stop-color="#e88050"/>
-              <stop offset="55%"  stop-color="#c44830"/>
-              <stop offset="100%" stop-color="#7a2015"/>
-            </radialGradient>
+        <svg class="bm-svg" viewBox="0 0 410 435" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(15, 0) scale(0.85, 0.85)">
 
-            <!-- ── DELTOID RADIALS ────────────────────────────── -->
-            <radialGradient id="g-delt-l" gradientUnits="userSpaceOnUse" cx="28" cy="136" r="30">
-              <stop offset="0%"   stop-color="#e07a52"/>
-              <stop offset="60%"  stop-color="#b84030"/>
-              <stop offset="100%" stop-color="#7a2015"/>
-            </radialGradient>
-            <radialGradient id="g-delt-r" gradientUnits="userSpaceOnUse" cx="172" cy="136" r="30">
-              <stop offset="0%"   stop-color="#e07a52"/>
-              <stop offset="60%"  stop-color="#b84030"/>
-              <stop offset="100%" stop-color="#7a2015"/>
-            </radialGradient>
+          <!-- ── SHOULDERS ───────────────────────────────── -->
+          <line class="bp bp-limb" id="bp-shoulders" data-label="Shoulders" data-part="shoulders"
+            x1="52" y1="112" x2="148" y2="112" stroke-width="9"/>
 
-            <!-- ── ABS BLOCK ──────────────────────────────────── -->
-            <radialGradient id="g-abs" cx="50%" cy="35%" r="65%">
-              <stop offset="0%"   stop-color="#da6c44"/>
-              <stop offset="100%" stop-color="#962c18"/>
-            </radialGradient>
+          <!-- ── TORSO ───────────────────────────────────── -->
+          <line class="bp bp-limb" id="bp-torso" data-label="Torso / Core" data-part="torso"
+            x1="100" y1="112" x2="100" y2="252" stroke-width="13"/>
 
-            <!-- ── ARM GRADIENTS (angled 45° to match arm direction) ─ -->
-            <!-- Left arm: gradient runs perpendicular to arm (right-down direction) -->
-            <linearGradient id="g-arm-l" gradientUnits="userSpaceOnUse"
-              x1="-18" y1="152" x2="8" y2="178">
-              <stop offset="0%"   stop-color="#7a2015"/>
-              <stop offset="48%"  stop-color="#de7252"/>
-              <stop offset="100%" stop-color="#7a2015"/>
-            </linearGradient>
-            <!-- Right arm: mirror direction -->
-            <linearGradient id="g-arm-r" gradientUnits="userSpaceOnUse"
-              x1="218" y1="152" x2="192" y2="178">
-              <stop offset="0%"   stop-color="#7a2015"/>
-              <stop offset="48%"  stop-color="#de7252"/>
-              <stop offset="100%" stop-color="#7a2015"/>
-            </linearGradient>
+          <!-- ── NECK ─────────────────────────────────────── -->
+          <line class="bp bp-limb" id="bp-neck" data-label="Neck" data-part="neck"
+            x1="100" y1="84" x2="100" y2="108" stroke-width="14"/>
 
-            <!-- ── THIGH / LOWER LEG (horizontal cylindrical) ── -->
-            <linearGradient id="g-cyl-tl" gradientUnits="userSpaceOnUse" x1="38" y1="0" x2="82" y2="0">
-              <stop offset="0%"   stop-color="#7a2015"/>
-              <stop offset="22%"  stop-color="#c24830"/>
-              <stop offset="50%"  stop-color="#de7252"/>
-              <stop offset="78%"  stop-color="#c24830"/>
-              <stop offset="100%" stop-color="#7a2015"/>
-            </linearGradient>
-            <linearGradient id="g-cyl-tr" gradientUnits="userSpaceOnUse" x1="118" y1="0" x2="162" y2="0">
-              <stop offset="0%"   stop-color="#7a2015"/>
-              <stop offset="22%"  stop-color="#c24830"/>
-              <stop offset="50%"  stop-color="#de7252"/>
-              <stop offset="78%"  stop-color="#c24830"/>
-              <stop offset="100%" stop-color="#7a2015"/>
-            </linearGradient>
+          <!-- ── HEAD ─────────────────────────────────────── -->
+          <g class="bp" id="bp-head" data-label="Head" data-part="head">
+            <circle cx="100" cy="50" r="34" fill="var(--bg2)" stroke="var(--acc)" stroke-width="2.5" stroke-opacity="0.75"/>
+            <!-- Eyes -->
+            <circle class="face-dot" cx="91" cy="46" r="3"/>
+            <circle class="face-dot" cx="109" cy="46" r="3"/>
+            <!-- Smile -->
+            <path class="face" d="M92,60 Q100,67 108,60" stroke-width="2"/>
+          </g>
 
-            <!-- ── TORSO ──────────────────────────────────────── -->
-            <linearGradient id="g-torso" gradientUnits="userSpaceOnUse" x1="44" y1="0" x2="156" y2="0">
-              <stop offset="0%"   stop-color="#8a2a18"/>
-              <stop offset="20%"  stop-color="#c04030"/>
-              <stop offset="50%"  stop-color="#d05838"/>
-              <stop offset="80%"  stop-color="#c04030"/>
-              <stop offset="100%" stop-color="#8a2a18"/>
-            </linearGradient>
+          <!-- ── LEFT ARM ────────────────────────────────── -->
+          <path class="bp bp-limb" id="bp-arm-l" data-label="Left Arm" data-part="arms"
+            d="M52,112 L26,186 L18,258" stroke-width="8"/>
 
-            <!-- ── HEAD SKIN ──────────────────────────────────── -->
-            <radialGradient id="g-head" gradientUnits="userSpaceOnUse" cx="95" cy="36" r="32">
-              <stop offset="0%"   stop-color="#daa878"/>
-              <stop offset="65%"  stop-color="#c8906a"/>
-              <stop offset="100%" stop-color="#9e6440"/>
-            </radialGradient>
-          </defs>
+          <!-- ── RIGHT ARM ───────────────────────────────── -->
+          <path class="bp bp-limb" id="bp-arm-r" data-label="Right Arm" data-part="arms"
+            d="M148,112 L174,186 L182,258" stroke-width="8"/>
 
-          <!-- ════════════════════════════════════════════════════
-               DRAWING ORDER (back → front):
-               chest → abdomen → pelvis
-               → thighs → lower legs → feet
-               → shoulders → arms → hands
-               → neck → head
-               → decorative anatomy lines last (pointer-events:none)
-               ════════════════════════════════════════════════════ -->
+          <!-- ── LEFT HAND ───────────────────────────────── -->
+          <circle class="bp bp-node" id="bp-hand-l" data-label="Left Hand" data-part="hands"
+            cx="18" cy="269" r="12" stroke-width="2"/>
 
-          <!-- ── CHEST ──────────────────────────────────────────── -->
-          <g class="bp" id="bp-chest" data-label="Chest">
-            <path class="bp-region" fill="url(#g-torso)"
-              d="M88,100 Q70,101 57,110 Q45,120 44,136 L44,185
-                 L156,185 L156,136 Q155,120 143,110 Q130,101 112,100 Z"/>
+          <!-- ── RIGHT HAND ──────────────────────────────── -->
+          <circle class="bp bp-node" id="bp-hand-r" data-label="Right Hand" data-part="hands"
+            cx="182" cy="269" r="12" stroke-width="2"/>
+
+          <!-- ── LEFT LEG ────────────────────────────────── -->
+          <path class="bp bp-limb" id="bp-leg-l" data-label="Left Leg" data-part="legs"
+            d="M84,252 L72,368 L66,460" stroke-width="9"/>
+
+          <!-- ── RIGHT LEG ───────────────────────────────── -->
+          <path class="bp bp-limb" id="bp-leg-r" data-label="Right Leg" data-part="legs"
+            d="M116,252 L128,368 L134,460" stroke-width="9"/>
+
+          <!-- ── HIPS ────────────────────────────────────── -->
+          <line class="bp bp-limb" id="bp-hips" data-label="Hips / Pelvis" data-part="hips"
+            x1="74" y1="252" x2="126" y2="252" stroke-width="9"/>
+
+          <!-- ── LEFT FOOT ───────────────────────────────── -->
+          <ellipse class="bp bp-node" id="bp-foot-l" data-label="Left Foot" data-part="feet"
+            cx="54" cy="468" rx="22" ry="9" stroke-width="2"/>
+
+          <!-- ── RIGHT FOOT ──────────────────────────────── -->
+          <ellipse class="bp bp-node" id="bp-foot-r" data-label="Right Foot" data-part="feet"
+            cx="146" cy="468" rx="22" ry="9" stroke-width="2"/>
+
+          <!-- ── JOINT DOTS (decorative) ─────────────────── -->
+          <circle class="jt" cx="26"  cy="186" r="5.5"/> <!-- left elbow -->
+          <circle class="jt" cx="174" cy="186" r="5.5"/> <!-- right elbow -->
+          <circle class="jt" cx="72"  cy="368" r="6"/>   <!-- left knee -->
+          <circle class="jt" cx="128" cy="368" r="6"/>   <!-- right knee -->
+          <circle class="jt" cx="52"  cy="112" r="5"/>   <!-- left shoulder -->
+          <circle class="jt" cx="148" cy="112" r="5"/>   <!-- right shoulder -->
+          <circle class="jt" cx="84"  cy="252" r="5"/>   <!-- left hip -->
+          <circle class="jt" cx="116" cy="252" r="5"/>   <!-- right hip -->
+
+          <!-- ── MUSCLE LAYER ────────────────────────────── -->
+          <g class="muscle-layer">
+            <!-- Left SCM (neck) -->
+            <ellipse class="ms bp" data-label="Left SCM" data-part="neck" cx="93" cy="96" rx="5" ry="14" transform="rotate(-10 93 96)"/>
+            <!-- Right SCM (neck) -->
+            <ellipse class="ms bp" data-label="Right SCM" data-part="neck" cx="107" cy="96" rx="5" ry="14" transform="rotate(10 107 96)"/>
+            <!-- Trapezius -->
+            <ellipse class="ms bp" data-label="Trapezius" data-part="shoulders" cx="100" cy="115" rx="34" ry="10"/>
+            <!-- Left deltoid -->
+            <ellipse class="ms bp" data-label="Left Deltoid" data-part="shoulders" cx="46" cy="130" rx="16" ry="20" transform="rotate(-15 46 130)"/>
+            <!-- Right deltoid -->
+            <ellipse class="ms bp" data-label="Right Deltoid" data-part="shoulders" cx="154" cy="130" rx="16" ry="20" transform="rotate(15 154 130)"/>
             <!-- Left pec -->
-            <path class="d-hi" fill="url(#g-pec-l)"
-              d="M88,108 Q70,108 60,122 Q52,136 57,155
-                 Q63,168 78,170 Q92,170 98,158 L100,126 Q96,110 88,108 Z"/>
+            <ellipse class="ms bp" data-label="Left Pec" data-part="torso" cx="78" cy="152" rx="22" ry="20"/>
             <!-- Right pec -->
-            <path class="d-hi" fill="url(#g-pec-r)"
-              d="M112,108 Q130,108 140,122 Q148,136 143,155
-                 Q137,168 122,170 Q108,170 102,158 L100,126 Q104,110 112,108 Z"/>
-            <!-- Sternum groove -->
-            <rect class="d-sh" fill="#5a1008" opacity="0.48" x="97" y="110" width="6" height="68" rx="2"/>
-            <!-- Clavicles -->
-            <path class="d-ln" d="M88,106 Q74,102 58,114"/>
-            <path class="d-ln" d="M112,106 Q126,102 142,114"/>
-            <!-- Lower pec border -->
-            <path class="d-ln" d="M54,170 Q78,178 100,176 Q122,178 146,170"/>
+            <ellipse class="ms bp" data-label="Right Pec" data-part="torso" cx="122" cy="152" rx="22" ry="20"/>
+            <!-- Left bicep -->
+            <ellipse class="ms bp" data-label="Left Bicep" data-part="arms" cx="39" cy="149" rx="10" ry="32" transform="rotate(20 39 149)"/>
+            <!-- Right bicep -->
+            <ellipse class="ms bp" data-label="Right Bicep" data-part="arms" cx="161" cy="149" rx="10" ry="32" transform="rotate(-20 161 149)"/>
+            <!-- Left forearm -->
+            <ellipse class="ms bp" data-label="Left Forearm" data-part="arms" cx="22" cy="222" rx="8" ry="30" transform="rotate(-6 22 222)"/>
+            <!-- Right forearm -->
+            <ellipse class="ms bp" data-label="Right Forearm" data-part="arms" cx="178" cy="222" rx="8" ry="30" transform="rotate(6 178 222)"/>
+            <!-- Abs -->
+            <rect class="ms bp" data-label="Abs" data-part="torso" x="83" y="178" width="14" height="15" rx="4"/>
+            <rect class="ms bp" data-label="Abs" data-part="torso" x="103" y="178" width="14" height="15" rx="4"/>
+            <rect class="ms bp" data-label="Abs" data-part="torso" x="83" y="197" width="14" height="15" rx="4"/>
+            <rect class="ms bp" data-label="Abs" data-part="torso" x="103" y="197" width="14" height="15" rx="4"/>
+            <rect class="ms bp" data-label="Abs" data-part="torso" x="83" y="216" width="14" height="15" rx="4"/>
+            <rect class="ms bp" data-label="Abs" data-part="torso" x="103" y="216" width="14" height="15" rx="4"/>
+            <!-- Left oblique -->
+            <ellipse class="ms bp" data-label="Left Oblique" data-part="torso" cx="62" cy="210" rx="10" ry="32" transform="rotate(-8 62 210)"/>
+            <!-- Right oblique -->
+            <ellipse class="ms bp" data-label="Right Oblique" data-part="torso" cx="138" cy="210" rx="10" ry="32" transform="rotate(8 138 210)"/>
+            <!-- Left quad -->
+            <ellipse class="ms bp" data-label="Left Quad" data-part="legs" cx="78" cy="312" rx="15" ry="52" transform="rotate(-5 78 312)"/>
+            <!-- Right quad -->
+            <ellipse class="ms bp" data-label="Right Quad" data-part="legs" cx="122" cy="312" rx="15" ry="52" transform="rotate(5 122 312)"/>
+            <!-- Left calf -->
+            <ellipse class="ms bp" data-label="Left Calf" data-part="legs" cx="70" cy="412" rx="11" ry="38" transform="rotate(-3 70 412)"/>
+            <!-- Right calf -->
+            <ellipse class="ms bp" data-label="Right Calf" data-part="legs" cx="130" cy="412" rx="11" ry="38" transform="rotate(3 130 412)"/>
           </g>
 
-          <!-- ── ABDOMEN ──────────────────────────────────────── -->
-          <g class="bp" id="bp-abdomen" data-label="Abdomen">
-            <path class="bp-region" fill="url(#g-torso)"
-              d="M44,185 L44,215 Q44,232 52,242
-                 Q50,258 44,274 L44,280
-                 L156,280 L156,274
-                 Q150,258 148,242 Q156,232 156,215
-                 L156,185 Z"/>
-            <!-- Left abs column -->
-            <rect class="d-hi" fill="url(#g-abs)" x="57" y="192" width="39" height="19" rx="5"/>
-            <rect class="d-hi" fill="url(#g-abs)" x="57" y="217" width="39" height="19" rx="5"/>
-            <rect class="d-hi" fill="url(#g-abs)" x="57" y="242" width="38" height="17" rx="5"/>
-            <!-- Right abs column -->
-            <rect class="d-hi" fill="url(#g-abs)" x="104" y="192" width="39" height="19" rx="5"/>
-            <rect class="d-hi" fill="url(#g-abs)" x="104" y="217" width="39" height="19" rx="5"/>
-            <rect class="d-hi" fill="url(#g-abs)" x="105" y="242" width="38" height="17" rx="5"/>
-            <!-- Linea alba -->
-            <rect class="d-sh" fill="#5a1008" opacity="0.45" x="97" y="188" width="6" height="90" rx="2"/>
-            <!-- External obliques -->
-            <path class="d-sh" fill="#5a1008" opacity="0.28"
-              d="M44,188 L57,188 L57,276 Q50,268 44,256 Z"/>
-            <path class="d-sh" fill="#5a1008" opacity="0.28"
-              d="M156,188 L143,188 L143,276 Q150,268 156,256 Z"/>
-            <!-- Navel -->
-            <circle class="d-ln" cx="100" cy="240" r="3.5" stroke="#5a1208" stroke-width="1.3" fill="none"/>
           </g>
 
-          <!-- ── PELVIS ────────────────────────────────────────── -->
-          <g class="bp" id="bp-pelvis" data-label="Pelvis">
-            <path class="bp-region" fill="url(#g-torso)"
-              d="M44,280 L44,310
-                 Q62,320 82,323 Q91,325 100,326
-                 Q109,325 118,323 Q138,320 156,310
-                 L156,280 Z"/>
-            <path class="d-ln" d="M66,282 Q58,296 52,310"/>
-            <path class="d-ln" d="M134,282 Q142,296 148,310"/>
+          <!-- ── BACK FIGURE ────────────────────────────────── -->
+          <g transform="translate(215, 0) scale(0.85, 0.85)">
+
+          <!-- ── SHOULDERS (back) ───────────────────────────── -->
+          <line class="bp bp-limb" data-label="Shoulders (Back)" data-part="shoulders"
+            x1="52" y1="112" x2="148" y2="112" stroke-width="9"/>
+
+          <!-- ── UPPER BACK ──────────────────────────────────── -->
+          <line class="bp bp-limb" data-label="Upper Back" data-part="torso"
+            x1="100" y1="112" x2="100" y2="182" stroke-width="13"/>
+
+          <!-- ── LOWER BACK ──────────────────────────────────── -->
+          <line class="bp bp-limb" data-label="Lower Back" data-part="torso"
+            x1="100" y1="182" x2="100" y2="252" stroke-width="13"/>
+
+          <!-- ── NECK (back) ────────────────────────────────── -->
+          <line class="bp bp-limb" data-label="Neck (Back)" data-part="neck"
+            x1="100" y1="84" x2="100" y2="108" stroke-width="14"/>
+
+          <!-- ── HEAD (back — no face) ──────────────────────── -->
+          <g class="bp" data-label="Head (Back)" data-part="head">
+            <circle cx="100" cy="50" r="34" fill="var(--bg2)" stroke="var(--acc)" stroke-width="2.5" stroke-opacity="0.75"/>
           </g>
 
-          <!-- ── LEFT THIGH ────────────────────────────────────── -->
-          <g class="bp" id="bp-thigh-l" data-label="Left Thigh">
-            <path class="bp-region" fill="url(#g-cyl-tl)"
-              d="M44,310 Q62,320 82,323 L80,385
-                 Q80,396 62,398 L50,396
-                 Q38,392 38,382 L44,310 Z"/>
-            <path class="d-sh" fill="#5a1008" opacity="0.32"
-              d="M44,325 L38,383 Q38,392 48,395 L52,393 L50,322 Z"/>
-            <path class="d-hi" fill="#d96844" opacity="0.42"
-              d="M60,324 Q56,348 58,374 Q61,384 67,384 L69,378
-                 Q67,364 65,342 Q63,328 60,324 Z"/>
-            <path class="d-hi" fill="#d96844" opacity="0.48"
-              d="M68,358 Q62,368 66,380 Q72,390 80,384
-                 Q84,374 78,358 Q74,350 68,358 Z"/>
+          <!-- ── LEFT ARM (back) ────────────────────────────── -->
+          <path class="bp bp-limb" data-label="Left Arm (Back)" data-part="arms"
+            d="M52,112 L26,186 L18,258" stroke-width="8"/>
+
+          <!-- ── RIGHT ARM (back) ───────────────────────────── -->
+          <path class="bp bp-limb" data-label="Right Arm (Back)" data-part="arms"
+            d="M148,112 L174,186 L182,258" stroke-width="8"/>
+
+          <!-- ── LEFT HAND (back) ───────────────────────────── -->
+          <circle class="bp bp-node" data-label="Left Hand (Back)" data-part="hands"
+            cx="18" cy="269" r="12" stroke-width="2"/>
+
+          <!-- ── RIGHT HAND (back) ──────────────────────────── -->
+          <circle class="bp bp-node" data-label="Right Hand (Back)" data-part="hands"
+            cx="182" cy="269" r="12" stroke-width="2"/>
+
+          <!-- ── LEFT LEG (back) ────────────────────────────── -->
+          <path class="bp bp-limb" data-label="Left Leg (Back)" data-part="legs"
+            d="M84,252 L72,368 L66,460" stroke-width="9"/>
+
+          <!-- ── RIGHT LEG (back) ───────────────────────────── -->
+          <path class="bp bp-limb" data-label="Right Leg (Back)" data-part="legs"
+            d="M116,252 L128,368 L134,460" stroke-width="9"/>
+
+          <!-- ── HIPS (back) ────────────────────────────────── -->
+          <line class="bp bp-limb" data-label="Glutes / Hips" data-part="hips"
+            x1="74" y1="252" x2="126" y2="252" stroke-width="9"/>
+
+          <!-- ── LEFT FOOT (back) ───────────────────────────── -->
+          <ellipse class="bp bp-node" data-label="Left Foot (Back)" data-part="feet"
+            cx="54" cy="468" rx="22" ry="9" stroke-width="2"/>
+
+          <!-- ── RIGHT FOOT (back) ──────────────────────────── -->
+          <ellipse class="bp bp-node" data-label="Right Foot (Back)" data-part="feet"
+            cx="146" cy="468" rx="22" ry="9" stroke-width="2"/>
+
+          <!-- ── JOINT DOTS ──────────────────────────────────── -->
+          <circle class="jt" cx="26"  cy="186" r="5.5"/>
+          <circle class="jt" cx="174" cy="186" r="5.5"/>
+          <circle class="jt" cx="72"  cy="368" r="6"/>
+          <circle class="jt" cx="128" cy="368" r="6"/>
+          <circle class="jt" cx="52"  cy="112" r="5"/>
+          <circle class="jt" cx="148" cy="112" r="5"/>
+          <circle class="jt" cx="84"  cy="252" r="5"/>
+          <circle class="jt" cx="116" cy="252" r="5"/>
+
+          <!-- ── BACK MUSCLE LAYER ───────────────────────────── -->
+          <g class="muscle-layer">
+            <!-- Upper trapezius -->
+            <ellipse class="ms bp" data-label="Upper Trapezius" data-part="shoulders" cx="100" cy="113" rx="40" ry="13"/>
+            <!-- Left rear delt -->
+            <ellipse class="ms bp" data-label="Left Rear Delt" data-part="shoulders" cx="44" cy="128" rx="15" ry="18" transform="rotate(15 44 128)"/>
+            <!-- Right rear delt -->
+            <ellipse class="ms bp" data-label="Right Rear Delt" data-part="shoulders" cx="156" cy="128" rx="15" ry="18" transform="rotate(-15 156 128)"/>
+            <!-- Left rhomboid -->
+            <ellipse class="ms bp" data-label="Left Rhomboid" data-part="shoulders" cx="84" cy="152" rx="14" ry="18"/>
+            <!-- Right rhomboid -->
+            <ellipse class="ms bp" data-label="Right Rhomboid" data-part="shoulders" cx="116" cy="152" rx="14" ry="18"/>
+            <!-- Left lat -->
+            <ellipse class="ms bp" data-label="Left Lat" data-part="torso" cx="68" cy="192" rx="14" ry="44" transform="rotate(-8 68 192)"/>
+            <!-- Right lat -->
+            <ellipse class="ms bp" data-label="Right Lat" data-part="torso" cx="132" cy="192" rx="14" ry="44" transform="rotate(8 132 192)"/>
+            <!-- Left erector spinae -->
+            <rect class="ms bp" data-label="Left Erector" data-part="torso" x="87" y="162" width="10" height="78" rx="4"/>
+            <!-- Right erector spinae -->
+            <rect class="ms bp" data-label="Right Erector" data-part="torso" x="103" y="162" width="10" height="78" rx="4"/>
+            <!-- Left tricep -->
+            <ellipse class="ms bp" data-label="Left Tricep" data-part="arms" cx="39" cy="149" rx="10" ry="30" transform="rotate(20 39 149)"/>
+            <!-- Right tricep -->
+            <ellipse class="ms bp" data-label="Right Tricep" data-part="arms" cx="161" cy="149" rx="10" ry="30" transform="rotate(-20 161 149)"/>
+            <!-- Left forearm (back) -->
+            <ellipse class="ms bp" data-label="Left Forearm" data-part="arms" cx="22" cy="222" rx="8" ry="30" transform="rotate(-6 22 222)"/>
+            <!-- Right forearm (back) -->
+            <ellipse class="ms bp" data-label="Right Forearm" data-part="arms" cx="178" cy="222" rx="8" ry="30" transform="rotate(6 178 222)"/>
+            <!-- Left glute -->
+            <ellipse class="ms bp" data-label="Left Glute" data-part="hips" cx="84" cy="266" rx="22" ry="18"/>
+            <!-- Right glute -->
+            <ellipse class="ms bp" data-label="Right Glute" data-part="hips" cx="116" cy="266" rx="22" ry="18"/>
+            <!-- Left hamstring -->
+            <ellipse class="ms bp" data-label="Left Hamstring" data-part="legs" cx="78" cy="312" rx="14" ry="52" transform="rotate(-5 78 312)"/>
+            <!-- Right hamstring -->
+            <ellipse class="ms bp" data-label="Right Hamstring" data-part="legs" cx="122" cy="312" rx="14" ry="52" transform="rotate(5 122 312)"/>
+            <!-- Left gastrocnemius -->
+            <ellipse class="ms bp" data-label="Left Calf" data-part="legs" cx="70" cy="408" rx="12" ry="40" transform="rotate(-3 70 408)"/>
+            <!-- Right gastrocnemius -->
+            <ellipse class="ms bp" data-label="Right Calf" data-part="legs" cx="130" cy="408" rx="12" ry="40" transform="rotate(3 130 408)"/>
           </g>
 
-          <!-- ── RIGHT THIGH ───────────────────────────────────── -->
-          <g class="bp" id="bp-thigh-r" data-label="Right Thigh">
-            <path class="bp-region" fill="url(#g-cyl-tr)"
-              d="M156,310 Q138,320 118,323 L120,385
-                 Q120,396 138,398 L150,396
-                 Q162,392 162,382 L156,310 Z"/>
-            <path class="d-sh" fill="#5a1008" opacity="0.32"
-              d="M156,325 L162,383 Q162,392 152,395 L148,393 L150,322 Z"/>
-            <path class="d-hi" fill="#d96844" opacity="0.42"
-              d="M140,324 Q144,348 142,374 Q139,384 133,384 L131,378
-                 Q133,364 135,342 Q137,328 140,324 Z"/>
-            <path class="d-hi" fill="#d96844" opacity="0.48"
-              d="M132,358 Q138,368 134,380 Q128,390 120,384
-                 Q116,374 122,358 Q126,350 132,358 Z"/>
           </g>
 
-          <!-- ── LEFT LOWER LEG ────────────────────────────────── -->
-          <g class="bp" id="bp-lower-leg-l" data-label="Left Lower Leg">
-            <path class="bp-region" fill="url(#g-cyl-tl)"
-              d="M38,398 L42,464 Q42,475 56,477
-                 L72,476 Q80,470 78,398 Z"/>
-            <path class="d-hi" fill="#d96844" opacity="0.42"
-              d="M56,406 L60,466 Q62,474 58,475 L52,474
-                 Q48,467 44,406 Z"/>
-            <path class="d-sh" fill="#5a1008" opacity="0.28"
-              d="M38,402 L40,444 Q44,456 48,456 L50,444 L46,400 Z"/>
-          </g>
-
-          <!-- ── RIGHT LOWER LEG ───────────────────────────────── -->
-          <g class="bp" id="bp-lower-leg-r" data-label="Right Lower Leg">
-            <path class="bp-region" fill="url(#g-cyl-tr)"
-              d="M162,398 L158,464 Q158,475 144,477
-                 L128,476 Q120,470 122,398 Z"/>
-            <path class="d-hi" fill="#d96844" opacity="0.42"
-              d="M144,406 L140,466 Q138,474 142,475 L148,474
-                 Q152,467 156,406 Z"/>
-            <path class="d-sh" fill="#5a1008" opacity="0.28"
-              d="M162,402 L160,444 Q156,456 152,456 L150,444 L154,400 Z"/>
-          </g>
-
-          <!-- ── LEFT FOOT ─────────────────────────────────────── -->
-          <g class="bp" id="bp-foot-l" data-label="Left Foot">
-            <path class="bp-skin" fill="#c8906a"
-              d="M42,474 L34,483 Q22,496 24,505
-                 L78,505 Q83,493 80,474 Z"/>
-          </g>
-
-          <!-- ── RIGHT FOOT ────────────────────────────────────── -->
-          <g class="bp" id="bp-foot-r" data-label="Right Foot">
-            <path class="bp-skin" fill="#c8906a"
-              d="M158,474 L166,483 Q178,496 176,505
-                 L122,505 Q117,493 120,474 Z"/>
-          </g>
-
-          <!-- ── LEFT SHOULDER (deltoid) ───────────────────────── -->
-          <!--
-            With arm spread at 45°, the shoulder bridges the chest side
-            and the upper arm. The deltoid sits at roughly (28, 136).
-          -->
-          <g class="bp" id="bp-shoulder-l" data-label="Left Shoulder">
-            <path class="bp-region" fill="url(#g-delt-l)"
-              d="M44,106 Q26,100 12,116
-                 Q2,132 8,156
-                 Q16,172 36,174
-                 L52,170 Q62,156 60,130
-                 Q58,110 44,106 Z"/>
-          </g>
-
-          <!-- ── RIGHT SHOULDER (deltoid) ──────────────────────── -->
-          <g class="bp" id="bp-shoulder-r" data-label="Right Shoulder">
-            <path class="bp-region" fill="url(#g-delt-r)"
-              d="M156,106 Q174,100 188,116
-                 Q198,132 192,156
-                 Q184,172 164,174
-                 L148,170 Q138,156 140,130
-                 Q142,110 156,106 Z"/>
-          </g>
-
-          <!-- ── LEFT ARM ──────────────────────────────────────── -->
-          <!--
-            Arm goes from shoulder (~44,118) at ~45° down-left to wrist.
-            Elbow approx at (-2, 175). Wrist at (-40, 232).
-            Path traces outer edge (above-right of arm centerline),
-            curves around the hand, traces inner edge back.
-          -->
-          <g class="bp" id="bp-arm-l" data-label="Left Arm">
-            <path class="bp-region" fill="url(#g-arm-l)"
-              d="M 38,110
-                 L -10,164
-                 L -46,222
-                 Q -62,244 -52,256
-                 Q -40,264 -32,250
-                 L -22,228
-                 L  8,172
-                 L 54,120
-                 Z"/>
-            <!-- Bicep belly (front face, upper arm) -->
-            <ellipse class="d-hi" fill="#e07852" opacity="0.54"
-              cx="-2" cy="136" rx="10" ry="26"
-              transform="rotate(-45 -2 136)"/>
-            <!-- Brachioradialis (forearm, outer face) -->
-            <path class="d-hi" fill="#d46840" opacity="0.36"
-              d="M -14,200 L -38,238 Q -42,246 -36,250
-                 L -28,246 L -6,206 Z"/>
-            <!-- Tricep / posterior shadow -->
-            <path class="d-sh" fill="#5a1008" opacity="0.25"
-              d="M 8,172 L -22,228 L -32,250 L -26,254
-                 L -14,230 L 14,176 Z"/>
-          </g>
-
-          <!-- ── RIGHT ARM ─────────────────────────────────────── -->
-          <g class="bp" id="bp-arm-r" data-label="Right Arm">
-            <path class="bp-region" fill="url(#g-arm-r)"
-              d="M 162,110
-                 L 210,164
-                 L 246,222
-                 Q 262,244 252,256
-                 Q 240,264 232,250
-                 L 222,228
-                 L 192,172
-                 L 146,120
-                 Z"/>
-            <!-- Bicep belly -->
-            <ellipse class="d-hi" fill="#e07852" opacity="0.54"
-              cx="202" cy="136" rx="10" ry="26"
-              transform="rotate(45 202 136)"/>
-            <!-- Brachioradialis -->
-            <path class="d-hi" fill="#d46840" opacity="0.36"
-              d="M 214,200 L 238,238 Q 242,246 236,250
-                 L 228,246 L 206,206 Z"/>
-            <!-- Tricep / posterior shadow -->
-            <path class="d-sh" fill="#5a1008" opacity="0.25"
-              d="M 192,172 L 222,228 L 232,250 L 226,254
-                 L 214,230 L 186,176 Z"/>
-          </g>
-
-          <!-- ── LEFT HAND ─────────────────────────────────────── -->
-          <g class="bp" id="bp-hand-l" data-label="Left Hand">
-            <path class="bp-skin" fill="#c8906a"
-              d="M -32,250 Q -46,256 -58,262
-                 Q -74,274 -68,288
-                 Q -60,298 -46,292
-                 L -22,270 Q -26,260 -32,250 Z"/>
-          </g>
-
-          <!-- ── RIGHT HAND ─────────────────────────────────────── -->
-          <g class="bp" id="bp-hand-r" data-label="Right Hand">
-            <path class="bp-skin" fill="#c8906a"
-              d="M 232,250 Q 246,256 258,262
-                 Q 274,274 268,288
-                 Q 260,298 246,292
-                 L 222,270 Q 226,260 232,250 Z"/>
-          </g>
-
-          <!-- ── NECK ──────────────────────────────────────────── -->
-          <g class="bp" id="bp-neck" data-label="Neck">
-            <path class="bp-skin" fill="#c8906a"
-              d="M91,80 L109,80 L112,100 L88,100 Z"/>
-            <line class="d-ln" stroke="#6a3818" stroke-width="0.9" x1="93" y1="82" x2="89" y2="99"/>
-            <line class="d-ln" stroke="#6a3818" stroke-width="0.9" x1="107" y1="82" x2="111" y2="99"/>
-          </g>
-
-          <!-- ── HEAD ──────────────────────────────────────────── -->
-          <g class="bp" id="bp-head" data-label="Head">
-            <ellipse class="bp-skin" fill="url(#g-head)"
-              cx="100" cy="46" rx="29" ry="36"/>
-          </g>
+          <!-- ── FIGURE LABELS ───────────────────────────────── -->
+          <text x="100" y="428" text-anchor="middle"
+            font-size="11" font-weight="700" letter-spacing="2"
+            fill="var(--muted)" font-family="inherit">FRONT</text>
+          <text x="300" y="428" text-anchor="middle"
+            font-size="11" font-weight="700" letter-spacing="2"
+            fill="var(--muted)" font-family="inherit">BACK</text>
 
         </svg>
+      </div>
+
+      <div class="bm-controls">
+        <button class="muscle-btn" id="muscle-btn">💪 Show Muscles</button>
       </div>
     </div>
   </div>
@@ -409,6 +367,15 @@
     if (STATE.mode === 'degen') document.body.classList.add('degen');
     if (STATE.mode === 'elder') document.body.classList.add('elder');
     initParticles();
+
+    const muscleBtn = document.getElementById('muscle-btn');
+    const figureWrap = document.querySelector('.bm-figure-wrap');
+    muscleBtn.addEventListener('click', () => {
+      figureWrap.classList.toggle('muscles');
+      const on = figureWrap.classList.contains('muscles');
+      muscleBtn.classList.toggle('active', on);
+      muscleBtn.textContent = on ? '💪 Hide Muscles' : '💪 Show Muscles';
+    });
 
     const label = document.getElementById('bp-label');
     document.querySelectorAll('.bp').forEach(el => {
@@ -422,7 +389,8 @@
       });
       el.addEventListener('mouseleave', () => label.classList.remove('show'));
       el.addEventListener('click', () => {
-        // placeholder — will wire up later
+        const part = el.dataset.part;
+        if (part) window.location.href = 'body-part.html?part=' + part;
       });
     });
   </script>

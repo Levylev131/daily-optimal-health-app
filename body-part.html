@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Body Part — Daily Optimal Health</title>
+  <link rel="stylesheet" href="index.css">
+  <script src="constants.js"></script>
+  <script src="schedules-data.js"></script>
+  <script src="utils.js"></script>
+  <script src="modals.js"></script>
+  <script src="stats.js"></script>
+  <script src="profile.js"></script>
+  <style>
+    .bp-page { max-width: 680px; margin: 0 auto; padding: 32px 20px 80px; }
+    .bp-title {
+      text-align: center;
+      font-size: clamp(2rem, 6vw, 3rem); font-weight: 900; letter-spacing: 1px;
+      text-shadow: 0 0 50px var(--glow), 0 2px 12px rgba(0,0,0,.4);
+      margin-bottom: 6px;
+    }
+    .bp-sub { text-align: center; color: var(--muted); font-size: .88rem; font-style: italic; margin-bottom: 36px; }
+    .bp-card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: 16px; padding: 28px 24px; margin-bottom: 16px;
+    }
+    .bp-card h2 { font-size: 1rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--acc); margin-bottom: 12px; }
+    .bp-card p  { color: var(--muted); font-size: .9rem; line-height: 1.65; margin: 0; }
+    .bp-card ul { color: var(--muted); font-size: .9rem; line-height: 1.8; margin: 0; padding-left: 1.2em; }
+    .workout-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid var(--glass-b);
+    }
+    .workout-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .workout-row:first-child { padding-top: 0; }
+    .workout-name { font-size: .9rem; font-weight: 600; color: var(--text); }
+    .workout-note { font-size: .76rem; color: var(--muted); margin-top: 2px; }
+    .workout-sets { font-size: .82rem; font-weight: 700; color: var(--acc); white-space: nowrap; margin-left: 12px; }
+  </style>
+</head>
+<body>
+  <div id="particles"></div>
+  <div id="app">
+    <div class="bp-page">
+      <button class="sch-back" onclick="window.location.href='body-map.html'">← Body Map</button>
+      <h1 class="bp-title" id="part-title"></h1>
+      <p class="bp-sub" id="part-sub"></p>
+      <div id="part-content"></div>
+    </div>
+  </div>
+  <div id="toast"></div>
+
+  <script>
+    if (STATE.mode === 'degen') document.body.classList.add('degen');
+    if (STATE.mode === 'elder') document.body.classList.add('elder');
+    initParticles();
+
+    const PARTS = {
+      head: {
+        title: 'Head',
+        sub: 'Brain, eyes, jaw, sinuses',
+        sections: [
+          { heading: 'Overview', body: 'Your head houses the brain, sensory organs, and the start of the nervous system. Daily habits here have outsized effects on cognition, mood, and energy.' },
+          { heading: 'Key habits', list: ['Sleep 7–9 hrs for memory consolidation', 'Limit screen time before bed', 'Stay hydrated — even mild dehydration impairs focus', 'Daily sunlight exposure regulates circadian rhythm'] },
+          { heading: 'Common issues', list: ['Headaches / migraines', 'Eye strain from screens', 'Jaw tension (TMJ)', 'Brain fog'] },
+        ],
+        workouts: [
+          { name: 'Meditation', sets: '10 min', note: 'Reduces cortisol, improves focus and sleep quality' },
+          { name: '20-20-20 Eye Reset', sets: 'Every 20 min', note: 'Look at something 20ft away for 20 seconds' },
+          { name: 'Jaw Release', sets: '2 min', note: 'Open wide, hold 5s, relax — repeat to relieve TMJ tension' },
+          { name: 'Nasal Breathing Cardio', sets: '20 min', note: 'Breathe only through nose during low-intensity cardio' },
+          { name: 'Cold Water Face Splash', sets: '3×', note: 'Activates the dive reflex — lowers heart rate, sharpens focus' },
+        ]
+      },
+      neck: {
+        title: 'Neck',
+        sub: 'Cervical spine, throat, thyroid',
+        sections: [
+          { heading: 'Overview', body: 'The neck supports the head and houses the cervical spine, major blood vessels to the brain, and the thyroid gland. Posture and mobility here affect the whole body.' },
+          { heading: 'Key habits', list: ['Check your screen height — eyes level with top third of monitor', 'Neck stretches morning and evening', 'Avoid looking down at your phone for long periods', 'Strengthen deep neck flexors'] },
+          { heading: 'Common issues', list: ['Neck stiffness / tech neck', 'Cervical disc problems', 'Thyroid dysfunction'] },
+        ],
+        workouts: [
+          { name: 'Chin Tucks', sets: '3×15', note: 'Flatten your neck against the wall — activates deep neck flexors' },
+          { name: 'Neck Side Stretch', sets: '3×30s each', note: 'Ear to shoulder, gentle — hold without forcing' },
+          { name: 'Levator Scapulae Stretch', sets: '2×40s each', note: 'Look down at your armpit and hold' },
+          { name: 'Prone Y-T-W Raises', sets: '3×12', note: 'Lie face down, raise arms in Y, T, W shapes — builds neck base stability' },
+          { name: 'Neck Nods (yes/no)', sets: '2×20 each', note: 'Slow controlled range-of-motion warm-up' },
+        ]
+      },
+      shoulders: {
+        title: 'Shoulders',
+        sub: 'Deltoids, rotator cuff, scapula',
+        sections: [
+          { heading: 'Overview', body: 'The shoulder is the most mobile joint in the body — and the most injury-prone. Stability comes from the rotator cuff and scapular muscles, not just the deltoids.' },
+          { heading: 'Key habits', list: ['Daily external rotation exercises for rotator cuff health', 'Band pull-aparts to strengthen rear delts', 'Avoid internal rotation dominance (too much pressing, no pulling)', 'Stretch pecs and lats regularly'] },
+          { heading: 'Common issues', list: ['Rotator cuff tears', 'Shoulder impingement', 'AC joint pain', 'Frozen shoulder'] },
+        ],
+        workouts: [
+          { name: 'Band Pull-Aparts', sets: '3×20', note: 'Keep arms straight, pull band to chest — essential for shoulder health' },
+          { name: 'Face Pulls', sets: '3×15', note: 'Cable or band at face height — targets rear delt and external rotators' },
+          { name: 'External Rotation (side-lying)', sets: '3×15 each', note: 'Light weight, slow — builds rotator cuff resilience' },
+          { name: 'Wall Slides', sets: '3×12', note: 'Arms on wall, slide up without losing contact — scapular control' },
+          { name: 'Cuban Press', sets: '3×10', note: 'Upright row → external rotate → press — full rotator cuff warm-up' },
+          { name: 'Doorway Pec Stretch', sets: '2×45s', note: 'Opens the chest and counters internal rotation dominance' },
+        ]
+      },
+      torso: {
+        title: 'Torso / Core',
+        sub: 'Spine, abs, obliques, lower back',
+        sections: [
+          { heading: 'Overview', body: 'The core is your structural foundation — not just abs, but every muscle that stabilises the spine. A strong, mobile core protects the lower back and transfers force through the body.' },
+          { heading: 'Key habits', list: ['Brace before lifting — not just sucking in', 'Mix stability (planks) with movement (deadbugs, pallof presses)', 'Avoid sitting for more than 60 min without moving', 'Hip flexor stretching to reduce lower back tension'] },
+          { heading: 'Common issues', list: ['Lower back pain (most common musculoskeletal complaint)', 'Herniated discs', 'Poor posture from extended sitting'] },
+        ],
+        workouts: [
+          { name: 'Dead Bug', sets: '3×10 each side', note: 'Opposite arm + leg lower slowly — spine stays flat on floor' },
+          { name: 'Plank', sets: '3×45s', note: 'Squeeze glutes and brace — not just a hold, an active contraction' },
+          { name: 'McGill Curl-Up', sets: '3×10', note: 'Hands under lower back, elbows up — spine-sparing ab exercise' },
+          { name: 'Bird Dog', sets: '3×10 each side', note: 'Opposite arm + leg extend from all-fours — builds stability and balance' },
+          { name: 'Pallof Press', sets: '3×12 each side', note: 'Anti-rotation press — trains core to resist twisting, not just crunch' },
+          { name: 'Side Plank', sets: '3×30s each', note: 'Stacked feet or staggered — targets obliques and QL' },
+        ]
+      },
+      arms: {
+        title: 'Arms',
+        sub: 'Biceps, triceps, forearms, elbow',
+        sections: [
+          { heading: 'Overview', body: 'The arms transfer force from the torso to the hands. Balanced push/pull ratios are key — most people overtrain the biceps and neglect the triceps and forearms.' },
+          { heading: 'Key habits', list: ['Train pull movements (rows, curls) as much as push', 'Wrist and forearm mobility work', 'Avoid locking out elbows under heavy load', 'Eccentric training for tendon health'] },
+          { heading: 'Common issues', list: ['Tennis / golfer\'s elbow (lateral & medial epicondylitis)', 'Bicep tendon strain', 'Forearm tightness from typing'] },
+        ],
+        workouts: [
+          { name: 'Bicep Curl', sets: '3×12', note: 'Full range — don\'t cut the bottom of the rep' },
+          { name: 'Hammer Curl', sets: '3×12', note: 'Neutral grip — targets brachialis and brachioradialis' },
+          { name: 'Tricep Dips', sets: '3×12', note: 'Elbows track back, not out — protect the joint' },
+          { name: 'Overhead Tricep Extension', sets: '3×12', note: 'Long head gets full stretch at the top' },
+          { name: 'Reverse Curl', sets: '3×12', note: 'Overhand grip — targets extensors and prevents elbow imbalances' },
+          { name: 'Eccentric Wrist Curl', sets: '3×15', note: 'Lower slowly over 3s — essential for elbow tendon health' },
+        ]
+      },
+      hands: {
+        title: 'Hands',
+        sub: 'Wrists, fingers, grip strength',
+        sections: [
+          { heading: 'Overview', body: 'Hands are used in almost every physical task. Grip strength is surprisingly well correlated with overall longevity — it\'s a proxy for total muscle mass and cardiovascular health.' },
+          { heading: 'Key habits', list: ['Farmer carries and dead hangs for grip strength', 'Wrist circles and finger extensions after typing sessions', 'Finger extensor training (rubber band exercises)', 'Avoid resting wrists on hard edges for long periods'] },
+          { heading: 'Common issues', list: ['Carpal tunnel syndrome', 'Trigger finger', 'Wrist tendinitis', 'Arthritis'] },
+        ],
+        workouts: [
+          { name: 'Dead Hang', sets: '3×30s', note: 'Hang from a bar — decompresses spine and builds grip endurance' },
+          { name: 'Farmer Carry', sets: '3×40m', note: 'Heavy dumbbells, walk — best single exercise for grip strength' },
+          { name: 'Rubber Band Finger Extensions', sets: '3×20', note: 'Wrap band around fingers, extend open — balances flexor dominance' },
+          { name: 'Wrist Roller', sets: '3× up+down', note: 'Roll weight up and down — builds wrist and forearm endurance' },
+          { name: 'Wrist Circles', sets: '2×20 each way', note: 'Full range mobility warm-up before training' },
+          { name: 'Pinch Grip Holds', sets: '3×20s', note: 'Pinch a weight plate — isolates thumb and finger strength' },
+        ]
+      },
+      hips: {
+        title: 'Hips & Pelvis',
+        sub: 'Hip flexors, glutes, SI joint',
+        sections: [
+          { heading: 'Overview', body: 'The hips are the powerhouse of the body. Tight hip flexors from sitting are one of the most common contributors to lower back pain, knee pain, and poor athletic performance.' },
+          { heading: 'Key habits', list: ['Daily hip flexor stretching (couch stretch, lunge)', 'Glute activation before lower body workouts', 'Hip 90/90 stretches for internal and external rotation', 'Single-leg work to address imbalances'] },
+          { heading: 'Common issues', list: ['Hip flexor tightness', 'Hip impingement (FAI)', 'SI joint dysfunction', 'Bursitis'] },
+        ],
+        workouts: [
+          { name: 'Hip Thrust', sets: '3×12', note: 'Full glute extension at the top — pause for 1s' },
+          { name: 'Couch Stretch', sets: '2×60s each', note: 'Rear foot elevated on wall behind you — deep hip flexor stretch' },
+          { name: 'Hip 90/90', sets: '2×60s each side', note: 'Both legs at 90° — works internal and external rotation' },
+          { name: 'Clamshell', sets: '3×20 each', note: 'Band above knees — activates glute medius' },
+          { name: 'Lateral Band Walk', sets: '3×20 steps', note: 'Bent-knee stance, step side to side — hip abductor strength' },
+          { name: 'Single-Leg RDL', sets: '3×10 each', note: 'Hinge on one leg — glute + hamstring + balance' },
+        ]
+      },
+      legs: {
+        title: 'Legs',
+        sub: 'Quads, hamstrings, calves, knees',
+        sections: [
+          { heading: 'Overview', body: 'The legs contain the largest muscles in the body. Leg strength is strongly linked to longevity, metabolic health, and injury prevention in older age.' },
+          { heading: 'Key habits', list: ['Train both quads and hamstrings equally', 'Nordic curls for hamstring injury prevention', 'Single-leg balance work for knee stability', 'Calf raises — daily, high volume, to prevent Achilles issues'] },
+          { heading: 'Common issues', list: ['Knee pain (patellofemoral syndrome)', 'Hamstring strains', 'IT band syndrome', 'Achilles tendinopathy'] },
+        ],
+        workouts: [
+          { name: 'Squat', sets: '3×10', note: 'Knees track over toes, chest up — full depth if mobility allows' },
+          { name: 'Romanian Deadlift', sets: '3×10', note: 'Hip hinge, soft knees — feel the hamstring stretch at the bottom' },
+          { name: 'Nordic Curl', sets: '3×5', note: 'Slow eccentric only — most effective hamstring injury prevention exercise' },
+          { name: 'Bulgarian Split Squat', sets: '3×10 each', note: 'Rear foot elevated — brutal quad and glute builder' },
+          { name: 'Calf Raise', sets: '3×25', note: 'Single-leg, full range — high volume is key for Achilles health' },
+          { name: 'Terminal Knee Extension (TKE)', sets: '3×15 each', note: 'Band behind knee, straighten leg — VMO activation for knee health' },
+        ]
+      },
+      feet: {
+        title: 'Feet',
+        sub: 'Arches, ankles, toes, plantar fascia',
+        sections: [
+          { heading: 'Overview', body: 'The feet are your foundation. Most people\'s feet are weak and stiff from years of supportive footwear. Foot and ankle strength affects the entire kinetic chain up to the lower back.' },
+          { heading: 'Key habits', list: ['Go barefoot at home to strengthen intrinsic foot muscles', 'Toe spreads and short-foot exercises daily', 'Ankle circles and calf stretches', 'Consider minimalist footwear gradually'] },
+          { heading: 'Common issues', list: ['Plantar fasciitis', 'Flat feet / fallen arches', 'Ankle instability', 'Bunions'] },
+        ],
+        workouts: [
+          { name: 'Toe Spread & Hold', sets: '3×10', note: 'Spread all toes apart, hold 5s — activates intrinsic foot muscles' },
+          { name: 'Short Foot Exercise', sets: '3×30s each', note: 'Shorten the foot without curling toes — builds the arch' },
+          { name: 'Single-Leg Balance', sets: '3×30s each', note: 'Eyes closed for extra challenge — trains ankle stability' },
+          { name: 'Ankle Circles', sets: '2×20 each way', note: 'Full range — do this before any lower body workout' },
+          { name: 'Calf Raise (single-leg)', sets: '3×20 each', note: 'Off a step, full range — strengthens Achilles and plantar fascia' },
+          { name: 'Towel Scrunch', sets: '3×30s each', note: 'Scrunch a towel with your toes — strengthens flexor digitorum' },
+        ]
+      },
+    };
+
+    const part = new URLSearchParams(window.location.search).get('part') || 'head';
+    const data = PARTS[part] || PARTS.head;
+
+    document.title = data.title + ' — Daily Optimal Health';
+    document.getElementById('part-title').textContent = data.title;
+    document.getElementById('part-sub').textContent = data.sub;
+
+    const content = document.getElementById('part-content');
+
+    data.sections.forEach(s => {
+      const card = document.createElement('div');
+      card.className = 'bp-card';
+      let inner = `<h2>${s.heading}</h2>`;
+      if (s.body) inner += `<p>${s.body}</p>`;
+      if (s.list) inner += `<ul>${s.list.map(i => `<li>${i}</li>`).join('')}</ul>`;
+      card.innerHTML = inner;
+      content.appendChild(card);
+    });
+
+    if (data.workouts && data.workouts.length) {
+      const card = document.createElement('div');
+      card.className = 'bp-card';
+      card.innerHTML = `<h2>Workouts</h2>` +
+        data.workouts.map(w => `
+          <div class="workout-row">
+            <div>
+              <div class="workout-name">${w.name}</div>
+              ${w.note ? `<div class="workout-note">${w.note}</div>` : ''}
+            </div>
+            <div class="workout-sets">${w.sets}</div>
+          </div>`).join('');
+      content.appendChild(card);
+    }
+  </script>
+</body>
+</html>

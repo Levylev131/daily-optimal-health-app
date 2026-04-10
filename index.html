@@ -119,7 +119,7 @@ function renderHub() {
     </div>
     <div class="sec-label">Health Goals</div>
     <div class="goal-grid">${hGoals.map(card).join('')}</div>
-    ${false /* DEGEN HIDDEN — change false to true to restore */ ? `
+    ${STATE.mode === 'degen' ? `
     <div class="degen-div"><span class="degen-label">Degenerate Fucks</span></div>
     <div class="sec-label">Recovery Tiers</div>
     <div class="goal-grid">${dGoals.map(card).join('')}</div>` : ''}
@@ -181,6 +181,16 @@ function renderHub() {
           <div class="card-pct">Open →</div>
         </div>
       </div>
+      <!-- DASHBOARD CARD — to remove: delete this block + dashboard.html -->
+      <div class="goal-card" onclick="window.location.href='dashboard.html'">
+        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">📊</div></div>
+        <div class="card-info">
+          <div class="card-title">Dashboard</div>
+          <div class="card-desc">All your data at a glance — XP, streaks, habits, fasting, workouts, and nutrition.</div>
+          <div class="card-pct">Open →</div>
+        </div>
+      </div>
+      <!-- END DASHBOARD CARD -->
     </div>
     ${customScheds.length > 0 ? `
     <div class="sec-label" style="margin-top:28px">My Schedules</div>
