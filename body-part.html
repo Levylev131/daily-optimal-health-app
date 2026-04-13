@@ -36,6 +36,22 @@
     .workout-name { font-size: .9rem; font-weight: 600; color: var(--text); }
     .workout-note { font-size: .76rem; color: var(--muted); margin-top: 2px; }
     .workout-sets { font-size: .82rem; font-weight: 700; color: var(--acc); white-space: nowrap; margin-left: 12px; }
+    .bp-section-label {
+      font-size: 1.1rem; font-weight: 900; letter-spacing: .5px;
+      color: var(--text); margin: 32px 0 12px 2px;
+    }
+    .workout-tabs { display: flex; gap: 8px; }
+    .workout-tab {
+      flex: 1; padding: 10px 0; border-radius: 10px;
+      background: var(--glass); border: 1px solid var(--glass-b);
+      color: var(--muted); font-size: .82rem; font-weight: 700;
+      letter-spacing: .5px; cursor: pointer; transition: all .2s;
+      text-align: center;
+    }
+    .workout-tab:hover { border-color: var(--acc); color: var(--text); }
+    .workout-tab.active { background: var(--acc); color: #000; border-color: var(--acc); box-shadow: 0 0 14px var(--glow); }
+    .workout-panel { display: none; margin-top: 12px; }
+    .workout-panel.active { display: block; }
   </style>
 </head>
 <body>
@@ -64,13 +80,26 @@
           { heading: 'Key habits', list: ['Sleep 7–9 hrs for memory consolidation', 'Limit screen time before bed', 'Stay hydrated — even mild dehydration impairs focus', 'Daily sunlight exposure regulates circadian rhythm'] },
           { heading: 'Common issues', list: ['Headaches / migraines', 'Eye strain from screens', 'Jaw tension (TMJ)', 'Brain fog'] },
         ],
-        workouts: [
-          { name: 'Meditation', sets: '10 min', note: 'Reduces cortisol, improves focus and sleep quality' },
-          { name: '20-20-20 Eye Reset', sets: 'Every 20 min', note: 'Look at something 20ft away for 20 seconds' },
-          { name: 'Jaw Release', sets: '2 min', note: 'Open wide, hold 5s, relax — repeat to relieve TMJ tension' },
-          { name: 'Nasal Breathing Cardio', sets: '20 min', note: 'Breathe only through nose during low-intensity cardio' },
-          { name: 'Cold Water Face Splash', sets: '3×', note: 'Activates the dive reflex — lowers heart rate, sharpens focus' },
-        ]
+        workouts: {
+          strength: [
+            { name: 'Neck Curl (plate)', sets: '3×15', note: 'Plate on forehead, flex neck — deep cervical flexor strength' },
+            { name: 'Neck Extension (plate)', sets: '3×15', note: 'Plate on back of head, extend — posterior neck strength' },
+            { name: 'Shrug', sets: '3×12', note: 'Heavy dumbbells, full elevation — upper trap and base of skull' },
+            { name: 'Jaw Resistance', sets: '3×10', note: 'Push jaw with hand, resist — masseter and pterygoid strength' },
+          ],
+          cardio: [
+            { name: 'Zone 2 Run', sets: '30 min', note: 'Easy sustained pace — increases BDNF, the best exercise for brain health' },
+            { name: 'HIIT Intervals', sets: '20 min', note: '30s on / 90s off — acute stress response followed by recovery sharpens focus' },
+            { name: 'Nasal Breathing Walk', sets: '20 min', note: 'Breathe through nose only — trains CO2 tolerance and brain oxygenation' },
+            { name: 'Cold Shower', sets: '2–3 min', note: 'Full cold exposure — releases norepinephrine, improves alertness and mood' },
+          ],
+          mobility: [
+            { name: 'Neck Circles', sets: '2×10 each way', note: 'Slow full range — restores cervical mobility' },
+            { name: 'Jaw Release', sets: '2 min', note: 'Open wide, hold 5s, relax — relieves TMJ tension' },
+            { name: '20-20-20 Eye Reset', sets: 'Every 20 min', note: 'Look 20ft away for 20s — reduces eye strain and ciliary muscle fatigue' },
+            { name: 'Scalene Stretch', sets: '2×30s each', note: 'Ear to shoulder, look up slightly — lateral neck and scalene release' },
+          ],
+        }
       },
       neck: {
         title: 'Neck',
@@ -80,13 +109,25 @@
           { heading: 'Key habits', list: ['Check your screen height — eyes level with top third of monitor', 'Neck stretches morning and evening', 'Avoid looking down at your phone for long periods', 'Strengthen deep neck flexors'] },
           { heading: 'Common issues', list: ['Neck stiffness / tech neck', 'Cervical disc problems', 'Thyroid dysfunction'] },
         ],
-        workouts: [
-          { name: 'Chin Tucks', sets: '3×15', note: 'Flatten your neck against the wall — activates deep neck flexors' },
-          { name: 'Neck Side Stretch', sets: '3×30s each', note: 'Ear to shoulder, gentle — hold without forcing' },
-          { name: 'Levator Scapulae Stretch', sets: '2×40s each', note: 'Look down at your armpit and hold' },
-          { name: 'Prone Y-T-W Raises', sets: '3×12', note: 'Lie face down, raise arms in Y, T, W shapes — builds neck base stability' },
-          { name: 'Neck Nods (yes/no)', sets: '2×20 each', note: 'Slow controlled range-of-motion warm-up' },
-        ]
+        workouts: {
+          strength: [
+            { name: 'Chin Tucks', sets: '3×15', note: 'Press chin back to wall — activates deep neck flexors' },
+            { name: 'Neck Harness Extension', sets: '4×12', note: 'Weight on back of head — posterior cervical strength' },
+            { name: 'Prone Y-T-W Raises', sets: '3×12', note: 'Lie face down, raise arms in shapes — lower trap and neck base stability' },
+            { name: 'Shrug', sets: '4×12', note: 'Heavy dumbbells, full range — upper trap mass and neck base' },
+          ],
+          cardio: [
+            { name: 'Swimming', sets: '20–30 min', note: 'Freestyle or backstroke — neck stays neutral, cardiovascular without compression' },
+            { name: 'Cycling (upright)', sets: '20 min', note: 'Upright posture — trains neck endurance in a neutral position' },
+            { name: 'Elliptical', sets: '20 min', note: 'Low impact, head upright — cardiovascular without neck loading' },
+          ],
+          mobility: [
+            { name: 'Neck Side Stretch', sets: '3×30s each', note: 'Ear to shoulder — levator scapulae and SCM release' },
+            { name: 'Levator Scapulae Stretch', sets: '2×40s each', note: 'Look down to armpit — targets the levator attachment point' },
+            { name: 'SCM Stretch', sets: '2×30s each', note: 'Turn head, tilt back to opposite side — sternocleidomastoid length' },
+            { name: 'Chin Tuck Nod', sets: '2×10', note: 'Slow nod with chin tucked — restores segmental cervical mobility' },
+          ],
+        }
       },
       shoulders: {
         title: 'Shoulders',
@@ -96,48 +137,137 @@
           { heading: 'Key habits', list: ['Daily external rotation exercises for rotator cuff health', 'Band pull-aparts to strengthen rear delts', 'Avoid internal rotation dominance (too much pressing, no pulling)', 'Stretch pecs and lats regularly'] },
           { heading: 'Common issues', list: ['Rotator cuff tears', 'Shoulder impingement', 'AC joint pain', 'Frozen shoulder'] },
         ],
-        workouts: [
-          { name: 'Band Pull-Aparts', sets: '3×20', note: 'Keep arms straight, pull band to chest — essential for shoulder health' },
-          { name: 'Face Pulls', sets: '3×15', note: 'Cable or band at face height — targets rear delt and external rotators' },
-          { name: 'External Rotation (side-lying)', sets: '3×15 each', note: 'Light weight, slow — builds rotator cuff resilience' },
-          { name: 'Wall Slides', sets: '3×12', note: 'Arms on wall, slide up without losing contact — scapular control' },
-          { name: 'Cuban Press', sets: '3×10', note: 'Upright row → external rotate → press — full rotator cuff warm-up' },
-          { name: 'Doorway Pec Stretch', sets: '2×45s', note: 'Opens the chest and counters internal rotation dominance' },
-        ]
+        workouts: {
+          strength: [
+            { name: 'Overhead Press', sets: '4×8', note: 'Barbell or dumbbells — primary shoulder strength and mass builder' },
+            { name: 'Barbell Row', sets: '4×8', note: 'Hinge, row to lower chest — upper back counterbalance to pressing' },
+            { name: 'Weighted Pull-Up', sets: '3×6', note: 'Full range dead hang — lat and shoulder girdle strength' },
+            { name: 'Farmer Carry', sets: '3×40m', note: 'Heavy dumbbells, walk — shoulder stability under sustained load' },
+          ],
+          cardio: [
+            { name: 'Rowing Machine', sets: '20 min', note: 'Full drive with posture — shoulder endurance and cardiovascular combined' },
+            { name: 'Swimming', sets: '20–30 min', note: 'Freestyle stroke — shoulder mobility and cardio in one' },
+            { name: 'Battle Ropes', sets: '3×30s', note: 'Alternating waves — shoulder endurance and HIIT conditioning' },
+          ],
+          mobility: [
+            { name: 'Band Pull-Apart', sets: '3×20', note: 'Arms straight, pull to chest — rear delt and scapular health daily' },
+            { name: 'Doorway Pec Stretch', sets: '2×45s', note: 'Lean through doorway — pec and anterior delt release' },
+            { name: 'Sleeper Stretch', sets: '2×30s each', note: 'Lie on side, rotate forearm down — posterior capsule stretch' },
+            { name: 'Wall Slide', sets: '3×12', note: 'Arms on wall, slide up — scapular upward rotation mobility' },
+          ],
+        }
       },
-      torso: {
-        title: 'Torso / Core',
-        sub: 'Spine, abs, obliques, lower back',
+      'upper-torso': {
+        title: 'Upper Torso',
+        sub: 'Chest, pecs, upper abs, serratus',
         sections: [
-          { heading: 'Overview', body: 'The core is your structural foundation — not just abs, but every muscle that stabilises the spine. A strong, mobile core protects the lower back and transfers force through the body.' },
-          { heading: 'Key habits', list: ['Brace before lifting — not just sucking in', 'Mix stability (planks) with movement (deadbugs, pallof presses)', 'Avoid sitting for more than 60 min without moving', 'Hip flexor stretching to reduce lower back tension'] },
-          { heading: 'Common issues', list: ['Lower back pain (most common musculoskeletal complaint)', 'Herniated discs', 'Poor posture from extended sitting'] },
+          { heading: 'Overview', body: 'The upper torso is dominated by the pectorals — but most people overtrain chest and neglect the muscles that stabilise the shoulder blade (serratus anterior, lower traps). A strong chest paired with a weak upper back is a recipe for shoulder impingement and poor posture.' },
+          { heading: 'Key habits', list: ['Match every pressing set with a pulling set — bench press without rows creates imbalance', 'Serratus anterior work keeps the scapula tracking correctly', 'Full range of motion on pressing — partial reps build partial results', 'Stretch the pecs after every push session to counter internal rotation'] },
+          { heading: 'Common issues', list: ['Pec minor tightness causing rounded shoulders', 'Pec strain or tear (usually from max-effort pressing)', 'Poor scapular stability masking as shoulder pain', 'Upper cross syndrome — tight chest, weak upper back'] },
         ],
-        workouts: [
-          { name: 'Dead Bug', sets: '3×10 each side', note: 'Opposite arm + leg lower slowly — spine stays flat on floor' },
-          { name: 'Plank', sets: '3×45s', note: 'Squeeze glutes and brace — not just a hold, an active contraction' },
-          { name: 'McGill Curl-Up', sets: '3×10', note: 'Hands under lower back, elbows up — spine-sparing ab exercise' },
-          { name: 'Bird Dog', sets: '3×10 each side', note: 'Opposite arm + leg extend from all-fours — builds stability and balance' },
-          { name: 'Pallof Press', sets: '3×12 each side', note: 'Anti-rotation press — trains core to resist twisting, not just crunch' },
-          { name: 'Side Plank', sets: '3×30s each', note: 'Stacked feet or staggered — targets obliques and QL' },
-        ]
+        workouts: {
+          strength: [
+            { name: 'Bench Press', sets: '4×6', note: 'Bar to lower chest, controlled eccentric — primary chest strength' },
+            { name: 'Weighted Dip', sets: '3×8', note: 'Belt or dumbbell, lean forward — lower pec and tricep compound' },
+            { name: 'Incline DB Press', sets: '3×8', note: '30–45° — upper chest and anterior delt strength' },
+            { name: 'Push-Up (weighted)', sets: '3×15', note: 'Plate on back or feet elevated — chest endurance under load' },
+          ],
+          cardio: [
+            { name: 'Rowing Machine', sets: '20 min', note: 'Chest and back involvement — upper body cardiovascular' },
+            { name: 'Swimming', sets: '20–30 min', note: 'Freestyle and butterfly — chest, shoulder, and lung capacity' },
+            { name: 'Shadowboxing', sets: '15 min', note: 'Punching movements — chest, shoulder, and cardio combined' },
+          ],
+          mobility: [
+            { name: 'Foam Roller Thoracic Extension', sets: '2×60s', note: 'Roll along upper spine — opens chest and thoracic extension' },
+            { name: 'Doorway Pec Stretch', sets: '2×45s', note: 'Arms at 90°, lean through — full pec and anterior delt stretch' },
+            { name: 'Thread-the-Needle', sets: '2×30s each', note: 'From all-fours, reach arm under — thoracic rotation' },
+            { name: 'Child\'s Pose with Reach', sets: '2×45s', note: 'Arms extended forward, breathe — lat and chest lengthening' },
+          ],
+        }
       },
-      arms: {
-        title: 'Arms',
-        sub: 'Biceps, triceps, forearms, elbow',
+      'lower-torso': {
+        title: 'Lower Torso',
+        sub: 'Lower abs, obliques, core stability',
         sections: [
-          { heading: 'Overview', body: 'The arms transfer force from the torso to the hands. Balanced push/pull ratios are key — most people overtrain the biceps and neglect the triceps and forearms.' },
-          { heading: 'Key habits', list: ['Train pull movements (rows, curls) as much as push', 'Wrist and forearm mobility work', 'Avoid locking out elbows under heavy load', 'Eccentric training for tendon health'] },
-          { heading: 'Common issues', list: ['Tennis / golfer\'s elbow (lateral & medial epicondylitis)', 'Bicep tendon strain', 'Forearm tightness from typing'] },
+          { heading: 'Overview', body: 'The lower torso is your core — not just the abs you can see, but the deep stabilisers (transverse abdominis, multifidus) that protect the spine under load. The goal isn\'t just a six-pack; it\'s building a core that can brace, resist rotation, and transfer force efficiently.' },
+          { heading: 'Key habits', list: ['Learn to brace properly — 360° pressure outward, not just sucking in the belly', 'Train anti-rotation and anti-extension as much as crunches', 'Hip flexor flexibility directly affects lower ab engagement — stretch them daily', 'Avoid sitting for more than 60 minutes without standing and moving'] },
+          { heading: 'Common issues', list: ['Lower ab weakness contributing to lower back pain', 'Hip flexor dominance overriding ab activation', 'Diastasis recti from excessive spinal flexion under load', 'Poor bracing mechanics leading to hernia risk'] },
         ],
-        workouts: [
-          { name: 'Bicep Curl', sets: '3×12', note: 'Full range — don\'t cut the bottom of the rep' },
-          { name: 'Hammer Curl', sets: '3×12', note: 'Neutral grip — targets brachialis and brachioradialis' },
-          { name: 'Tricep Dips', sets: '3×12', note: 'Elbows track back, not out — protect the joint' },
-          { name: 'Overhead Tricep Extension', sets: '3×12', note: 'Long head gets full stretch at the top' },
-          { name: 'Reverse Curl', sets: '3×12', note: 'Overhand grip — targets extensors and prevents elbow imbalances' },
-          { name: 'Eccentric Wrist Curl', sets: '3×15', note: 'Lower slowly over 3s — essential for elbow tendon health' },
-        ]
+        workouts: {
+          strength: [
+            { name: 'Deadlift', sets: '4×5', note: 'Hip hinge, neutral spine — core bracing under maximum load' },
+            { name: 'Weighted Plank', sets: '3×45s', note: 'Plate on back, squeeze — anti-extension core strength' },
+            { name: 'Pallof Press', sets: '3×12 each', note: 'Cable anti-rotation — trains core to resist twisting forces' },
+            { name: 'Ab Wheel Rollout', sets: '3×8', note: 'Control the descent — one of the hardest anti-extension movements' },
+          ],
+          cardio: [
+            { name: 'Running', sets: '20–30 min', note: 'Core must stabilise every stride — natural core endurance training' },
+            { name: 'Rowing Machine', sets: '20 min', note: 'Strong core drive required — core and cardiovascular combined' },
+            { name: 'Jump Rope', sets: '10 min', note: 'Tight core throughout — core endurance and conditioning' },
+          ],
+          mobility: [
+            { name: 'Cat-Cow', sets: '2×10', note: 'Slow full range — lumbar and thoracic mobility' },
+            { name: 'Child\'s Pose', sets: '2×60s', note: 'Arms extended — lat, QL, and lower ab stretch' },
+            { name: 'Hip Flexor Lunge Stretch', sets: '2×60s each', note: 'Low lunge, reach up — iliopsoas and lower ab release' },
+            { name: 'Seated Spinal Twist', sets: '2×30s each', note: 'Cross-leg twist — thoracolumbar rotation and decompression' },
+          ],
+        }
+      },
+      'upper-arm': {
+        title: 'Upper Arm',
+        sub: 'Biceps, triceps, elbow joint',
+        sections: [
+          { heading: 'Overview', body: 'The upper arm is made up of the biceps (front) and triceps (back). The triceps make up roughly two-thirds of upper arm mass — most people overtrain biceps and underdevelop triceps. Balance between the two groups is key for elbow health and arm size.' },
+          { heading: 'Key habits', list: ['Train triceps as much as biceps — they\'re the larger muscle', 'Full range of motion on all curls and extensions — partial reps limit development', 'Eccentric training for elbow tendon health', 'Avoid locking out elbows hard under heavy load'] },
+          { heading: 'Common issues', list: ['Bicep tendon strain', 'Tennis elbow (lateral epicondylitis)', 'Golfer\'s elbow (medial epicondylitis)', 'Tricep tendon irritation from overhead pressing'] },
+        ],
+        workouts: {
+          strength: [
+            { name: 'Barbell Curl', sets: '4×8', note: 'Full range, no cheat — peak bicep strength' },
+            { name: 'Close-Grip Bench Press', sets: '4×8', note: 'Shoulder-width grip, elbows tucked — heaviest tricep movement' },
+            { name: 'Chin-Up', sets: '3×8', note: 'Supinated grip — bicep and back compound strength' },
+            { name: 'Skull Crusher', sets: '4×8', note: 'EZ-bar to forehead — tricep long head strength' },
+          ],
+          cardio: [
+            { name: 'Rowing Machine', sets: '20 min', note: 'Arms drive and recover every stroke — bicep and tricep endurance' },
+            { name: 'Swimming', sets: '20–30 min', note: 'Freestyle pull and push — sustained upper arm muscular endurance' },
+            { name: 'Battle Ropes', sets: '3×30s', note: 'Alternating waves — bicep, tricep, and shoulder endurance' },
+          ],
+          mobility: [
+            { name: 'Cross-Body Shoulder Stretch', sets: '2×30s each', note: 'Pull arm across chest — posterior delt and tricep stretch' },
+            { name: 'Overhead Tricep Stretch', sets: '2×30s each', note: 'Reach behind head, gentle pressure — tricep long head length' },
+            { name: 'Bicep Wall Stretch', sets: '2×30s each', note: 'Hand on wall behind you, rotate away — bicep and anterior delt' },
+            { name: 'Elbow Circles', sets: '2×10 each way', note: 'Full range rotation — elbow joint mobility warm-up' },
+          ],
+        }
+      },
+      'lower-arm': {
+        title: 'Forearm',
+        sub: 'Forearm flexors, extensors, wrist, elbow tendons',
+        sections: [
+          { heading: 'Overview', body: 'The forearms are one of the most undertrained and most used muscle groups. They\'re active in nearly every upper body exercise. Forearm strength and endurance directly limits grip, which limits every pull movement. Imbalance between flexors and extensors is the primary cause of tennis and golfer\'s elbow.' },
+          { heading: 'Key habits', list: ['Train both flexors (curls) and extensors (reverse curls) equally', 'Eccentric wrist curls for elbow tendon health', 'Stretch forearms after long typing or gripping sessions', 'Farmer carries and dead hangs for functional forearm strength'] },
+          { heading: 'Common issues', list: ['Tennis elbow (extensor overuse)', 'Golfer\'s elbow (flexor overuse)', 'Wrist tendinitis', 'Forearm tightness and compartment syndrome in climbers'] },
+        ],
+        workouts: {
+          strength: [
+            { name: 'Barbell Wrist Curl', sets: '4×15', note: 'Forearm on bench, curl wrist up — flexor mass and strength' },
+            { name: 'Reverse Curl', sets: '4×12', note: 'Overhand grip barbell curl — extensor and brachioradialis strength' },
+            { name: 'Farmer Carry', sets: '3×40m', note: 'Heavy dumbbells, walk — overall forearm and grip strength' },
+            { name: 'Eccentric Wrist Curl', sets: '3×15', note: 'Lower slowly over 3s — essential for elbow tendon health' },
+          ],
+          cardio: [
+            { name: 'Rock Climbing', sets: '30+ min', note: 'Sustained grip and forearm effort — best cardio for forearm endurance' },
+            { name: 'Rowing Machine', sets: '20 min', note: 'Grip maintained every stroke — forearm cardiovascular endurance' },
+            { name: 'Jump Rope', sets: '10 min', note: 'Wrist rotation and grip throughout — forearm and wrist conditioning' },
+          ],
+          mobility: [
+            { name: 'Wrist Flexor Stretch', sets: '2×30s each', note: 'Arm extended, pull fingers back — forearm flexor release' },
+            { name: 'Wrist Extensor Stretch', sets: '2×30s each', note: 'Arm extended, pull fingers down — extensor release' },
+            { name: 'Wrist Circles', sets: '2×20 each way', note: 'Full range rotation — wrist joint mobility' },
+            { name: 'Prayer & Reverse Prayer Stretch', sets: '2×30s each', note: 'Palms together press down, then back of hands press up — full wrist range' },
+          ],
+        }
       },
       hands: {
         title: 'Hands',
@@ -147,14 +277,25 @@
           { heading: 'Key habits', list: ['Farmer carries and dead hangs for grip strength', 'Wrist circles and finger extensions after typing sessions', 'Finger extensor training (rubber band exercises)', 'Avoid resting wrists on hard edges for long periods'] },
           { heading: 'Common issues', list: ['Carpal tunnel syndrome', 'Trigger finger', 'Wrist tendinitis', 'Arthritis'] },
         ],
-        workouts: [
-          { name: 'Dead Hang', sets: '3×30s', note: 'Hang from a bar — decompresses spine and builds grip endurance' },
-          { name: 'Farmer Carry', sets: '3×40m', note: 'Heavy dumbbells, walk — best single exercise for grip strength' },
-          { name: 'Rubber Band Finger Extensions', sets: '3×20', note: 'Wrap band around fingers, extend open — balances flexor dominance' },
-          { name: 'Wrist Roller', sets: '3× up+down', note: 'Roll weight up and down — builds wrist and forearm endurance' },
-          { name: 'Wrist Circles', sets: '2×20 each way', note: 'Full range mobility warm-up before training' },
-          { name: 'Pinch Grip Holds', sets: '3×20s', note: 'Pinch a weight plate — isolates thumb and finger strength' },
-        ]
+        workouts: {
+          strength: [
+            { name: 'Farmer Carry', sets: '4×40m', note: 'As heavy as possible — overall hand and forearm strength' },
+            { name: 'Barbell Wrist Curl', sets: '4×15', note: 'Forearm on bench, curl wrist up — flexor strength' },
+            { name: 'Dead Hang', sets: '3×30–60s', note: 'Full hang from bar — crush and support grip endurance' },
+            { name: 'Plate Pinch', sets: '3×20s each', note: 'Two plates smooth-side out — pinch strength' },
+          ],
+          cardio: [
+            { name: 'Rock Climbing', sets: '30+ min', note: 'Sustained grip effort — best cardio for hand and forearm endurance' },
+            { name: 'Jump Rope', sets: '10 min', note: 'Grip endurance and wrist mobility combined' },
+            { name: 'Rowing Machine', sets: '20 min', note: 'Grip maintained throughout — hand and forearm cardiovascular' },
+          ],
+          mobility: [
+            { name: 'Wrist Circles', sets: '2×20 each way', note: 'Full range rotation — wrist joint mobility' },
+            { name: 'Prayer Stretch', sets: '2×30s', note: 'Palms together, press down — wrist flexor length' },
+            { name: 'Finger Extension Spread', sets: '2×20s', note: 'Spread fingers wide, hold — intrinsic muscle flexibility' },
+            { name: 'Reverse Prayer Stretch', sets: '2×30s', note: 'Back of hands together, press up — wrist extensor stretch' },
+          ],
+        }
       },
       hips: {
         title: 'Hips & Pelvis',
@@ -164,31 +305,165 @@
           { heading: 'Key habits', list: ['Daily hip flexor stretching (couch stretch, lunge)', 'Glute activation before lower body workouts', 'Hip 90/90 stretches for internal and external rotation', 'Single-leg work to address imbalances'] },
           { heading: 'Common issues', list: ['Hip flexor tightness', 'Hip impingement (FAI)', 'SI joint dysfunction', 'Bursitis'] },
         ],
-        workouts: [
-          { name: 'Hip Thrust', sets: '3×12', note: 'Full glute extension at the top — pause for 1s' },
-          { name: 'Couch Stretch', sets: '2×60s each', note: 'Rear foot elevated on wall behind you — deep hip flexor stretch' },
-          { name: 'Hip 90/90', sets: '2×60s each side', note: 'Both legs at 90° — works internal and external rotation' },
-          { name: 'Clamshell', sets: '3×20 each', note: 'Band above knees — activates glute medius' },
-          { name: 'Lateral Band Walk', sets: '3×20 steps', note: 'Bent-knee stance, step side to side — hip abductor strength' },
-          { name: 'Single-Leg RDL', sets: '3×10 each', note: 'Hinge on one leg — glute + hamstring + balance' },
-        ]
+        workouts: {
+          strength: [
+            { name: 'Barbell Hip Thrust', sets: '4×8', note: 'Heavy, pause at top — the best glute maximus strength builder' },
+            { name: 'Squat', sets: '4×6', note: 'Full depth, knees out — hip flexor, glute, and quad compound' },
+            { name: 'Sumo Deadlift', sets: '4×5', note: 'Wide stance, toes out — glute and adductor dominant' },
+            { name: 'Single-Leg RDL', sets: '3×10 each', note: 'Hinge on one leg — glute strength and balance' },
+          ],
+          cardio: [
+            { name: 'Cycling', sets: '20–30 min', note: 'Constant hip flexion and extension — hip cardiovascular endurance' },
+            { name: 'Stair Climbing', sets: '20 min', note: 'Glute and hip dominant — cardiovascular and strength endurance' },
+            { name: 'Running', sets: '20–30 min', note: 'Hip drives every stride — hip extensor endurance' },
+          ],
+          mobility: [
+            { name: 'Couch Stretch', sets: '2×60s each', note: 'Rear foot on wall — deep hip flexor and quad stretch' },
+            { name: 'Hip 90/90', sets: '2×60s each', note: 'Both legs at 90° — internal and external rotation' },
+            { name: 'Pigeon Pose', sets: '2×60s each', note: 'Figure-4 on floor — deep glute and piriformis stretch' },
+            { name: 'Figure-4 Glute Stretch', sets: '2×45s each', note: 'Lying on back, cross ankle over knee — piriformis and external rotator release' },
+          ],
+        }
       },
-      legs: {
-        title: 'Legs',
-        sub: 'Quads, hamstrings, calves, knees',
+      'upper-leg': {
+        title: 'Upper Leg',
+        sub: 'Quads, hamstrings, adductors',
         sections: [
-          { heading: 'Overview', body: 'The legs contain the largest muscles in the body. Leg strength is strongly linked to longevity, metabolic health, and injury prevention in older age.' },
-          { heading: 'Key habits', list: ['Train both quads and hamstrings equally', 'Nordic curls for hamstring injury prevention', 'Single-leg balance work for knee stability', 'Calf raises — daily, high volume, to prevent Achilles issues'] },
-          { heading: 'Common issues', list: ['Knee pain (patellofemoral syndrome)', 'Hamstring strains', 'IT band syndrome', 'Achilles tendinopathy'] },
+          { heading: 'Overview', body: 'The upper leg houses the largest muscles in the body — the quadriceps and hamstrings. These muscles drive almost every athletic movement: running, jumping, squatting, climbing. Imbalance between the two groups is a leading cause of knee and hip injury.' },
+          { heading: 'Key habits', list: ['Train quads and hamstrings equally — most people are quad-dominant', 'Nordic curls are the single best hamstring injury prevention exercise', 'Single-leg work to identify and fix left/right imbalances', 'Stretch hip flexors and hamstrings daily to maintain full range of motion'] },
+          { heading: 'Common issues', list: ['Hamstring strains (extremely common in runners and sprinters)', 'Quad dominance leading to knee pain', 'IT band syndrome from tight TFL and weak glutes', 'Adductor strains (groin pulls)'] },
         ],
-        workouts: [
-          { name: 'Squat', sets: '3×10', note: 'Knees track over toes, chest up — full depth if mobility allows' },
-          { name: 'Romanian Deadlift', sets: '3×10', note: 'Hip hinge, soft knees — feel the hamstring stretch at the bottom' },
-          { name: 'Nordic Curl', sets: '3×5', note: 'Slow eccentric only — most effective hamstring injury prevention exercise' },
-          { name: 'Bulgarian Split Squat', sets: '3×10 each', note: 'Rear foot elevated — brutal quad and glute builder' },
-          { name: 'Calf Raise', sets: '3×25', note: 'Single-leg, full range — high volume is key for Achilles health' },
-          { name: 'Terminal Knee Extension (TKE)', sets: '3×15 each', note: 'Band behind knee, straighten leg — VMO activation for knee health' },
-        ]
+        workouts: {
+          strength: [
+            { name: 'Back Squat', sets: '4×6', note: 'Full depth, bar on back — quad and hamstring maximal strength' },
+            { name: 'Romanian Deadlift', sets: '4×8', note: 'Hip hinge, hamstring stretch — posterior chain strength' },
+            { name: 'Bulgarian Split Squat', sets: '3×8 each', note: 'Rear foot elevated — single-leg quad and glute' },
+            { name: 'Nordic Curl', sets: '3×5', note: 'Slow eccentric — most effective hamstring strength and injury prevention exercise' },
+          ],
+          cardio: [
+            { name: 'Running', sets: '20–30 min', note: 'Quads and hamstrings propel every stride — direct leg cardiovascular' },
+            { name: 'Cycling', sets: '20–30 min', note: 'Quad dominant, low impact — knee-friendly leg endurance' },
+            { name: 'Stair Climbing', sets: '20 min', note: 'Quad and hamstring demand — cardiovascular and muscle endurance' },
+          ],
+          mobility: [
+            { name: 'Standing Quad Stretch', sets: '2×45s each', note: 'Heel to glute, hips forward — rectus femoris length' },
+            { name: 'Lying Hamstring Stretch', sets: '2×60s each', note: 'Leg raised, strap or towel — hamstring flexibility' },
+            { name: 'IT Band Stretch', sets: '2×45s each', note: 'Cross leg, lean to side — IT band and TFL release' },
+            { name: 'Adductor Stretch', sets: '2×60s', note: 'Wide stance, sink down — inner thigh length' },
+          ],
+        }
+      },
+      knee: {
+        title: 'Knee',
+        sub: 'Patella, meniscus, ACL/PCL, joint stability',
+        sections: [
+          { heading: 'Overview', body: 'The knee is a hinge joint under enormous load — it must transfer force between the hip and foot while absorbing impact. Most knee problems aren\'t a knee problem: they\'re a hip weakness or ankle mobility problem showing up at the knee. Fix upstream and downstream first.' },
+          { heading: 'Key habits', list: ['Strengthen the VMO (inner quad) — weakness here is the most common cause of patellofemoral pain', 'Hip abductor strength prevents knee valgus (knees caving in) under load', 'Ankle dorsiflexion mobility directly affects knee tracking — stretch the calves', 'Avoid sudden increases in running volume — most ACL and meniscus stress injuries are overuse'] },
+          { heading: 'Common issues', list: ['Patellofemoral syndrome (runner\'s knee / kneecap pain)', 'IT band syndrome (lateral knee pain in runners)', 'ACL and meniscus tears (acute trauma)', 'Patellar tendinopathy (jumper\'s knee)'] },
+        ],
+        workouts: {
+          strength: [
+            { name: 'Terminal Knee Extension (TKE)', sets: '3×15 each', note: 'Band behind knee, fully straighten — VMO activation' },
+            { name: 'Weighted Step-Up', sets: '4×10 each', note: 'Controlled descent — patellar tendon eccentric loading' },
+            { name: 'Wall Sit', sets: '3×60s', note: 'Isometric quad hold — builds endurance without impact' },
+            { name: 'Leg Press', sets: '3×12', note: 'Low foot placement, full range — quad and VMO under safe load' },
+          ],
+          cardio: [
+            { name: 'Cycling', sets: '20–30 min', note: 'Knee-friendly constant range of motion — best cardio for knee health' },
+            { name: 'Swimming', sets: '20–30 min', note: 'Zero impact, knee moves through range — joint lubrication without load' },
+            { name: 'Walking', sets: '30+ min', note: 'Low impact daily movement — keeps joint fluid moving' },
+          ],
+          mobility: [
+            { name: 'Knee Circles (standing)', sets: '2×10 each way', note: 'Hands on knees, circle — joint mobility warm-up' },
+            { name: 'Quad Stretch', sets: '2×45s each', note: 'Heel to glute — patellar tendon flexibility' },
+            { name: 'Ankle Dorsiflexion Stretch', sets: '2×60s each', note: 'Knee-to-wall — ankle mobility that directly affects knee tracking' },
+            { name: 'Foam Roller Quad / IT Band', sets: '2 min each side', note: 'Roll quadriceps and lateral thigh — reduces tension pulling on the knee' },
+          ],
+        }
+      },
+      'lower-leg': {
+        title: 'Lower Leg',
+        sub: 'Calves, shins, Achilles tendon, tibialis',
+        sections: [
+          { heading: 'Overview', body: 'The lower leg is chronically undertrained. The calves and Achilles tendon absorb several times your body weight with every step. Weak calves and stiff Achilles are the leading cause of plantar fasciitis, Achilles tendinopathy, and shin splints.' },
+          { heading: 'Key habits', list: ['High-volume calf raises daily — the Achilles needs load to stay healthy', 'Train tibialis anterior (shin muscle) to prevent shin splints', 'Single-leg work — calves are rarely trained heavy enough on two legs', 'Gradually increase running mileage — shin splints are almost always a ramp-up error'] },
+          { heading: 'Common issues', list: ['Achilles tendinopathy (gradual overload)', 'Shin splints (medial tibial stress syndrome)', 'Calf strains', 'Compartment syndrome in runners'] },
+        ],
+        workouts: {
+          strength: [
+            { name: 'Standing Calf Raise (heavy)', sets: '5×8', note: 'Full range, 3s pause at stretch — primary gastrocnemius strength' },
+            { name: 'Seated Calf Raise', sets: '4×12', note: 'Heavy knees, full range — soleus strength' },
+            { name: 'Tibialis Raise', sets: '3×20', note: 'Heels down, lift toes against resistance — shin strength' },
+            { name: 'Eccentric Heel Drop', sets: '3×15 each', note: 'Rise on two feet, lower on one — Achilles tendon loading' },
+          ],
+          cardio: [
+            { name: 'Running', sets: '20–30 min', note: 'Calves propel every push-off — primary lower leg cardiovascular load' },
+            { name: 'Jump Rope', sets: '10 min', note: 'Constant calf and Achilles demand — best lower leg conditioning' },
+            { name: 'Hiking', sets: '45+ min', note: 'Varied terrain demands calf and tibialis stability throughout' },
+          ],
+          mobility: [
+            { name: 'Gastrocnemius Stretch', sets: '2×60s each', note: 'Straight-leg wall stretch — full calf and Achilles length' },
+            { name: 'Soleus Stretch', sets: '2×60s each', note: 'Bent-knee wall stretch — deeper calf and lower Achilles' },
+            { name: 'Ankle Circles', sets: '2×20 each way', note: 'Full range rotation — ankle joint mobility' },
+            { name: 'Toe Pull Stretch', sets: '2×30s each', note: 'Pull toes back — plantar fascia and toe flexor release' },
+          ],
+        }
+      },
+      'upper-back': {
+        title: 'Upper Back',
+        sub: 'Lats, rhomboids, traps, rear delts',
+        sections: [
+          { heading: 'Overview', body: 'The upper back is the anchor for your shoulders and the counterbalance to your chest. Most people are push-dominant — too much pressing and not enough rowing leads to rounded shoulders, poor posture, and impingement. A strong upper back is the foundation of a healthy shoulder girdle.' },
+          { heading: 'Key habits', list: ['Pull as much as you push — 1:1 or even 2:1 row-to-press ratio', 'Daily band pull-aparts to keep rear delts activated', 'Squeeze shoulder blades together at the top of every row', 'Avoid rounding the upper back when sitting or lifting'] },
+          { heading: 'Common issues', list: ['Rounded shoulders / kyphosis', 'Rhomboid pain between the shoulder blades', 'Upper trap tightness and knots', 'Lat strain from sudden overhead loading'] },
+        ],
+        workouts: {
+          strength: [
+            { name: 'Weighted Pull-Up', sets: '4×6', note: 'Dead hang to chin — the king of upper back and lat strength' },
+            { name: 'Barbell Row', sets: '4×6', note: 'Hinge, row to lower chest — back thickness and strength' },
+            { name: 'T-Bar Row', sets: '4×8', note: 'Chest-supported or standing — heavy rowing for maximum back overload' },
+            { name: 'Rack Pull', sets: '3×5', note: 'Deadlift from knee height — upper back and trap overload' },
+          ],
+          cardio: [
+            { name: 'Rowing Machine', sets: '20–30 min', note: 'Upper back drives every stroke — direct upper back cardiovascular' },
+            { name: 'Swimming', sets: '20–30 min', note: 'Freestyle pull — lat and upper back endurance' },
+            { name: 'Battle Ropes', sets: '3×30s', note: 'Anchored pulls and slams — upper back and shoulder endurance' },
+          ],
+          mobility: [
+            { name: 'Cat-Cow (thoracic focus)', sets: '2×10', note: 'Slow, emphasise upper spine — thoracic mobility' },
+            { name: 'Foam Roller Thoracic', sets: '2 min', note: 'Roll along upper spine — opens thoracic extension' },
+            { name: 'Thread-the-Needle', sets: '2×30s each', note: 'From all-fours, reach arm under — thoracic rotation' },
+            { name: 'Band Pull-Apart', sets: '3×20', note: 'Rear delt and scapular retraction — do this every day' },
+          ],
+        }
+      },
+      'lower-back': {
+        title: 'Lower Back',
+        sub: 'Lumbar spine, erector spinae, QL',
+        sections: [
+          { heading: 'Overview', body: 'The lower back is the most commonly injured area of the body. It\'s not weak — it\'s usually overloaded because the hips and thoracic spine aren\'t doing their jobs. Strengthening the lower back means training it to resist forces, not just flex and extend.' },
+          { heading: 'Key habits', list: ['Brace your core before any lift — creates intra-abdominal pressure to protect the lumbar spine', 'Hip hinge practice daily — deadlift pattern is the spine\'s best friend when done correctly', 'Avoid sustained flexion (long sitting with a rounded lower back)', 'Stretch hip flexors — tight hip flexors pull the pelvis forward and stress the lumbar spine'] },
+          { heading: 'Common issues', list: ['Lumbar disc herniation (L4/L5, L5/S1 most common)', 'Lumbar strain / sprain', 'Sciatica (nerve compression)', 'Quadratus lumborum (QL) tightness'] },
+        ],
+        workouts: {
+          strength: [
+            { name: 'Conventional Deadlift', sets: '4×5', note: 'Neutral spine, brace hard — the primary lower back strength builder' },
+            { name: 'Barbell Good Morning', sets: '4×8', note: 'Bar on back, hinge forward — erector under heavy load' },
+            { name: 'Weighted Hyperextension', sets: '4×12', note: 'Plate to chest, full range — direct erector strength' },
+            { name: 'Bird Dog', sets: '3×10 each', note: 'Opposite arm/leg extend — spinal stability under load' },
+          ],
+          cardio: [
+            { name: 'Walking', sets: '30–45 min', note: 'Low-load spinal movement — best gentle lower back cardiovascular' },
+            { name: 'Swimming', sets: '20–30 min', note: 'Water supports the spine — cardiovascular without lumbar compression' },
+            { name: 'Cycling (recumbent)', sets: '20 min', note: 'Supported lower back — cardiovascular without spinal load' },
+          ],
+          mobility: [
+            { name: 'Cat-Cow', sets: '2×10', note: 'Slow full range — lumbar mobility, best done first thing in the morning' },
+            { name: 'Child\'s Pose', sets: '2×60s', note: 'Arms extended, breathe deep — QL and lumbar decompression' },
+            { name: 'QL Stretch', sets: '2×45s each', note: 'Side lean with arm overhead — quadratus lumborum release' },
+            { name: 'Piriformis Stretch', sets: '2×45s each', note: 'Figure-4 lying down — sciatic nerve and piriformis release' },
+          ],
+        }
       },
       feet: {
         title: 'Feet',
@@ -198,14 +473,25 @@
           { heading: 'Key habits', list: ['Go barefoot at home to strengthen intrinsic foot muscles', 'Toe spreads and short-foot exercises daily', 'Ankle circles and calf stretches', 'Consider minimalist footwear gradually'] },
           { heading: 'Common issues', list: ['Plantar fasciitis', 'Flat feet / fallen arches', 'Ankle instability', 'Bunions'] },
         ],
-        workouts: [
-          { name: 'Toe Spread & Hold', sets: '3×10', note: 'Spread all toes apart, hold 5s — activates intrinsic foot muscles' },
-          { name: 'Short Foot Exercise', sets: '3×30s each', note: 'Shorten the foot without curling toes — builds the arch' },
-          { name: 'Single-Leg Balance', sets: '3×30s each', note: 'Eyes closed for extra challenge — trains ankle stability' },
-          { name: 'Ankle Circles', sets: '2×20 each way', note: 'Full range — do this before any lower body workout' },
-          { name: 'Calf Raise (single-leg)', sets: '3×20 each', note: 'Off a step, full range — strengthens Achilles and plantar fascia' },
-          { name: 'Towel Scrunch', sets: '3×30s each', note: 'Scrunch a towel with your toes — strengthens flexor digitorum' },
-        ]
+        workouts: {
+          strength: [
+            { name: 'Single-Leg Calf Raise (heavy)', sets: '4×10 each', note: 'Off a step, full range — Achilles and foot arch loading' },
+            { name: 'Towel Scrunch', sets: '3×30s each', note: 'Scrunch towel with toes — intrinsic foot muscle strength' },
+            { name: 'Farmer Carry', sets: '3×40m', note: 'Heavy dumbbells — foot and ankle stability under sustained load' },
+            { name: 'Short Foot Exercise', sets: '3×30s each', note: 'Shorten foot without curling toes — arch strength' },
+          ],
+          cardio: [
+            { name: 'Barefoot Walking', sets: '20–30 min', note: 'On grass or sand — foot muscle activation and cardiovascular' },
+            { name: 'Hiking', sets: '45+ min', note: 'Varied terrain — ankle and foot stability endurance' },
+            { name: 'Jump Rope', sets: '10 min', note: 'Forefoot contact, Achilles load — foot and ankle conditioning' },
+          ],
+          mobility: [
+            { name: 'Ankle Circles', sets: '2×20 each way', note: 'Full range rotation — ankle joint mobility' },
+            { name: 'Toe Spread & Hold', sets: '3×10', note: 'Spread toes apart, hold 5s — intrinsic muscle flexibility' },
+            { name: 'Plantar Fascia Stretch', sets: '2×45s each', note: 'Pull toes back — plantar fascia and toe flexor length' },
+            { name: 'Calf & Achilles Stretch', sets: '2×60s each', note: 'Straight then bent knee — full posterior foot chain' },
+          ],
+        }
       },
     };
 
@@ -218,6 +504,21 @@
 
     const content = document.getElementById('part-content');
 
+    function makeWorkoutCard(heading, list) {
+      const card = document.createElement('div');
+      card.className = 'bp-card';
+      card.innerHTML = `<h2>${heading}</h2>` +
+        list.map(w => `
+          <div class="workout-row">
+            <div>
+              <div class="workout-name">${w.name}</div>
+              ${w.note ? `<div class="workout-note">${w.note}</div>` : ''}
+            </div>
+            <div class="workout-sets">${w.sets}</div>
+          </div>`).join('');
+      return card;
+    }
+
     data.sections.forEach(s => {
       const card = document.createElement('div');
       card.className = 'bp-card';
@@ -228,19 +529,42 @@
       content.appendChild(card);
     });
 
-    if (data.workouts && data.workouts.length) {
-      const card = document.createElement('div');
-      card.className = 'bp-card';
-      card.innerHTML = `<h2>Workouts</h2>` +
-        data.workouts.map(w => `
-          <div class="workout-row">
-            <div>
-              <div class="workout-name">${w.name}</div>
-              ${w.note ? `<div class="workout-note">${w.note}</div>` : ''}
-            </div>
-            <div class="workout-sets">${w.sets}</div>
-          </div>`).join('');
-      content.appendChild(card);
+    if (data.workouts) {
+      const lbl = document.createElement('div');
+      lbl.className = 'bp-section-label';
+      lbl.textContent = 'Workouts';
+      content.appendChild(lbl);
+
+      const TAB_DEFS = [
+        { key: 'strength', tab: 'Strength', card: 'Strength' },
+        { key: 'cardio',   tab: 'Cardio',   card: 'Cardio' },
+        { key: 'mobility', tab: 'Mobility', card: 'Mobility & Flexibility' },
+      ].filter(t => data.workouts[t.key] && data.workouts[t.key].length);
+
+      const tabBar = document.createElement('div');
+      tabBar.className = 'workout-tabs';
+
+      const panels = TAB_DEFS.map(t => {
+        const panel = document.createElement('div');
+        panel.className = 'workout-panel';
+        panel.appendChild(makeWorkoutCard(t.card, data.workouts[t.key]));
+        return panel;
+      });
+
+      TAB_DEFS.forEach((t, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'workout-tab' + (i === 0 ? ' active' : '');
+        btn.textContent = t.tab;
+        btn.addEventListener('click', () => {
+          tabBar.querySelectorAll('.workout-tab').forEach((b, j) => b.classList.toggle('active', j === i));
+          panels.forEach((p, j) => p.classList.toggle('active', j === i));
+        });
+        tabBar.appendChild(btn);
+      });
+
+      panels[0].classList.add('active');
+      content.appendChild(tabBar);
+      panels.forEach(p => content.appendChild(p));
     }
   </script>
 </body>

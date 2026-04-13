@@ -118,9 +118,13 @@
           <line class="bp bp-limb" id="bp-shoulders" data-label="Shoulders" data-part="shoulders"
             x1="52" y1="112" x2="148" y2="112" stroke-width="9"/>
 
-          <!-- ── TORSO ───────────────────────────────────── -->
-          <line class="bp bp-limb" id="bp-torso" data-label="Torso / Core" data-part="torso"
-            x1="100" y1="112" x2="100" y2="252" stroke-width="13"/>
+          <!-- ── UPPER TORSO ─────────────────────────────── -->
+          <line class="bp bp-limb" id="bp-upper-torso" data-label="Upper Torso / Chest" data-part="upper-torso"
+            x1="100" y1="112" x2="100" y2="182" stroke-width="13"/>
+
+          <!-- ── LOWER TORSO ─────────────────────────────── -->
+          <line class="bp bp-limb" id="bp-lower-torso" data-label="Lower Torso / Core" data-part="lower-torso"
+            x1="100" y1="182" x2="100" y2="246" stroke-width="13"/>
 
           <!-- ── NECK ─────────────────────────────────────── -->
           <line class="bp bp-limb" id="bp-neck" data-label="Neck" data-part="neck"
@@ -136,13 +140,21 @@
             <path class="face" d="M92,60 Q100,67 108,60" stroke-width="2"/>
           </g>
 
-          <!-- ── LEFT ARM ────────────────────────────────── -->
-          <path class="bp bp-limb" id="bp-arm-l" data-label="Left Arm" data-part="arms"
-            d="M52,112 L26,186 L18,258" stroke-width="8"/>
+          <!-- ── LEFT UPPER ARM ─────────────────────────── -->
+          <path class="bp bp-limb" id="bp-upper-arm-l" data-label="Left Upper Arm" data-part="upper-arm"
+            d="M52,112 L26,186" stroke-width="8"/>
 
-          <!-- ── RIGHT ARM ───────────────────────────────── -->
-          <path class="bp bp-limb" id="bp-arm-r" data-label="Right Arm" data-part="arms"
-            d="M148,112 L174,186 L182,258" stroke-width="8"/>
+          <!-- ── LEFT LOWER ARM ─────────────────────────── -->
+          <path class="bp bp-limb" id="bp-lower-arm-l" data-label="Left Forearm" data-part="lower-arm"
+            d="M26,186 L18,258" stroke-width="8"/>
+
+          <!-- ── RIGHT UPPER ARM ────────────────────────── -->
+          <path class="bp bp-limb" id="bp-upper-arm-r" data-label="Right Upper Arm" data-part="upper-arm"
+            d="M148,112 L174,186" stroke-width="8"/>
+
+          <!-- ── RIGHT LOWER ARM ────────────────────────── -->
+          <path class="bp bp-limb" id="bp-lower-arm-r" data-label="Right Forearm" data-part="lower-arm"
+            d="M174,186 L182,258" stroke-width="8"/>
 
           <!-- ── LEFT HAND ───────────────────────────────── -->
           <circle class="bp bp-node" id="bp-hand-l" data-label="Left Hand" data-part="hands"
@@ -152,13 +164,27 @@
           <circle class="bp bp-node" id="bp-hand-r" data-label="Right Hand" data-part="hands"
             cx="182" cy="269" r="12" stroke-width="2"/>
 
-          <!-- ── LEFT LEG ────────────────────────────────── -->
-          <path class="bp bp-limb" id="bp-leg-l" data-label="Left Leg" data-part="legs"
-            d="M84,252 L72,368 L66,460" stroke-width="9"/>
+          <!-- ── LEFT UPPER LEG ────────────────────────────── -->
+          <path class="bp bp-limb" id="bp-upper-leg-l" data-label="Left Thigh" data-part="upper-leg"
+            d="M84,252 L72,368" stroke-width="9"/>
 
-          <!-- ── RIGHT LEG ───────────────────────────────── -->
-          <path class="bp bp-limb" id="bp-leg-r" data-label="Right Leg" data-part="legs"
-            d="M116,252 L128,368 L134,460" stroke-width="9"/>
+          <!-- ── LEFT LOWER LEG ─────────────────────────── -->
+          <path class="bp bp-limb" id="bp-lower-leg-l" data-label="Left Shin / Calf" data-part="lower-leg"
+            d="M72,368 L66,460" stroke-width="9"/>
+
+          <!-- ── RIGHT UPPER LEG ───────────────────────────── -->
+          <path class="bp bp-limb" id="bp-upper-leg-r" data-label="Right Thigh" data-part="upper-leg"
+            d="M116,252 L128,368" stroke-width="9"/>
+
+          <!-- ── RIGHT LOWER LEG ────────────────────────── -->
+          <path class="bp bp-limb" id="bp-lower-leg-r" data-label="Right Shin / Calf" data-part="lower-leg"
+            d="M128,368 L134,460" stroke-width="9"/>
+
+          <!-- ── KNEES (rendered last so they sit on top of leg paths) ── -->
+          <circle class="bp bp-node" id="bp-knee-l" data-label="Left Knee" data-part="knee"
+            cx="72" cy="368" r="10" stroke-width="2"/>
+          <circle class="bp bp-node" id="bp-knee-r" data-label="Right Knee" data-part="knee"
+            cx="128" cy="368" r="10" stroke-width="2"/>
 
           <!-- ── HIPS ────────────────────────────────────── -->
           <line class="bp bp-limb" id="bp-hips" data-label="Hips / Pelvis" data-part="hips"
@@ -175,8 +201,6 @@
           <!-- ── JOINT DOTS (decorative) ─────────────────── -->
           <circle class="jt" cx="26"  cy="186" r="5.5"/> <!-- left elbow -->
           <circle class="jt" cx="174" cy="186" r="5.5"/> <!-- right elbow -->
-          <circle class="jt" cx="72"  cy="368" r="6"/>   <!-- left knee -->
-          <circle class="jt" cx="128" cy="368" r="6"/>   <!-- right knee -->
           <circle class="jt" cx="52"  cy="112" r="5"/>   <!-- left shoulder -->
           <circle class="jt" cx="148" cy="112" r="5"/>   <!-- right shoulder -->
           <circle class="jt" cx="84"  cy="252" r="5"/>   <!-- left hip -->
@@ -195,36 +219,37 @@
             <!-- Right deltoid -->
             <ellipse class="ms bp" data-label="Right Deltoid" data-part="shoulders" cx="154" cy="130" rx="16" ry="20" transform="rotate(15 154 130)"/>
             <!-- Left pec -->
-            <ellipse class="ms bp" data-label="Left Pec" data-part="torso" cx="78" cy="152" rx="22" ry="20"/>
+            <ellipse class="ms bp" data-label="Left Pec" data-part="upper-torso" cx="78" cy="152" rx="22" ry="20"/>
             <!-- Right pec -->
-            <ellipse class="ms bp" data-label="Right Pec" data-part="torso" cx="122" cy="152" rx="22" ry="20"/>
+            <ellipse class="ms bp" data-label="Right Pec" data-part="upper-torso" cx="122" cy="152" rx="22" ry="20"/>
             <!-- Left bicep -->
-            <ellipse class="ms bp" data-label="Left Bicep" data-part="arms" cx="39" cy="149" rx="10" ry="32" transform="rotate(20 39 149)"/>
+            <ellipse class="ms bp" data-label="Left Bicep" data-part="upper-arm" cx="39" cy="149" rx="10" ry="32" transform="rotate(20 39 149)"/>
             <!-- Right bicep -->
-            <ellipse class="ms bp" data-label="Right Bicep" data-part="arms" cx="161" cy="149" rx="10" ry="32" transform="rotate(-20 161 149)"/>
+            <ellipse class="ms bp" data-label="Right Bicep" data-part="upper-arm" cx="161" cy="149" rx="10" ry="32" transform="rotate(-20 161 149)"/>
             <!-- Left forearm -->
-            <ellipse class="ms bp" data-label="Left Forearm" data-part="arms" cx="22" cy="222" rx="8" ry="30" transform="rotate(-6 22 222)"/>
+            <ellipse class="ms bp" data-label="Left Forearm" data-part="lower-arm" cx="22" cy="222" rx="8" ry="30" transform="rotate(-6 22 222)"/>
             <!-- Right forearm -->
-            <ellipse class="ms bp" data-label="Right Forearm" data-part="arms" cx="178" cy="222" rx="8" ry="30" transform="rotate(6 178 222)"/>
-            <!-- Abs -->
-            <rect class="ms bp" data-label="Abs" data-part="torso" x="83" y="178" width="14" height="15" rx="4"/>
-            <rect class="ms bp" data-label="Abs" data-part="torso" x="103" y="178" width="14" height="15" rx="4"/>
-            <rect class="ms bp" data-label="Abs" data-part="torso" x="83" y="197" width="14" height="15" rx="4"/>
-            <rect class="ms bp" data-label="Abs" data-part="torso" x="103" y="197" width="14" height="15" rx="4"/>
-            <rect class="ms bp" data-label="Abs" data-part="torso" x="83" y="216" width="14" height="15" rx="4"/>
-            <rect class="ms bp" data-label="Abs" data-part="torso" x="103" y="216" width="14" height="15" rx="4"/>
+            <ellipse class="ms bp" data-label="Right Forearm" data-part="lower-arm" cx="178" cy="222" rx="8" ry="30" transform="rotate(6 178 222)"/>
+            <!-- Upper abs -->
+            <rect class="ms bp" data-label="Abs" data-part="upper-torso" x="83" y="178" width="14" height="15" rx="4"/>
+            <rect class="ms bp" data-label="Abs" data-part="upper-torso" x="103" y="178" width="14" height="15" rx="4"/>
+            <rect class="ms bp" data-label="Abs" data-part="upper-torso" x="83" y="197" width="14" height="15" rx="4"/>
+            <rect class="ms bp" data-label="Abs" data-part="upper-torso" x="103" y="197" width="14" height="15" rx="4"/>
+            <!-- Lower abs -->
+            <rect class="ms bp" data-label="Lower Abs" data-part="lower-torso" x="83" y="216" width="14" height="15" rx="4"/>
+            <rect class="ms bp" data-label="Lower Abs" data-part="lower-torso" x="103" y="216" width="14" height="15" rx="4"/>
             <!-- Left oblique -->
-            <ellipse class="ms bp" data-label="Left Oblique" data-part="torso" cx="62" cy="210" rx="10" ry="32" transform="rotate(-8 62 210)"/>
+            <ellipse class="ms bp" data-label="Left Oblique" data-part="lower-torso" cx="62" cy="210" rx="10" ry="32" transform="rotate(-8 62 210)"/>
             <!-- Right oblique -->
-            <ellipse class="ms bp" data-label="Right Oblique" data-part="torso" cx="138" cy="210" rx="10" ry="32" transform="rotate(8 138 210)"/>
+            <ellipse class="ms bp" data-label="Right Oblique" data-part="lower-torso" cx="138" cy="210" rx="10" ry="32" transform="rotate(8 138 210)"/>
             <!-- Left quad -->
-            <ellipse class="ms bp" data-label="Left Quad" data-part="legs" cx="78" cy="312" rx="15" ry="52" transform="rotate(-5 78 312)"/>
+            <ellipse class="ms bp" data-label="Left Quad" data-part="upper-leg" cx="78" cy="312" rx="15" ry="52" transform="rotate(-5 78 312)"/>
             <!-- Right quad -->
-            <ellipse class="ms bp" data-label="Right Quad" data-part="legs" cx="122" cy="312" rx="15" ry="52" transform="rotate(5 122 312)"/>
+            <ellipse class="ms bp" data-label="Right Quad" data-part="upper-leg" cx="122" cy="312" rx="15" ry="52" transform="rotate(5 122 312)"/>
             <!-- Left calf -->
-            <ellipse class="ms bp" data-label="Left Calf" data-part="legs" cx="70" cy="412" rx="11" ry="38" transform="rotate(-3 70 412)"/>
+            <ellipse class="ms bp" data-label="Left Calf" data-part="lower-leg" cx="70" cy="412" rx="11" ry="38" transform="rotate(-3 70 412)"/>
             <!-- Right calf -->
-            <ellipse class="ms bp" data-label="Right Calf" data-part="legs" cx="130" cy="412" rx="11" ry="38" transform="rotate(3 130 412)"/>
+            <ellipse class="ms bp" data-label="Right Calf" data-part="lower-leg" cx="130" cy="412" rx="11" ry="38" transform="rotate(3 130 412)"/>
           </g>
 
           </g>
@@ -237,12 +262,12 @@
             x1="52" y1="112" x2="148" y2="112" stroke-width="9"/>
 
           <!-- ── UPPER BACK ──────────────────────────────────── -->
-          <line class="bp bp-limb" data-label="Upper Back" data-part="torso"
+          <line class="bp bp-limb" data-label="Upper Back" data-part="upper-back"
             x1="100" y1="112" x2="100" y2="182" stroke-width="13"/>
 
           <!-- ── LOWER BACK ──────────────────────────────────── -->
-          <line class="bp bp-limb" data-label="Lower Back" data-part="torso"
-            x1="100" y1="182" x2="100" y2="252" stroke-width="13"/>
+          <line class="bp bp-limb" data-label="Lower Back" data-part="lower-back"
+            x1="100" y1="182" x2="100" y2="246" stroke-width="13"/>
 
           <!-- ── NECK (back) ────────────────────────────────── -->
           <line class="bp bp-limb" data-label="Neck (Back)" data-part="neck"
@@ -253,13 +278,21 @@
             <circle cx="100" cy="50" r="34" fill="var(--bg2)" stroke="var(--acc)" stroke-width="2.5" stroke-opacity="0.75"/>
           </g>
 
-          <!-- ── LEFT ARM (back) ────────────────────────────── -->
-          <path class="bp bp-limb" data-label="Left Arm (Back)" data-part="arms"
-            d="M52,112 L26,186 L18,258" stroke-width="8"/>
+          <!-- ── LEFT UPPER ARM (back) ─────────────────────── -->
+          <path class="bp bp-limb" data-label="Left Upper Arm (Back)" data-part="upper-arm"
+            d="M52,112 L26,186" stroke-width="8"/>
 
-          <!-- ── RIGHT ARM (back) ───────────────────────────── -->
-          <path class="bp bp-limb" data-label="Right Arm (Back)" data-part="arms"
-            d="M148,112 L174,186 L182,258" stroke-width="8"/>
+          <!-- ── LEFT LOWER ARM (back) ──────────────────────── -->
+          <path class="bp bp-limb" data-label="Left Forearm (Back)" data-part="lower-arm"
+            d="M26,186 L18,258" stroke-width="8"/>
+
+          <!-- ── RIGHT UPPER ARM (back) ────────────────────── -->
+          <path class="bp bp-limb" data-label="Right Upper Arm (Back)" data-part="upper-arm"
+            d="M148,112 L174,186" stroke-width="8"/>
+
+          <!-- ── RIGHT LOWER ARM (back) ─────────────────────── -->
+          <path class="bp bp-limb" data-label="Right Forearm (Back)" data-part="lower-arm"
+            d="M174,186 L182,258" stroke-width="8"/>
 
           <!-- ── LEFT HAND (back) ───────────────────────────── -->
           <circle class="bp bp-node" data-label="Left Hand (Back)" data-part="hands"
@@ -269,13 +302,23 @@
           <circle class="bp bp-node" data-label="Right Hand (Back)" data-part="hands"
             cx="182" cy="269" r="12" stroke-width="2"/>
 
-          <!-- ── LEFT LEG (back) ────────────────────────────── -->
-          <path class="bp bp-limb" data-label="Left Leg (Back)" data-part="legs"
-            d="M84,252 L72,368 L66,460" stroke-width="9"/>
+          <!-- ── LEFT UPPER LEG (back) ─────────────────────── -->
+          <path class="bp bp-limb" data-label="Left Thigh (Back)" data-part="upper-leg"
+            d="M84,252 L72,368" stroke-width="9"/>
 
-          <!-- ── RIGHT LEG (back) ───────────────────────────── -->
-          <path class="bp bp-limb" data-label="Right Leg (Back)" data-part="legs"
-            d="M116,252 L128,368 L134,460" stroke-width="9"/>
+
+          <!-- ── LEFT LOWER LEG (back) ──────────────────────── -->
+          <path class="bp bp-limb" data-label="Left Shin / Calf (Back)" data-part="lower-leg"
+            d="M72,368 L66,460" stroke-width="9"/>
+
+          <!-- ── RIGHT UPPER LEG (back) ────────────────────── -->
+          <path class="bp bp-limb" data-label="Right Thigh (Back)" data-part="upper-leg"
+            d="M116,252 L128,368" stroke-width="9"/>
+
+          <!-- ── RIGHT LOWER LEG (back) ─────────────────────── -->
+          <path class="bp bp-limb" data-label="Right Shin / Calf (Back)" data-part="lower-leg"
+            d="M128,368 L134,460" stroke-width="9"/>
+
 
           <!-- ── HIPS (back) ────────────────────────────────── -->
           <line class="bp bp-limb" data-label="Glutes / Hips" data-part="hips"
@@ -292,8 +335,6 @@
           <!-- ── JOINT DOTS ──────────────────────────────────── -->
           <circle class="jt" cx="26"  cy="186" r="5.5"/>
           <circle class="jt" cx="174" cy="186" r="5.5"/>
-          <circle class="jt" cx="72"  cy="368" r="6"/>
-          <circle class="jt" cx="128" cy="368" r="6"/>
           <circle class="jt" cx="52"  cy="112" r="5"/>
           <circle class="jt" cx="148" cy="112" r="5"/>
           <circle class="jt" cx="84"  cy="252" r="5"/>
@@ -308,37 +349,37 @@
             <!-- Right rear delt -->
             <ellipse class="ms bp" data-label="Right Rear Delt" data-part="shoulders" cx="156" cy="128" rx="15" ry="18" transform="rotate(-15 156 128)"/>
             <!-- Left rhomboid -->
-            <ellipse class="ms bp" data-label="Left Rhomboid" data-part="shoulders" cx="84" cy="152" rx="14" ry="18"/>
+            <ellipse class="ms bp" data-label="Left Rhomboid" data-part="upper-back" cx="84" cy="152" rx="14" ry="18"/>
             <!-- Right rhomboid -->
-            <ellipse class="ms bp" data-label="Right Rhomboid" data-part="shoulders" cx="116" cy="152" rx="14" ry="18"/>
+            <ellipse class="ms bp" data-label="Right Rhomboid" data-part="upper-back" cx="116" cy="152" rx="14" ry="18"/>
             <!-- Left lat -->
-            <ellipse class="ms bp" data-label="Left Lat" data-part="torso" cx="68" cy="192" rx="14" ry="44" transform="rotate(-8 68 192)"/>
+            <ellipse class="ms bp" data-label="Left Lat" data-part="upper-back" cx="68" cy="192" rx="14" ry="44" transform="rotate(-8 68 192)"/>
             <!-- Right lat -->
-            <ellipse class="ms bp" data-label="Right Lat" data-part="torso" cx="132" cy="192" rx="14" ry="44" transform="rotate(8 132 192)"/>
+            <ellipse class="ms bp" data-label="Right Lat" data-part="upper-back" cx="132" cy="192" rx="14" ry="44" transform="rotate(8 132 192)"/>
             <!-- Left erector spinae -->
-            <rect class="ms bp" data-label="Left Erector" data-part="torso" x="87" y="162" width="10" height="78" rx="4"/>
+            <rect class="ms bp" data-label="Left Erector" data-part="lower-back" x="87" y="162" width="10" height="78" rx="4"/>
             <!-- Right erector spinae -->
-            <rect class="ms bp" data-label="Right Erector" data-part="torso" x="103" y="162" width="10" height="78" rx="4"/>
+            <rect class="ms bp" data-label="Right Erector" data-part="lower-back" x="103" y="162" width="10" height="78" rx="4"/>
             <!-- Left tricep -->
-            <ellipse class="ms bp" data-label="Left Tricep" data-part="arms" cx="39" cy="149" rx="10" ry="30" transform="rotate(20 39 149)"/>
+            <ellipse class="ms bp" data-label="Left Tricep" data-part="upper-arm" cx="39" cy="149" rx="10" ry="30" transform="rotate(20 39 149)"/>
             <!-- Right tricep -->
-            <ellipse class="ms bp" data-label="Right Tricep" data-part="arms" cx="161" cy="149" rx="10" ry="30" transform="rotate(-20 161 149)"/>
+            <ellipse class="ms bp" data-label="Right Tricep" data-part="upper-arm" cx="161" cy="149" rx="10" ry="30" transform="rotate(-20 161 149)"/>
             <!-- Left forearm (back) -->
-            <ellipse class="ms bp" data-label="Left Forearm" data-part="arms" cx="22" cy="222" rx="8" ry="30" transform="rotate(-6 22 222)"/>
+            <ellipse class="ms bp" data-label="Left Forearm" data-part="lower-arm" cx="22" cy="222" rx="8" ry="30" transform="rotate(-6 22 222)"/>
             <!-- Right forearm (back) -->
-            <ellipse class="ms bp" data-label="Right Forearm" data-part="arms" cx="178" cy="222" rx="8" ry="30" transform="rotate(6 178 222)"/>
+            <ellipse class="ms bp" data-label="Right Forearm" data-part="lower-arm" cx="178" cy="222" rx="8" ry="30" transform="rotate(6 178 222)"/>
             <!-- Left glute -->
             <ellipse class="ms bp" data-label="Left Glute" data-part="hips" cx="84" cy="266" rx="22" ry="18"/>
             <!-- Right glute -->
             <ellipse class="ms bp" data-label="Right Glute" data-part="hips" cx="116" cy="266" rx="22" ry="18"/>
             <!-- Left hamstring -->
-            <ellipse class="ms bp" data-label="Left Hamstring" data-part="legs" cx="78" cy="312" rx="14" ry="52" transform="rotate(-5 78 312)"/>
+            <ellipse class="ms bp" data-label="Left Hamstring" data-part="upper-leg" cx="78" cy="312" rx="14" ry="52" transform="rotate(-5 78 312)"/>
             <!-- Right hamstring -->
-            <ellipse class="ms bp" data-label="Right Hamstring" data-part="legs" cx="122" cy="312" rx="14" ry="52" transform="rotate(5 122 312)"/>
+            <ellipse class="ms bp" data-label="Right Hamstring" data-part="upper-leg" cx="122" cy="312" rx="14" ry="52" transform="rotate(5 122 312)"/>
             <!-- Left gastrocnemius -->
-            <ellipse class="ms bp" data-label="Left Calf" data-part="legs" cx="70" cy="408" rx="12" ry="40" transform="rotate(-3 70 408)"/>
+            <ellipse class="ms bp" data-label="Left Calf" data-part="lower-leg" cx="70" cy="408" rx="12" ry="40" transform="rotate(-3 70 408)"/>
             <!-- Right gastrocnemius -->
-            <ellipse class="ms bp" data-label="Right Calf" data-part="legs" cx="130" cy="408" rx="12" ry="40" transform="rotate(3 130 408)"/>
+            <ellipse class="ms bp" data-label="Right Calf" data-part="lower-leg" cx="130" cy="408" rx="12" ry="40" transform="rotate(3 130 408)"/>
           </g>
 
           </g>
