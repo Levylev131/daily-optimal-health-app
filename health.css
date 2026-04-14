@@ -524,7 +524,7 @@ tbody tr:hover .detail {
   position: fixed;
   bottom: 100px;
   left: 50%;
-  transform: translateX(-50%) translateY(12px);
+  transform: translateX(-50%) translateY(200px);
   background: #1a3a2a;
   border: 1px solid #4ade80;
   color: #4ade80;
@@ -532,16 +532,28 @@ tbody tr:hover .detail {
   font-weight: 600;
   padding: 10px 20px;
   border-radius: 10px;
-  opacity: 0;
-  transition: opacity 0.3s, transform 0.3s;
-  pointer-events: none;
+  transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+  pointer-events: auto;
+  cursor: pointer;
   z-index: 1000;
   white-space: nowrap;
 }
-#ht-toast.ht-toast--show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
+#ht-toast.ht-toast--ack {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  padding: 9px 20px;
+  line-height: 1.5;
+  border-radius: 14px;
 }
+#ht-toast.ht-toast--active { transform: translateX(-50%) translateY(calc(100% + 100px)); }
+#ht-toast.ht-toast--show {
+  transform: translateX(-50%) translateY(0);
+  cursor: default;
+}
+#ht-toast:not(.ht-toast--show) * { opacity: 0; }
+#ht-toast.ht-toast--show * { opacity: 1; transition: opacity 0.15s 0.2s; }
 
 /* ── Checkbox column ── */
 .cb-all-btn {

@@ -474,7 +474,15 @@
       store().setItem(pfx() + 'water_' + currentDate, !done ? String(waterGoal) : '0');
     }
     render();
-    if (!done) showToast('Done! Keep it up.');
+    if (!done) {
+      var newStreak = calcStreak(id, currentDate);
+      var milestones = [7, 14, 21, 30, 60, 90, 100, 365];
+      if (milestones.indexOf(newStreak) !== -1) {
+        showToast('🔥 ' + newStreak + '-day streak for "' + (habit ? habit.name : 'habit') + '"!');
+      } else {
+        showToast('Done! Keep it up. ' + (newStreak > 1 ? newStreak + ' days in a row 🔥' : ''));
+      }
+    }
   }
 
   /* ── MENU ── */

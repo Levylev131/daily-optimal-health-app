@@ -181,6 +181,14 @@ function renderHub() {
           <div class="card-pct">Open →</div>
         </div>
       </div>
+      <div class="goal-card" onclick="window.location.href='blog.html'">
+        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">✍️</div></div>
+        <div class="card-info">
+          <div class="card-title">Blog Tool</div>
+          <div class="card-desc">Write, format, and publish posts. Export as clean HTML to share anywhere.</div>
+          <div class="card-pct">Open →</div>
+        </div>
+      </div>
       <!-- DASHBOARD CARD — to remove: delete this block + dashboard.html -->
       <div class="goal-card" onclick="window.location.href='dashboard.html'">
         <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">📊</div></div>
@@ -398,6 +406,57 @@ function setMode(mode) {
     if (!e.target.closest('[data-tip]')) return;
     tip.classList.remove('show');
   });
+})();
+
+// ─── DEBUG HELPER (console only) ─────────────────────────────────────────────
+window.dohDebug = (function() {
+  function _save() { localStorage.setItem(storagePrefix()+'streak', JSON.stringify(STATE.streak)); }
+  function _saveBest() { if (STATE.streak.count > parseInt(localStorage.getItem(storagePrefix()+'best_streak')||'0')) localStorage.setItem(storagePrefix()+'best_streak', STATE.streak.count); }
+  return {
+    // ── Streak ──
+    streakAdd:     function(n) { n=n||1; STATE.streak.count+=n; STATE.streak.last=dateKey(); _save(); _saveBest(); renderHub(); console.log('Streak →', STATE.streak.count); },
+    streakSet:     function(n) { STATE.streak.count=n; STATE.streak.last=dateKey(); _save(); _saveBest(); renderHub(); console.log('Streak set to', n); },
+    streakMissDay: function() { const d=new Date(); d.setDate(d.getDate()-2); STATE.streak.last=dateKey(d); _save(); console.log('Last streak date set to 2 days ago — reload to trigger audit'); },
+    streakReset:   function() { STATE.streak.count=0; STATE.streak.last=''; _save(); renderHub(); console.log('Streak reset'); },
+    // ── Best Streak ──
+    bestReset:     function() { localStorage.removeItem(storagePrefix()+'best_streak'); console.log('Best streak reset'); },
+    // ── Freezes ──
+    freezeSet:     function(n) { setFreezes(n==null?3:n); renderHub(); console.log('Freezes →', getFreezes()); },
+    freezeUse:     function() { if(getFreezes()>0){setFreezes(getFreezes()-1);incFreezeUses();} triggerSnowflakes(); toast('❄️ Streak Freeze Used — Streak Protected! ('+getFreezes()+' Left)', 10000, true); renderHub(); },
+    // ── Days Protected ──
+    daysAdd:       function(n) { n=n||1; for(var i=0;i<n;i++) incFreezeUses(); console.log('Days protected →', getFreezeUses()); },
+    daysReset:     function() { localStorage.setItem(storagePrefix()+'freeze_uses','0'); console.log('Days protected reset'); },
+    // ── Toasts ──
+    toastFreeze:   function() { triggerSnowflakes(); toast('❄️ Streak Freeze Used — Streak Protected! ('+getFreezes()+' Left)', 10000, true); },
+    toastRankUp:   function() { toast('🎉 Rank up: Biohacker!'); },
+    toastAllDone:  function() { toast('All done today! 🎊'); },
+    toastStreak:   function(n) { toast('🔥 '+(n||STATE.streak.count)+'-day streak! Keep it going!'); },
+    // ── Help ──
+    help: function() {
+      console.log([
+        '─── dohDebug (hub) ───────────────────────────────',
+        'Streak',
+        '  .streakAdd(n=1)     increment streak by n, mark today done',
+        '  .streakSet(n)       set streak to exact value',
+        '  .streakMissDay()    set last date to 2 days ago → reload to trigger audit',
+        '  .streakReset()      reset streak to 0',
+        'Best Streak',
+        '  .bestReset()        clear stored best streak',
+        'Freezes',
+        '  .freezeSet(n=3)     set freeze count (0-3)',
+        '  .freezeUse()        consume a freeze + show toast',
+        'Days Protected',
+        '  .daysAdd(n=1)       increment days protected',
+        '  .daysReset()        reset days protected to 0',
+        'Toasts',
+        '  .toastFreeze()      show freeze notification',
+        '  .toastRankUp()      show rank-up notification',
+        '  .toastAllDone()     show all-done notification',
+        '  .toastStreak(n)     show streak milestone notification',
+        '─────────────────────────────────────────────────',
+      ].join('\n'));
+    }
+  };
 })();
 </script>
 </body>

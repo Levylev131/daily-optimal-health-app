@@ -300,14 +300,20 @@
     /* Toast */
     #toast {
       position: fixed; bottom: 26px; left: 50%;
-      transform: translateX(-50%) translateY(80px);
+      transform: translateX(-50%) translateY(200px);
       background: var(--acc); color: #000; padding: 9px 20px;
       border-radius: 22px; font-size: .86rem; font-weight: 700;
       transition: transform .4s cubic-bezier(.34,1.56,.64,1);
       z-index: 200; box-shadow: 0 4px 20px var(--glow);
-      pointer-events: none; white-space: nowrap;
+      pointer-events: auto; white-space: nowrap; cursor: pointer;
     }
-    #toast.show { transform: translateX(-50%) translateY(0); }
+    #toast.toast-active { transform: translateX(-50%) translateY(calc(100% + 14px)); }
+    #toast.show { transform: translateX(-50%) translateY(0); cursor: default; }
+    #toast:not(.show) * { opacity: 0; }
+    #toast.show * { opacity: 1; transition: opacity 0.15s 0.2s; }
+    #toast.toast-ack { pointer-events: auto; display: flex; align-items: center; gap: 8px; white-space: nowrap; text-align: left; padding: 9px 20px; line-height: 1.5; border-radius: 16px; }
+    #toast .toast-dismiss { background: rgba(0,0,0,0.2); border: none; color: inherit; font-size: .8rem; font-weight: 800; padding: 6px 14px; border-radius: 12px; cursor: pointer; flex-shrink: 0; }
+    #toast .toast-dismiss:hover { background: rgba(0,0,0,0.35); }
     body.degen #toast { color: #fff; }
 
     @media (max-width: 560px) {

@@ -1,6 +1,7 @@
 # Daily Optimal Health — TODO
 
 ## Version History
+- **v0.9** — Body map granular segments (upper/lower torso, arm, leg, knees), strength/cardio/mobility workout tabs on drill-down pages
 - **v0.8** — Dashboard (`dashboard.html`), body-map SVG overhaul, streak audit on load, water↔habit sync, habit name auto-capitalize
 - **v0.7** — Elder Mode: warm amber theme, larger fonts, no particles/animations
 - **v0.6** — Phase 3 refactor: extract profile.js (~270 lines) + stats.js (~95 lines) from index.html
@@ -31,6 +32,8 @@
 - [x] Streak audit on page load — freeze consumed automatically if day missed
 - [x] Water ↔ habit bidirectional sync (water goal met = water habit checked, and vice versa)
 - [x] Habit name auto-capitalizes on save
+- [x] Body map granular SVG segments (upper/lower torso, arm, leg, knees)
+- [x] Body-part drill-down workout tabs (Strength / Cardio / Mobility)
 
 ## In Progress
 <!-- Add what you're currently working on -->

@@ -1,5 +1,6 @@
 (function () {
   // ── LEVELS (mirrors index.html) ───────────────────────────────────────────
+  const STREAK_MILESTONES = [7, 14, 21, 30, 60, 90, 100, 365];
   const LEVELS = [
     {name:'Couch Potato',      min:0},
     {name:'Weekend Warrior',   min:150},
@@ -19,7 +20,7 @@
   // ── PROFILE HELPERS ───────────────────────────────────────────────────────
   function getActiveId()  { return localStorage.getItem('doh_active_profile') || null; }
   function getProfiles()  { return JSON.parse(localStorage.getItem('doh_profiles') || '{}'); }
-  function pfx()          { const id = getActiveId(); return id ? `doh_${id}_` : null; }
+  function pfx()          { const id = getActiveId(); return `doh_${id || 'guest'}_`; }
 
   function getXP()        { const p = pfx(); return p ? parseInt(localStorage.getItem(p+'xp') || '0') : 0; }
   function getStreak()    { const p = pfx(); return p ? JSON.parse(localStorage.getItem(p+'streak') || '{"count":0,"last":""}') : {count:0,last:''}; }
@@ -81,11 +82,12 @@
     if (freezes > 0) {
       setFreezes(freezes - 1);
       const p = pfx();
-      if (p) localStorage.setItem(p + 'freeze_uses', parseInt(localStorage.getItem(p + 'freeze_uses') || '0') + 1);
-      s.count += 1;
+      localStorage.setItem(p + 'freeze_uses', parseInt(localStorage.getItem(p + 'freeze_uses') || '0') + 1);
+      // Protect streak count — do NOT increment; user must still earn today's increment by completing tasks
       s.last = today;
       setStreak(s);
-      showToast('❄️ Streak freeze used — streak protected! (' + (freezes - 1) + ' left)');
+      triggerSnowflakes();
+      showToast('❄️ Streak Freeze Used — Streak Protected! (' + (freezes - 1) + ' Left)', 10000, true);
     } else {
       s.count = 0;
       setStreak(s);
@@ -101,6 +103,12 @@
     s.count = (s.last === ydStr) ? s.count + 1 : 1;
     s.last = today;
     setStreak(s);
+    const p = pfx();
+    const bestStored = parseInt(localStorage.getItem(p + 'best_streak') || '0');
+    if (s.count > bestStored) localStorage.setItem(p + 'best_streak', s.count);
+    if (STREAK_MILESTONES.includes(s.count)) {
+      showToast('🔥 ' + s.count + '-day streak! Keep it going!');
+    }
   }
 
   // ── PAGE KEY / DATE STATE ─────────────────────────────────────────────────
@@ -332,6 +340,7 @@
         }
       });
       saveDay();
+      checkAllDone();
       updateProfileBar();
     });
     th.appendChild(checkAllBtn);
@@ -377,11 +386,20 @@
           updateProfileBar();
         }
         saveDay();
+        checkAllDone();
       });
     });
   }
 
   // ── STATE ─────────────────────────────────────────────────────────────────
+  function checkAllDone() {
+    if (!isToday()) return;
+    var cbs = Array.from(document.querySelectorAll('tbody input[type=checkbox]'));
+    if (cbs.length && cbs.every(function(cb) { return cb.checked; })) {
+      showToast('All done today! 🎊');
+    }
+  }
+
   function saveDay() {
     const cbs = document.querySelectorAll('tbody input[type=checkbox]');
     const state = Array.from(cbs).map(function (cb) { return cb.checked; });
@@ -477,18 +495,71 @@
     card.style.display = 'flex';
   }
 
-  function showToast(msg) {
+  function triggerSnowflakes() {
+    if (!document.getElementById('snowflake-style')) {
+      var s = document.createElement('style');
+      s.id = 'snowflake-style';
+      s.textContent = '@keyframes sf-fall{0%{transform:translateY(-20px) translateX(0) rotate(0deg);opacity:1}100%{transform:translateY(105vh) translateX(var(--sf-drift)) rotate(360deg);opacity:0}}';
+      document.head.appendChild(s);
+    }
+    var colors = ['#7dd3fc','#bfdbfe','#e0f2fe','#ffffff','#93c5fd','#38bdf8'];
+    for (var i = 0; i < 45; i++) {
+      (function(i) {
+        setTimeout(function() {
+          var el = document.createElement('div');
+          el.textContent = '❄';
+          var drift = ((Math.random() - 0.5) * 140).toFixed(1);
+          el.style.cssText = 'position:fixed;top:-24px;left:' + (Math.random()*100).toFixed(1) + 'vw;'
+            + 'font-size:' + (13 + Math.random()*14).toFixed(1) + 'px;'
+            + 'color:' + colors[Math.floor(Math.random()*colors.length)] + ';'
+            + 'opacity:0.9;pointer-events:none;z-index:9998;'
+            + '--sf-drift:' + drift + 'px;'
+            + 'animation:sf-fall ' + (2.2 + Math.random()*2).toFixed(2) + 's linear forwards;';
+          document.body.appendChild(el);
+          setTimeout(function() { el.remove(); }, 4500);
+        }, i * 35);
+      })(i);
+    }
+  }
+
+  var lastHtToastParams = null;
+  var htToastTmr = null;
+  function showToast(msg, duration, ack) {
+    duration = duration || 2200;
+    lastHtToastParams = { msg: msg, duration: duration, ack: ack };
+    clearTimeout(htToastTmr);
     var existing = document.getElementById('ht-toast');
     if (existing) existing.remove();
     var toast = document.createElement('div');
     toast.id = 'ht-toast';
-    toast.textContent = msg;
+    if (ack) {
+      toast.classList.add('ht-toast--ack');
+      var snowflakeMatch = msg.match(/^❄️?\s*/);
+      var icon = snowflakeMatch
+        ? '<span style="background:rgba(0,0,0,0.7);border-radius:50%;width:40px;height:40px;display:inline-grid;place-items:center;flex-shrink:0;vertical-align:middle;"><span style="font-size:1.5rem;line-height:1;display:block;transform:translateY(-1px);">❄️</span></span>'
+        : '';
+      var text = snowflakeMatch ? msg.slice(snowflakeMatch[0].length) : msg;
+      toast.innerHTML = icon + '<span>' + text + '</span>';
+      var btn = document.createElement('button');
+      btn.textContent = 'Got it';
+      btn.style.cssText = 'background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);color:#4ade80;font-size:.8rem;font-weight:800;padding:6px 14px;border-radius:12px;cursor:pointer;flex-shrink:0;';
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        clearTimeout(htToastTmr);
+        toast.classList.remove('ht-toast--show');
+      });
+      toast.appendChild(btn);
+    } else {
+      toast.textContent = msg;
+    }
+    toast.addEventListener('click', function() {
+      if (!toast.classList.contains('ht-toast--show') && lastHtToastParams) {
+        showToast(lastHtToastParams.msg, lastHtToastParams.duration, lastHtToastParams.ack);
+      }
+    });
     document.body.appendChild(toast);
-    setTimeout(function () { toast.classList.add('ht-toast--show'); }, 10);
-    setTimeout(function () {
-      toast.classList.remove('ht-toast--show');
-      setTimeout(function () { toast.remove(); }, 400);
-    }, 2200);
+    setTimeout(function () { toast.classList.add('ht-toast--active', 'ht-toast--show'); }, 10);
+    htToastTmr = setTimeout(function () { toast.classList.remove('ht-toast--show'); }, duration);
   }
 
   function updateCheckboxStates() {
@@ -503,6 +574,82 @@
     updateCheckboxStates();
   }
 
+  // ── DEBUG HELPER (console only) ───────────────────────────────────────────
+  function exposeDebug() {
+    window.dohDebug = window.dohDebug || {};
+    // Schedule-page methods — extend the hub's dohDebug object (or stand alone)
+    window.dohDebug.streakAdd = function(n) {
+      var s = getStreak(); n = n || 1;
+      s.count += n; s.last = todayISO(); setStreak(s);
+      var p = pfx(); var best = parseInt(localStorage.getItem(p+'best_streak')||'0');
+      if (s.count > best) localStorage.setItem(p+'best_streak', s.count);
+      updateProfileBar(); console.log('Streak \u2192', s.count);
+    };
+    window.dohDebug.streakSet = function(n) {
+      var s = getStreak(); s.count = n; s.last = todayISO(); setStreak(s);
+      var p = pfx(); var best = parseInt(localStorage.getItem(p+'best_streak')||'0');
+      if (n > best) localStorage.setItem(p+'best_streak', n);
+      updateProfileBar(); console.log('Streak set to', n);
+    };
+    window.dohDebug.streakMissDay = function() {
+      var s = getStreak(); var d = new Date(); d.setDate(d.getDate()-2);
+      s.last = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      setStreak(s); console.log('Last streak set 2 days ago \u2014 reload to trigger audit');
+    };
+    window.dohDebug.streakReset = function() {
+      setStreak({count:0,last:''}); updateProfileBar(); console.log('Streak reset');
+    };
+    window.dohDebug.bestReset = function() {
+      localStorage.removeItem(pfx()+'best_streak'); console.log('Best streak reset');
+    };
+    window.dohDebug.freezeSet = function(n) {
+      setFreezes(n==null?3:n); updateProfileBar(); console.log('Freezes \u2192', getFreezes());
+    };
+    window.dohDebug.freezeUse = function() {
+      if (getFreezes() > 0) { setFreezes(getFreezes()-1); localStorage.setItem(pfx()+'freeze_uses', parseInt(localStorage.getItem(pfx()+'freeze_uses')||'0')+1); }
+      triggerSnowflakes();
+      showToast('\u2744\uFE0F Streak Freeze Used \u2014 Streak Protected! ('+getFreezes()+' Left)', 10000, true);
+      updateProfileBar();
+    };
+    window.dohDebug.daysAdd = function(n) {
+      n = n||1; var p = pfx(); var cur = parseInt(localStorage.getItem(p+'freeze_uses')||'0');
+      localStorage.setItem(p+'freeze_uses', cur+n); console.log('Days protected \u2192', cur+n);
+    };
+    window.dohDebug.daysReset = function() {
+      localStorage.setItem(pfx()+'freeze_uses','0'); console.log('Days protected reset');
+    };
+    window.dohDebug.toastFreeze   = function() { triggerSnowflakes(); showToast('\u2744\uFE0F Streak Freeze Used \u2014 Streak Protected! ('+getFreezes()+' Left)', 10000, true); };
+    window.dohDebug.toastRankUp   = function() { showToast('\uD83C\uDF89 Rank Up: Biohacker!'); };
+    window.dohDebug.toastAllDone  = function() { showToast('All Done Today! \uD83C\uDF8A'); };
+    window.dohDebug.toastStreak   = function(n) { var s = getStreak(); showToast('\uD83D\uDD25 '+(n||s.count)+'-Day Streak! Keep It Going!'); };
+    window.dohDebug.auditNow      = function() { auditStreak(); updateProfileBar(); console.log('auditStreak ran'); };
+    window.dohDebug.help = function() {
+      console.log([
+        '\u2500\u2500\u2500 dohDebug (schedule page) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500',
+        'Streak',
+        '  .streakAdd(n=1)      increment streak by n',
+        '  .streakSet(n)        set streak to exact value',
+        '  .streakMissDay()     set last date 2 days ago \u2014 reload to trigger audit',
+        '  .streakReset()       reset streak to 0',
+        '  .auditNow()          run auditStreak() immediately',
+        'Best Streak',
+        '  .bestReset()         clear stored best streak',
+        'Freezes',
+        '  .freezeSet(n=3)      set freeze count (0-3)',
+        '  .freezeUse()         consume a freeze + show toast',
+        'Days Protected',
+        '  .daysAdd(n=1)        increment days protected',
+        '  .daysReset()         reset days protected to 0',
+        'Toasts',
+        '  .toastFreeze()       show freeze notification',
+        '  .toastRankUp()       show rank-up notification',
+        '  .toastAllDone()      show all-done notification',
+        '  .toastStreak(n)      show streak milestone notification',
+        '\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500',
+      ].join('\n'));
+    };
+  }
+
   // ── INIT ──────────────────────────────────────────────────────────────────
   function init() {
     auditStreak();
@@ -514,6 +661,7 @@
     if (window.dohNotifications) window.dohNotifications.schedule();
     setInterval(function () { updateNowIndicator(); updateCheckboxStates(); }, 60000);
     document.body.style.opacity = '1';
+    exposeDebug();
   }
 
   if (document.readyState === 'loading') {

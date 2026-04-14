@@ -23,10 +23,10 @@ function auditStreak() {
   if (freezes > 0) {
     setFreezes(freezes - 1);
     incFreezeUses();
-    STATE.streak.count += 1;
+    // Protect streak count — do NOT increment; user must still earn today's increment by completing tasks
     STATE.streak.last = today;
     localStorage.setItem(`${storagePrefix()}streak`, JSON.stringify(STATE.streak));
-    toast(`❄️ Streak freeze used — streak protected! (${freezes - 1} left)`);
+    setTimeout(() => { triggerSnowflakes(); toast(`❄️ Streak Freeze Used — Streak Protected! (${freezes - 1} Left)`, 10000, true); }, 800);
   } else {
     STATE.streak.count = 0;
     localStorage.setItem(`${storagePrefix()}streak`, JSON.stringify(STATE.streak));
@@ -176,11 +176,59 @@ function spawnP(c, pool) {
   el.addEventListener('animationend',()=>{el.remove(); spawnP(c,pool);});
 }
 
+// ─── SNOWFLAKES ───────────────────────────────────────────────────────────────
+function triggerSnowflakes() {
+  if (!document.getElementById('snowflake-style')) {
+    const s = document.createElement('style');
+    s.id = 'snowflake-style';
+    s.textContent = '@keyframes sf-fall{0%{transform:translateY(-20px) translateX(0) rotate(0deg);opacity:1}100%{transform:translateY(105vh) translateX(var(--sf-drift)) rotate(360deg);opacity:0}}';
+    document.head.appendChild(s);
+  }
+  const colors = ['#7dd3fc','#bfdbfe','#e0f2fe','#ffffff','#93c5fd','#38bdf8'];
+  for (let i = 0; i < 45; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.textContent = '❄';
+      const drift = ((Math.random() - 0.5) * 140).toFixed(1);
+      el.style.cssText = `position:fixed;top:-24px;left:${(Math.random()*100).toFixed(1)}vw;`
+        + `font-size:${(13 + Math.random()*14).toFixed(1)}px;`
+        + `color:${colors[Math.floor(Math.random()*colors.length)]};`
+        + `opacity:0.9;pointer-events:none;z-index:9998;`
+        + `--sf-drift:${drift}px;`
+        + `animation:sf-fall ${(2.2 + Math.random()*2).toFixed(2)}s linear forwards;`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4500);
+    }, i * 35);
+  }
+}
+
 // ─── TOAST ────────────────────────────────────────────────────────────────────
 let toastTmr;
-function toast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
+let lastToastParams = null;
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('toast').addEventListener('click', function() {
+    if (!this.classList.contains('show') && lastToastParams) {
+      toast(lastToastParams.msg, lastToastParams.duration, lastToastParams.ack);
+    }
+  });
+});
+function toast(msg, duration=2600, ack=false) {
+  lastToastParams = { msg, duration, ack };
+  const t = document.getElementById('toast');
+  t.classList.add('toast-active');
   clearTimeout(toastTmr);
-  toastTmr=setTimeout(()=>t.classList.remove('show'),2600);
+  if (ack) {
+    t.classList.add('toast-ack');
+    const snowflakeMatch = msg.match(/^❄️?\s*/);
+    const icon = snowflakeMatch
+      ? `<span style="background:rgba(0,0,0,0.7);border-radius:50%;width:40px;height:40px;display:inline-grid;place-items:center;flex-shrink:0;vertical-align:middle;"><span style="font-size:1.5rem;line-height:1;display:block;transform:translateY(-1px);">❄️</span></span>`
+      : '';
+    const text = snowflakeMatch ? msg.slice(snowflakeMatch[0].length) : msg;
+    t.innerHTML = `${icon}<span>${text}</span><button class="toast-dismiss" onclick="event.stopPropagation(); this.closest('#toast').classList.remove('show','toast-ack')">Got it</button>`;
+  } else {
+    t.classList.remove('toast-ack');
+    t.textContent = msg;
+  }
+  t.classList.add('show');
+  toastTmr = setTimeout(() => t.classList.remove('show', 'toast-ack'), duration);
 }
