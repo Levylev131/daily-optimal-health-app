@@ -1,6 +1,7 @@
 # Daily Optimal Health — TODO
 
 ## Version History
+- **v1.1** — Blog Feed page, editor/feed context handoff, toolbar active states, list backspace fix, unlink on clear fmt
 - **v1.0** — Blog tool, streak milestones, snowflake freeze animation, toast overhaul, dohDebug helper
 - **v0.9** — Body map granular segments (upper/lower torso, arm, leg, knees), strength/cardio/mobility workout tabs on drill-down pages
 - **v0.8** — Dashboard (`dashboard.html`), body-map SVG overhaul, streak audit on load, water↔habit sync, habit name auto-capitalize
@@ -43,6 +44,12 @@
 - [x] Toast overhaul — slide-in animation, ack toast with "Got it" button
 - [x] `checkAllDone()` — celebration toast when all tasks checked
 - [x] `dohDebug` console helper on hub + schedule pages
+- [x] Blog Feed page (`blog-reader.html`) — card grid, filters, search, reader overlay
+- [x] Editor ↔ Feed context handoff — swap buttons preserve active post
+- [x] Blog toolbar active states (B/I/U/S highlight when format is on)
+- [x] ¶ button unwraps blockquotes and inline code
+- [x] Backspace at list item start strips bullet, stays on same line
+- [x] Clear formatting also unlinks links
 
 ## In Progress
 <!-- Add what you're currently working on -->
