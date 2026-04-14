@@ -1,6 +1,7 @@
 # Daily Optimal Health — TODO
 
 ## Version History
+- **v1.0** — Blog tool, streak milestones, snowflake freeze animation, toast overhaul, dohDebug helper
 - **v0.9** — Body map granular segments (upper/lower torso, arm, leg, knees), strength/cardio/mobility workout tabs on drill-down pages
 - **v0.8** — Dashboard (`dashboard.html`), body-map SVG overhaul, streak audit on load, water↔habit sync, habit name auto-capitalize
 - **v0.7** — Elder Mode: warm amber theme, larger fonts, no particles/animations
@@ -34,6 +35,14 @@
 - [x] Habit name auto-capitalizes on save
 - [x] Body map granular SVG segments (upper/lower torso, arm, leg, knees)
 - [x] Body-part drill-down workout tabs (Strength / Cardio / Mobility)
+- [x] Blog tool (`blog.html`) — write, format, export posts
+- [x] Streak milestones — toast at 7/14/21/30/60/90/100/365 days
+- [x] Best streak tracking persisted to localStorage
+- [x] Streak freeze fix — no longer auto-increments count on freeze use
+- [x] Snowflake particle animation on streak freeze use
+- [x] Toast overhaul — slide-in animation, ack toast with "Got it" button
+- [x] `checkAllDone()` — celebration toast when all tasks checked
+- [x] `dohDebug` console helper on hub + schedule pages
 
 ## In Progress
 <!-- Add what you're currently working on -->
