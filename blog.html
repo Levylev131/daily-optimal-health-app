@@ -46,6 +46,8 @@
     .header-title { font-size: .95rem; font-weight: 700; }
     .header-spacer { flex: 1; }
     #header-profile { font-size: .78rem; color: var(--muted); }
+    .swap-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); font-size: .78rem; font-weight: 700; padding: 5px 12px; border-radius: 7px; text-decoration: none; white-space: nowrap; transition: border-color .1s, color .1s; }
+    .swap-btn:hover { border-color: var(--acc); color: var(--acc); }
 
     /* ── LAYOUT ────────────────────────────────────────────────────────── */
     #layout { display: flex; flex: 1; overflow: hidden; }
@@ -227,6 +229,7 @@
 
     .tb { background: transparent; border: 1px solid transparent; color: var(--muted); padding: 3px 7px; border-radius: 5px; cursor: pointer; font-size: .8rem; font-weight: 700; min-width: 28px; text-align: center; line-height: 1.5; }
     .tb:hover { background: var(--surface2); border-color: var(--border); color: var(--text); }
+    .tb.on { background: var(--surface2); border-color: var(--acc); color: var(--acc); }
     .tb-sep { width: 1px; height: 16px; background: var(--border); margin: 0 3px; flex-shrink: 0; }
 
     /* Content editor */
@@ -428,7 +431,9 @@
 <div id="header">
   <a href="index.html">← Home</a>
   <span class="header-sep">|</span>
-  <div class="header-title">✍️ Blog Tool</div>
+  <div class="header-title">✍️ Blog Editor</div>
+  <div class="header-spacer"></div>
+  <a href="blog-reader.html" class="swap-btn" onclick="if(activeId)localStorage.setItem('doh_blog_open',activeId)">📖 Feed</a>
   <div class="header-spacer"></div>
   <div id="header-profile"></div>
 </div>
@@ -446,7 +451,7 @@
         <button class="filter-btn" id="f-draft"      onclick="setFilter('draft')">Drafts</button>
         <button class="filter-btn" id="f-public"     onclick="setFilter('public')">Public</button>
         <button class="filter-btn" id="f-private"    onclick="setFilter('private')">Private</button>
-        <button class="filter-btn" id="f-mine"       onclick="setFilter('mine')">Mine</button>
+        <button class="filter-btn" id="f-mine"       onclick="setFilter('mine')">My Posts</button>
       </div>
     </div>
     <div id="post-list"></div>
@@ -480,10 +485,10 @@
         <button class="tb" onclick="fmtCode()"             title="Inline code">`</button>
         <button class="tb" onclick="insertLink()"          title="Link">🔗</button>
         <button class="tb" onclick="fmt('insertHorizontalRule')" title="Divider">—</button>
-        <button class="tb" onclick="fmt('removeFormat')"   title="Clear formatting" style="font-size:.7rem">✕ fmt</button>
+        <button class="tb" onclick="clearFmt()"   title="Clear formatting" style="font-size:.7rem">✕ fmt</button>
       </div>
 
-      <div id="editor" contenteditable="true" data-ph="Start writing…" oninput="dirty()" onkeydown="editorKeydown(event)"></div>
+      <div id="editor" contenteditable="true" data-ph="Start writing…" oninput="dirty()" onkeydown="editorKeydown(event)" onkeyup="updateToolbarState()" onmouseup="updateToolbarState()"></div>
 
       <div id="editor-bottom">
         <input id="tags-input" type="text" placeholder="Tags: health, journal…" oninput="dirty()">
@@ -554,6 +559,7 @@ let _indTimer  = null;
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function uid()  { return 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,6); }
 function today(){ return new Date().toISOString().slice(0,10); }
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function activeProfile() {
   const id = localStorage.getItem('doh_active_profile');
@@ -672,21 +678,25 @@ function save(silent) {
   if (!activeId) return;
   const posts = getPosts();
   const i = posts.findIndex(p => p.id === activeId);
-  if (i === -1 || !isOwner(posts[i])) return;
+  if (i === -1 || !canEdit(posts[i])) return;
 
-  if (!silent && curStat === 'draft' && curVis === 'public') {
+  const owned = isOwner(posts[i]);
+  if (!silent && owned && curStat === 'draft' && curVis === 'public') {
     if (!confirm('This post is a draft but set to Public.\nOther profiles can already see it in this state.\n\nSave anyway?')) return;
   }
 
   const body = document.getElementById('editor').innerHTML;
-  posts[i].title      = document.getElementById('title-input').value.trim() || 'Untitled';
-  posts[i].body       = body;
-  posts[i].excerpt    = excerpt(body);
-  posts[i].tags       = document.getElementById('tags-input').value.split(',').map(t => t.trim()).filter(Boolean);
-  posts[i].visibility    = curVis;
-  posts[i].status        = curStat;
-  posts[i].collaborative = curCollab;
-  posts[i].updated       = today();
+  posts[i].title   = document.getElementById('title-input').value.trim() || 'Untitled';
+  posts[i].body    = body;
+  posts[i].excerpt = excerpt(body);
+  posts[i].tags    = document.getElementById('tags-input').value.split(',').map(t => t.trim()).filter(Boolean);
+  posts[i].updated = today();
+  // Only the owner may change metadata
+  if (owned) {
+    posts[i].visibility    = curVis;
+    posts[i].status        = curStat;
+    posts[i].collaborative = curCollab;
+  }
 
   savePosts(posts);
   _dirty = false;
@@ -707,8 +717,56 @@ function deletePost() {
 }
 
 // ─── EDITOR ───────────────────────────────────────────────────────────────────
-function fmt(cmd)     { document.getElementById('editor').focus(); document.execCommand(cmd, false, null); dirty(); }
-function blk(tag)     { document.getElementById('editor').focus(); document.execCommand('formatBlock', false, tag); dirty(); }
+const FMT_CMDS = { bold: 'bold', italic: 'italic', underline: 'underline', strikeThrough: 'strikeThrough' };
+function updateToolbarState() {
+  Object.keys(FMT_CMDS).forEach(function(cmd) {
+    const btn = document.querySelector('.tb[onclick="fmt(\'' + cmd + '\')"]');
+    if (btn) btn.classList.toggle('on', document.queryCommandState(cmd));
+  });
+}
+
+function fmt(cmd)     { document.getElementById('editor').focus(); document.execCommand(cmd, false, null); dirty(); updateToolbarState(); }
+function clearFmt()   { document.getElementById('editor').focus(); document.execCommand('removeFormat', false, null); document.execCommand('unlink', false, null); dirty(); updateToolbarState(); }
+function blk(tag) {
+  const editor = document.getElementById('editor');
+  editor.focus();
+  if (tag === 'p') {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount) {
+      let node = sel.getRangeAt(0).commonAncestorContainer;
+      if (node.nodeType === 3) node = node.parentNode;
+      // Unwrap blockquote
+      const bq = node.closest ? node.closest('blockquote') : null;
+      if (bq && editor.contains(bq)) {
+        const p = document.createElement('p');
+        p.innerHTML = bq.innerHTML;
+        bq.parentNode.replaceChild(p, bq);
+        const range = document.createRange();
+        range.selectNodeContents(p);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        dirty();
+        return;
+      }
+      // Unwrap inline code
+      const code = node.closest ? node.closest('code') : null;
+      if (code && editor.contains(code)) {
+        const text = document.createTextNode(code.textContent);
+        code.parentNode.replaceChild(text, code);
+        const range = document.createRange();
+        range.setStartAfter(text);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        dirty();
+        return;
+      }
+    }
+  }
+  document.execCommand('formatBlock', false, tag);
+  dirty();
+}
 
 function fmtCode() {
   document.getElementById('editor').focus();
@@ -734,6 +792,41 @@ function editorKeydown(e) {
   if (e.key === 'Tab') {
     e.preventDefault();
     document.execCommand(e.shiftKey ? 'outdent' : 'indent');
+  }
+
+  // Backspace at the start of a list item → strip bullet, keep content on same line
+  if (e.key === 'Backspace') {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    if (!range.collapsed) return; // has a selection — let browser handle deletion normally
+    let node = range.startContainer;
+    if (node.nodeType === 3) node = node.parentNode;
+    const li = node.closest ? node.closest('li') : null;
+    if (!li) return;
+    // Check cursor is at the very start of the li (no text before it)
+    const checkRange = document.createRange();
+    checkRange.setStart(li, 0);
+    checkRange.setEnd(range.startContainer, range.startOffset);
+    if (checkRange.toString().length > 0) return; // cursor not at start — normal backspace
+    e.preventDefault();
+    const list  = li.parentNode;
+    const p     = document.createElement('p');
+    p.innerHTML = li.innerHTML && li.innerHTML !== '<br>' ? li.innerHTML : '';
+    if (!p.innerHTML) p.appendChild(document.createElement('br'));
+    list.removeChild(li);
+    if (list.children.length === 0) {
+      list.parentNode.replaceChild(p, list);
+    } else {
+      list.parentNode.insertBefore(p, list);
+    }
+    // Place cursor at start of new paragraph
+    const newRange = document.createRange();
+    newRange.setStart(p, 0);
+    newRange.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+    dirty();
   }
 }
 
@@ -822,14 +915,14 @@ function renderList() {
   list.innerHTML = posts.map(function(p) {
     const active = p.id === activeId ? ' active' : '';
     return '<div class="post-card' + active + '" onclick="loadPost(\'' + p.id + '\')">' +
-      '<div class="pc-title">' + (p.title || 'Untitled') + '</div>' +
+      '<div class="pc-title" title="' + escHtml(p.title || 'Untitled') + '">' + escHtml(p.title || 'Untitled') + '</div>' +
       '<div class="pc-meta">' +
         '<span>' + p.updated + '</span>' +
         '<span class="badge badge-' + p.status + '">' + p.status + '</span>' +
         '<span class="badge badge-' + p.visibility + '">' + (p.visibility === 'public' ? '🌐 public' : '🔒') + '</span>' +
       '</div>' +
-      (p.authorName ? '<div class="pc-author">by ' + p.authorName + '</div>' : '') +
-      (p.excerpt ? '<div class="pc-excerpt">' + p.excerpt + '</div>' : '') +
+      (p.authorName ? '<div class="pc-author">by ' + escHtml(p.authorName) + '</div>' : '') +
+      (p.excerpt ? '<div class="pc-excerpt">' + escHtml(p.excerpt) + '</div>' : '') +
     '</div>';
   }).join('');
 }
@@ -949,6 +1042,18 @@ document.addEventListener('keydown', function(e) {
     if (profiles[id]) document.getElementById('header-profile').textContent = profiles[id].name;
   }
   setFilter('all');
+  // Auto-create a new post if arriving from the feed's "+ New Post" button
+  if (localStorage.getItem('doh_blog_new')) {
+    localStorage.removeItem('doh_blog_new');
+    newPost();
+  // Auto-open a specific post if arriving from the feed
+  } else {
+    const openId = localStorage.getItem('doh_blog_open');
+    if (openId) {
+      localStorage.removeItem('doh_blog_open');
+      loadPost(openId);
+    }
+  }
 })();
 </script>
 </body>
