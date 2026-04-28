@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meal Recipes — Daily Optimal Health</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --r: 14px; --r-sm: 10px;
+      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
+      --amber: #f5a623; --blue: #3ecfff;
+    }
+    html { min-height: 100%; scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+      color: var(--text); min-height: 100vh; overflow-x: hidden;
+    }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+    .top-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 24px; max-width: 900px; margin: 0 auto;
+      border-bottom: 1px solid var(--glass-b);
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(6,26,12,0.85); backdrop-filter: blur(16px);
+    }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: .88rem; font-weight: 600; transition: color .2s; background: none; border: none; cursor: pointer; white-space: nowrap; }
+    .back-btn:hover { color: var(--acc); }
+    .top-title { flex: 1; text-align: center; font-size: 1rem; font-weight: 800; text-shadow: 0 0 20px var(--glow); }
+    .top-spacer { width: 60px; }
+
+    .page { max-width: 900px; margin: 0 auto; padding: clamp(16px,4vw,28px) clamp(12px,3vw,20px) 100px; }
+
+    .hero { text-align: center; padding: clamp(20px,4vw,32px) 0 clamp(14px,3vw,24px); }
+    .hero-emoji { font-size: clamp(2.5rem,7vw,4rem); display: block; margin-bottom: 10px; filter: drop-shadow(0 0 16px var(--glow)); }
+    .hero-title {
+      font-size: clamp(1.6rem,5vw,2.6rem); font-weight: 900; letter-spacing: -1px; line-height: 1.1;
+      background: linear-gradient(135deg, #fff 30%, var(--acc));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px;
+    }
+    .hero-sub { color: var(--muted); font-size: clamp(.84rem,2vw,.98rem); max-width: 480px; margin: 0 auto; line-height: 1.6; }
+
+    /* CATEGORY FILTER */
+    .filter-bar {
+      display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; padding-top: 4px;
+    }
+    .filter-btn {
+      padding: 7px 14px; border-radius: 20px; border: 1px solid var(--glass-b);
+      background: var(--glass); color: var(--muted); font-size: .78rem; font-weight: 700;
+      cursor: pointer; transition: var(--trans); font-family: inherit; white-space: nowrap;
+    }
+    .filter-btn:hover { border-color: var(--acc); color: var(--text); }
+    .filter-btn.active { background: var(--acc); color: #000; border-color: var(--acc); box-shadow: 0 0 10px var(--glow); }
+
+    /* MEAL INDEX (sticky sidebar style top strip) */
+    .meal-index {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px;
+    }
+    .index-pill {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
+      padding: 5px 12px; font-size: .75rem; color: var(--muted); cursor: pointer;
+      transition: var(--trans); text-decoration: none; display: inline-block;
+    }
+    .index-pill:hover { border-color: var(--acc); color: var(--acc); }
+
+    /* SECTION LABEL */
+    .sec-label {
+      font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.4px;
+      color: var(--muted); margin: 28px 0 14px; display: flex; align-items: center; gap: 10px;
+    }
+    .sec-label::after { content:''; flex:1; height:1px; background: var(--glass-b); }
+
+    /* RECIPE CARD */
+    .recipe-card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px);
+      margin-bottom: 20px; overflow: hidden;
+      scroll-margin-top: 72px;
+      transition: border-color .2s;
+    }
+    .recipe-card.highlight-anchor { border-color: var(--acc); box-shadow: 0 0 24px var(--glow); }
+
+    .recipe-header {
+      display: flex; align-items: center; gap: 16px;
+      padding: clamp(14px,3vw,20px); cursor: pointer;
+      transition: background .15s; user-select: none;
+    }
+    .recipe-header:hover { background: var(--glass-h); }
+    .recipe-emoji { font-size: clamp(2rem,5vw,2.8rem); flex-shrink: 0; }
+    .recipe-meta { flex: 1; min-width: 0; }
+    .recipe-name { font-size: clamp(.95rem,2.5vw,1.15rem); font-weight: 900; margin-bottom: 5px; line-height: 1.2; }
+    .recipe-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .rtag {
+      font-size: .65rem; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: .6px;
+    }
+    .rtag-cat { background: rgba(45,212,110,0.15); color: var(--acc); }
+    .rtag-time { background: rgba(62,207,255,0.12); color: var(--blue); }
+    .rtag-diff { background: var(--glass-b); color: var(--muted); }
+    .recipe-macros { display: flex; gap: 8px; flex-shrink: 0; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .macro-box { text-align: center; }
+    .macro-val { font-size: .9rem; font-weight: 900; line-height: 1; }
+    .macro-lbl { font-size: .6rem; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+    .macro-box.p .macro-val { color: var(--acc); }
+    .macro-box.c .macro-val { color: var(--blue); }
+    .macro-box.f .macro-val { color: var(--amber); }
+    .expand-arrow { color: var(--muted); font-size: .8rem; transition: transform .25s; margin-left: 10px; flex-shrink: 0; }
+    .recipe-card.open .expand-arrow { transform: rotate(180deg); }
+
+    /* RECIPE BODY */
+    .recipe-body {
+      max-height: 0; overflow: hidden;
+      transition: max-height .4s cubic-bezier(.4,0,.2,1);
+      border-top: 1px solid transparent;
+    }
+    .recipe-card.open .recipe-body {
+      max-height: 1200px;
+      border-top-color: var(--glass-b);
+    }
+    .recipe-inner { padding: clamp(14px,3vw,22px); }
+
+    .recipe-cols { display: grid; grid-template-columns: 1fr 1.6fr; gap: 20px; }
+    @media(max-width:580px){ .recipe-cols { grid-template-columns: 1fr; } }
+
+    .col-label {
+      font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.1px;
+      color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+    }
+    .col-label::after { content:''; flex:1; height:1px; background: var(--glass-b); }
+
+    /* INGREDIENTS */
+    .ing-list { list-style: none; }
+    .ing-list li {
+      display: flex; align-items: baseline; gap: 8px;
+      padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: .82rem; line-height: 1.4;
+    }
+    .ing-list li:last-child { border-bottom: none; }
+    .ing-amt { color: var(--acc); font-weight: 700; font-size: .78rem; white-space: nowrap; flex-shrink: 0; }
+
+    /* STEPS */
+    .steps-list { list-style: none; counter-reset: steps; }
+    .steps-list li {
+      counter-increment: steps; display: flex; gap: 12px;
+      padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: .82rem; line-height: 1.6; align-items: flex-start;
+    }
+    .steps-list li:last-child { border-bottom: none; }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%; background: rgba(45,212,110,0.2);
+      color: var(--acc); font-size: .7rem; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+
+    /* WHY BOX */
+    .why-box {
+      background: rgba(45,212,110,0.07); border: 1px solid rgba(45,212,110,0.25);
+      border-radius: var(--r-sm); padding: 12px 14px; margin-top: 14px; font-size: .8rem; line-height: 1.6;
+    }
+    .why-box strong { color: var(--acc); }
+
+    /* TIPS */
+    .tips-box {
+      background: rgba(245,166,35,0.07); border: 1px solid rgba(245,166,35,0.25);
+      border-radius: var(--r-sm); padding: 12px 14px; margin-top: 10px; font-size: .78rem; line-height: 1.6; color: var(--amber);
+    }
+
+    /* BACK TO TOP */
+    .back-top {
+      display: block; text-align: center; color: var(--muted); font-size: .76rem;
+      font-weight: 700; cursor: pointer; margin-top: 6px; margin-bottom: 4px;
+      padding: 6px; transition: color .2s; background: none; border: none; width: 100%; font-family: inherit;
+    }
+    .back-top:hover { color: var(--acc); }
+
+    .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--acc); color: #000; border-radius: 28px; padding: 10px 22px; font-weight: 800; font-size: .9rem; z-index: 999; transition: transform .35s cubic-bezier(.4,0,.2,1), opacity .35s; opacity: 0; white-space: nowrap; box-shadow: 0 4px 20px var(--glow); }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="history.back()">← Back</button>
+  <div class="top-title">🍽️ Meal Recipes</div>
+  <div class="top-spacer"></div>
+</div>
+
+<div class="page">
+
+  <div class="hero">
+    <span class="hero-emoji">🥗</span>
+    <div class="hero-title">Recipes & Meal Guide</div>
+    <div class="hero-sub">High-protein, high-carb meals designed to maximize supplement uptake and fuel your training.</div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" onclick="filterMeals('all',this)">All Meals</button>
+    <button class="filter-btn" onclick="filterMeals('post-workout',this)">Post-Workout</button>
+    <button class="filter-btn" onclick="filterMeals('morning',this)">Morning</button>
+    <button class="filter-btn" onclick="filterMeals('pre-workout',this)">Pre-Workout</button>
+    <button class="filter-btn" onclick="filterMeals('snack',this)">Snack</button>
+    <button class="filter-btn" onclick="filterMeals('quick',this)">Quick (&lt;5 min)</button>
+  </div>
+
+  <!-- MEAL INDEX -->
+  <div class="meal-index" id="mealIndex"></div>
+
+  <!-- RECIPE LIST -->
+  <div id="recipeList"></div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const RECIPES = [
+  {
+    id: 'rice-chicken-banana',
+    emoji: '🍚',
+    name: 'Rice + Chicken + Banana',
+    categories: ['post-workout'],
+    time: '20 min',
+    difficulty: 'Easy',
+    protein: '~40g', carbs: '~70g', fat: '~6g',
+    why: 'High glycemic carbs from rice and banana spike insulin fast. Chicken provides fast-digesting protein. One of the best creatine uptake windows you can create.',
+    tips: 'Use white rice over brown for a faster insulin spike post-workout. Pre-cook chicken in batches so this meal takes under 5 minutes when you\'re hungry after training.',
+    ingredients: [
+      { amt: '150g', item: 'cooked white rice' },
+      { amt: '180g', item: 'grilled or baked chicken breast' },
+      { amt: '1 medium', item: 'banana' },
+      { amt: '1 tbsp', item: 'low-sodium soy sauce (optional)' },
+      { amt: 'to taste', item: 'salt, pepper, garlic powder' },
+    ],
+    steps: [
+      'Cook rice using a rice cooker or stovetop (1 cup dry rice = ~3 cups cooked).',
+      'Season chicken breast with salt, pepper, and garlic powder.',
+      'Grill or bake chicken at 200°C / 400°F for 18–22 minutes until fully cooked.',
+      'Slice chicken and serve over rice. Drizzle soy sauce if desired.',
+      'Eat the banana on the side or blended into a shake. Take your creatine now or mix it into a drink alongside this meal.',
+    ],
+  },
+  {
+    id: 'oatmeal-banana-protein',
+    emoji: '🥣',
+    name: 'Oatmeal + Banana + Protein Powder',
+    categories: ['morning', 'pre-workout'],
+    time: '8 min',
+    difficulty: 'Easy',
+    protein: '~35g', carbs: '~65g', fat: '~8g',
+    why: 'Slow + fast carbs blended together. The banana spikes insulin while oats sustain energy over 2–3 hours. Perfect for a morning dose.',
+    tips: 'Stir creatine directly into the oatmeal once it\'s slightly cooled — it dissolves well and you\'ll never taste it. Use vanilla protein powder to keep it tasting good.',
+    ingredients: [
+      { amt: '80g (1 cup)', item: 'rolled oats (not instant)' },
+      { amt: '1 scoop', item: 'vanilla or unflavored protein powder (~25g protein)' },
+      { amt: '1 large', item: 'banana, sliced' },
+      { amt: '250ml', item: 'milk or water' },
+      { amt: '1 tsp', item: 'honey (optional)' },
+      { amt: '1 tsp', item: 'cinnamon (optional)' },
+    ],
+    steps: [
+      'Add oats and milk/water to a pot or microwave-safe bowl.',
+      'Microwave on high for 2–3 minutes, stirring halfway, until thick. Or cook on the stovetop over medium heat for 5 minutes.',
+      'Remove from heat and let cool for 1 minute.',
+      'Stir in protein powder and creatine until fully mixed.',
+      'Top with sliced banana, a drizzle of honey, and cinnamon.',
+    ],
+  },
+  {
+    id: 'protein-shake-milk-banana',
+    emoji: '🥛',
+    name: 'Protein Shake + Milk + Banana',
+    categories: ['post-workout', 'quick'],
+    time: '3 min',
+    difficulty: 'Easy',
+    protein: '~35g', carbs: '~45g', fat: '~5g',
+    why: 'The fastest option. Lactose in milk and natural sugars in the banana create an insulin spike. Blend creatine right in — you\'ll never taste it.',
+    tips: 'Use whole milk for more calories if bulking, or skim milk when cutting. Frozen banana makes it thicker and more milkshake-like. Great for days you have zero appetite after training.',
+    ingredients: [
+      { amt: '1 scoop', item: 'whey protein powder (~25g protein)' },
+      { amt: '300ml', item: 'whole or 2% milk' },
+      { amt: '1 medium', item: 'banana (fresh or frozen)' },
+      { amt: '5g', item: 'creatine monohydrate' },
+      { amt: '4–5', item: 'ice cubes' },
+    ],
+    steps: [
+      'Add milk to the blender first.',
+      'Add the banana (slice it if fresh, add frozen chunks directly).',
+      'Add protein powder and creatine.',
+      'Drop in ice cubes.',
+      'Blend on high for 30–45 seconds until smooth. Drink immediately.',
+    ],
+  },
+  {
+    id: 'sweet-potato-eggs-turkey',
+    emoji: '🍠',
+    name: 'Sweet Potato + Eggs + Turkey',
+    categories: ['morning', 'post-workout'],
+    time: '25 min',
+    difficulty: 'Medium',
+    protein: '~30g', carbs: '~50g', fat: '~10g',
+    why: 'Sweet potato raises insulin steadily without spiking too hard. Eggs and turkey provide a complete amino acid profile. A clean, whole-food approach to maximizing creatine uptake.',
+    tips: 'Microwave the sweet potato for 5–6 minutes to save time vs. baking. Meal prep a batch of sweet potatoes at the start of the week.',
+    ingredients: [
+      { amt: '1 medium (200g)', item: 'sweet potato' },
+      { amt: '3 large', item: 'eggs' },
+      { amt: '100g', item: 'ground turkey or turkey breast slices' },
+      { amt: '1 tsp', item: 'olive oil' },
+      { amt: 'to taste', item: 'salt, pepper, smoked paprika' },
+    ],
+    steps: [
+      'Pierce sweet potato all over with a fork. Microwave on high for 5–6 minutes, flipping halfway, until soft.',
+      'While potato cooks, heat olive oil in a pan over medium heat.',
+      'Add ground turkey with salt, pepper, and paprika. Cook for 6–8 minutes until no longer pink.',
+      'Push turkey to one side, crack in eggs, and scramble to your liking.',
+      'Plate sweet potato, cut it open, and serve turkey and eggs alongside. Take creatine mixed into a drink with this meal.',
+    ],
+  },
+  {
+    id: 'pasta-meat-sauce',
+    emoji: '🍝',
+    name: 'Pasta + Lean Meat Sauce',
+    categories: ['pre-workout'],
+    time: '30 min',
+    difficulty: 'Medium',
+    protein: '~35g', carbs: '~80g', fat: '~10g',
+    why: 'A high-carb meal that fills glycogen stores and provides a lasting insulin response. Eat this 2+ hours before training so digestion is complete and you\'re not heavy during the session.',
+    tips: 'White pasta works better than whole wheat for pre-workout glycogen loading since it digests faster. Make a big batch of sauce and freeze portions.',
+    ingredients: [
+      { amt: '120g dry', item: 'white pasta (penne or spaghetti)' },
+      { amt: '150g', item: 'extra lean ground beef or turkey (90%+ lean)' },
+      { amt: '200ml', item: 'tomato pasta sauce (low sugar)' },
+      { amt: '1 clove', item: 'garlic, minced' },
+      { amt: '½ medium', item: 'onion, diced' },
+      { amt: '1 tsp', item: 'olive oil' },
+      { amt: 'to taste', item: 'salt, pepper, Italian seasoning' },
+    ],
+    steps: [
+      'Boil a large pot of salted water. Cook pasta per package directions until al dente. Drain.',
+      'Heat olive oil in a pan over medium-high heat. Add onion and garlic, cook 2–3 minutes.',
+      'Add ground meat with salt, pepper, and Italian seasoning. Break apart and cook until browned, about 7–8 minutes.',
+      'Pour in pasta sauce. Simmer 5 minutes.',
+      'Toss pasta into the sauce. Serve and take creatine with a glass of water or juice alongside.',
+    ],
+  },
+  {
+    id: 'toast-pb-honey-shake',
+    emoji: '🍞',
+    name: 'Toast + Peanut Butter + Honey + Shake',
+    categories: ['morning', 'pre-workout', 'quick'],
+    time: '5 min',
+    difficulty: 'Easy',
+    protein: '~30g', carbs: '~55g', fat: '~14g',
+    why: 'Honey is high glycemic index and creates a fast insulin spike. Peanut butter adds healthy fat and protein. The protein shake covers your amino acid needs. Easy to prepare and easy to eat creatine with.',
+    tips: 'Use sourdough or white bread for a faster carb spike. Stir creatine directly into the protein shake — it mixes well with most flavors.',
+    ingredients: [
+      { amt: '2 slices', item: 'white or sourdough bread' },
+      { amt: '2 tbsp', item: 'natural peanut butter' },
+      { amt: '1 tbsp', item: 'honey' },
+      { amt: '1 scoop', item: 'protein powder (any flavor)' },
+      { amt: '250ml', item: 'water or milk' },
+      { amt: '5g', item: 'creatine monohydrate' },
+    ],
+    steps: [
+      'Toast bread to your preferred level.',
+      'Spread peanut butter on both slices, then drizzle honey evenly.',
+      'Shake protein powder, creatine, and water/milk in a shaker bottle for 20–30 seconds.',
+      'Eat the toast and drink the shake together. That\'s it.',
+    ],
+  },
+  {
+    id: 'greek-yogurt-berries',
+    emoji: '🫐',
+    name: 'Greek Yogurt + Berries + Granola + Honey',
+    categories: ['morning', 'snack'],
+    time: '3 min',
+    difficulty: 'Easy',
+    protein: '~20g', carbs: '~45g', fat: '~6g',
+    why: 'Greek yogurt is extremely high in leucine, the amino acid most responsible for triggering muscle protein synthesis. Berries and honey provide the insulin response. Stir creatine right in.',
+    tips: 'Choose full-fat Greek yogurt for more leucine per serving. If you use flavored yogurt, reduce the honey. Stir in creatine before adding toppings so it fully dissolves.',
+    ingredients: [
+      { amt: '200g', item: 'plain full-fat Greek yogurt' },
+      { amt: '80g', item: 'mixed berries (fresh or frozen, thawed)' },
+      { amt: '30g', item: 'granola' },
+      { amt: '1 tbsp', item: 'honey' },
+      { amt: '5g', item: 'creatine monohydrate' },
+    ],
+    steps: [
+      'Spoon Greek yogurt into a bowl.',
+      'Stir in creatine until fully dissolved.',
+      'Add berries on top.',
+      'Sprinkle granola over the berries.',
+      'Drizzle honey over everything. Eat immediately (granola softens if you wait).',
+    ],
+  },
+  {
+    id: 'burrito-bowl',
+    emoji: '🌯',
+    name: 'Chicken & Rice Burrito Bowl',
+    categories: ['post-workout'],
+    time: '25 min',
+    difficulty: 'Medium',
+    protein: '~45g', carbs: '~75g', fat: '~12g',
+    why: 'A complete post-workout meal with high protein and high carbs. White rice is the insulin trigger, chicken covers your protein needs. One of the most complete creatine uptake meals you can make.',
+    tips: 'Prep the rice and chicken ahead. Assemble the bowl in under 2 minutes when you get home from the gym. Add salsa instead of a heavy sauce to keep it lighter.',
+    ingredients: [
+      { amt: '150g', item: 'cooked white rice' },
+      { amt: '180g', item: 'grilled chicken breast, sliced' },
+      { amt: '80g', item: 'black beans, drained and rinsed' },
+      { amt: '½ medium', item: 'avocado, sliced' },
+      { amt: '3 tbsp', item: 'fresh salsa or pico de gallo' },
+      { amt: '1 tbsp', item: 'sour cream or Greek yogurt' },
+      { amt: 'handful', item: 'shredded lettuce or spinach' },
+      { amt: 'to taste', item: 'lime juice, cumin, chili powder' },
+    ],
+    steps: [
+      'Season and grill chicken breast with cumin and chili powder until cooked through. Slice into strips.',
+      'Warm the black beans in a small pan or microwave for 1–2 minutes.',
+      'Add rice to the base of a bowl.',
+      'Layer chicken, beans, lettuce, avocado, and salsa over the rice.',
+      'Add a dollop of sour cream. Squeeze lime juice over everything.',
+      'Take creatine mixed into water or juice alongside this meal.',
+    ],
+  },
+  {
+    id: 'pancakes-eggs',
+    emoji: '🥞',
+    name: 'Pancakes + Maple Syrup + Eggs',
+    categories: ['morning', 'post-workout'],
+    time: '20 min',
+    difficulty: 'Medium',
+    protein: '~25g', carbs: '~70g', fat: '~12g',
+    why: 'Maple syrup is high glycemic and triggers a strong insulin spike. Eggs add protein and leucine. A satisfying, enjoyable meal that still creates the conditions for strong creatine uptake.',
+    tips: 'Use a simple mix (flour, egg, milk, baking powder) or a boxed mix to save time. Adding a scoop of protein powder to the batter boosts protein without changing the flavor much.',
+    ingredients: [
+      { amt: '1 cup', item: 'all-purpose flour' },
+      { amt: '1 tbsp', item: 'sugar' },
+      { amt: '1 tsp', item: 'baking powder' },
+      { amt: '1 large', item: 'egg' },
+      { amt: '¾ cup', item: 'milk' },
+      { amt: '1 tbsp', item: 'butter (for the pan)' },
+      { amt: '2 tbsp', item: 'pure maple syrup' },
+      { amt: '3 large', item: 'eggs (scrambled or fried, on the side)' },
+    ],
+    steps: [
+      'Mix flour, sugar, and baking powder in a bowl. Add egg and milk, stir until just combined (lumps are OK).',
+      'Heat a pan over medium heat. Add a small pat of butter.',
+      'Pour ~¼ cup batter per pancake. Cook until bubbles form on top (2–3 min), then flip. Cook 1–2 more minutes.',
+      'In a separate pan, scramble or fry the 3 eggs with salt and pepper.',
+      'Serve pancakes with maple syrup and eggs on the side. Take creatine with a glass of water or juice.',
+    ],
+  },
+  {
+    id: 'banana-pb-shake',
+    emoji: '🍌',
+    name: 'Banana + Peanut Butter + Whey Shake',
+    categories: ['post-workout', 'snack', 'quick'],
+    time: '3 min',
+    difficulty: 'Easy',
+    protein: '~30g', carbs: '~40g', fat: '~10g',
+    why: 'Simple and portable. Banana provides fast carbs for the insulin spike, whey is the fastest-digesting protein available. Together they hit both the carb and protein insulin triggers simultaneously.',
+    tips: 'Freeze bananas when they\'re ripe and starting to spot — frozen banana makes the shake thick and naturally sweet without ice. Works perfectly in a blender bottle with a little shaking.',
+    ingredients: [
+      { amt: '1 large', item: 'banana (fresh or frozen)' },
+      { amt: '1 tbsp', item: 'natural peanut butter' },
+      { amt: '1 scoop', item: 'whey protein powder (chocolate or vanilla)' },
+      { amt: '250ml', item: 'water or milk' },
+      { amt: '5g', item: 'creatine monohydrate' },
+    ],
+    steps: [
+      'Add liquid to blender first.',
+      'Add banana (slice fresh, or add frozen chunks directly).',
+      'Add peanut butter, protein powder, and creatine.',
+      'Blend on high for 30 seconds until smooth.',
+      'Pour and drink immediately. Best post-workout or as a snack.',
+    ],
+  },
+  {
+    id: 'steak-rice-oj',
+    emoji: '🥩',
+    name: 'Steak + White Rice + Orange Juice',
+    categories: ['post-workout'],
+    time: '25 min',
+    difficulty: 'Medium',
+    protein: '~42g', carbs: '~60g', fat: '~14g',
+    why: 'Orange juice provides fast-acting fructose and glucose for the insulin response. White rice digests quickly. Steak delivers a full amino acid profile plus creatine that is naturally found in red meat.',
+    tips: 'A sirloin or flank steak works great here — flavorful, lean enough, and cooks quickly. Squeeze the OJ fresh or buy pure OJ with no added sugar. Dissolve creatine into the OJ for a convenient combo.',
+    ingredients: [
+      { amt: '180g', item: 'sirloin or flank steak' },
+      { amt: '150g', item: 'cooked white rice' },
+      { amt: '200ml', item: 'pure orange juice (no added sugar)' },
+      { amt: '5g', item: 'creatine monohydrate' },
+      { amt: '1 tsp', item: 'olive oil' },
+      { amt: 'to taste', item: 'salt, pepper, garlic powder' },
+    ],
+    steps: [
+      'Take steak out of fridge 10 minutes before cooking. Season generously with salt, pepper, and garlic powder.',
+      'Heat a cast iron or heavy pan over high heat until very hot. Add olive oil.',
+      'Sear steak 2–4 minutes per side depending on thickness and desired doneness.',
+      'Rest steak on a cutting board for 5 minutes. Slice against the grain.',
+      'Stir creatine into the orange juice until dissolved. Serve steak over rice with OJ on the side.',
+    ],
+  },
+  {
+    id: 'cottage-cheese-pineapple',
+    emoji: '🫙',
+    name: 'Cottage Cheese + Pineapple + Honey',
+    categories: ['morning', 'snack', 'quick'],
+    time: '2 min',
+    difficulty: 'Easy',
+    protein: '~25g', carbs: '~38g', fat: '~4g',
+    why: 'Cottage cheese is extremely high in casein protein and leucine, the amino acid most responsible for muscle protein synthesis. Pineapple and honey provide a fast carb and insulin spike. Light, low-fat, and effective.',
+    tips: 'Use canned pineapple in juice (not syrup) if fresh isn\'t available. Stir in creatine with the honey — the sweetness fully masks the taste. Great late-night snack since casein digests slowly.',
+    ingredients: [
+      { amt: '200g', item: 'low-fat cottage cheese' },
+      { amt: '100g', item: 'fresh or canned pineapple chunks' },
+      { amt: '1 tbsp', item: 'honey' },
+      { amt: '5g', item: 'creatine monohydrate' },
+      { amt: 'pinch', item: 'cinnamon (optional)' },
+    ],
+    steps: [
+      'Scoop cottage cheese into a bowl.',
+      'Stir in creatine and honey until evenly mixed.',
+      'Add pineapple chunks on top.',
+      'Optional: dust with a pinch of cinnamon.',
+      'Eat immediately or refrigerate for up to 4 hours.',
+    ],
+  },
+];
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+let activeFilter = 'all';
+
+function mealCard(m) {
+  return `<div class="recipe-card" id="${m.id}" data-cats="${m.categories.join(' ')}">
+    <div class="recipe-header" onclick="toggleRecipe('${m.id}')">
+      <span class="recipe-emoji">${m.emoji}</span>
+      <div class="recipe-meta">
+        <div class="recipe-name">${m.name}</div>
+        <div class="recipe-tags">
+          ${m.categories.map(c => `<span class="rtag rtag-cat">${c.replace('-',' ')}</span>`).join('')}
+          <span class="rtag rtag-time">⏱ ${m.time}</span>
+          <span class="rtag rtag-diff">${m.difficulty}</span>
+        </div>
+      </div>
+      <div class="recipe-macros">
+        <div class="macro-box p"><div class="macro-val">${m.protein}</div><div class="macro-lbl">Protein</div></div>
+        <div class="macro-box c"><div class="macro-val">${m.carbs}</div><div class="macro-lbl">Carbs</div></div>
+        <div class="macro-box f"><div class="macro-val">${m.fat}</div><div class="macro-lbl">Fat</div></div>
+      </div>
+      <span class="expand-arrow">▼</span>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-inner">
+        <div class="recipe-cols">
+          <div>
+            <div class="col-label">Ingredients</div>
+            <ul class="ing-list">${m.ingredients.map(i => `<li><span class="ing-amt">${i.amt}</span>${i.item}</li>`).join('')}</ul>
+          </div>
+          <div>
+            <div class="col-label">Instructions</div>
+            <ol class="steps-list">${m.steps.map((s,i) => `<li><span class="step-num">${i+1}</span>${s}</li>`).join('')}</ol>
+          </div>
+        </div>
+        <div class="why-box"><strong>Why this works for creatine:</strong> ${m.why}</div>
+        ${m.tips ? `<div class="tips-box">💡 <strong>Tips:</strong> ${m.tips}</div>` : ''}
+        <button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to top</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderAll() {
+  const filtered = activeFilter === 'all' ? RECIPES : RECIPES.filter(m => m.categories.includes(activeFilter));
+  document.getElementById('recipeList').innerHTML = filtered.length
+    ? filtered.map(mealCard).join('')
+    : '<div style="text-align:center;color:var(--muted);padding:40px;font-size:.9rem">No meals match this filter.</div>';
+  buildIndex(filtered);
+}
+
+function buildIndex(list) {
+  document.getElementById('mealIndex').innerHTML = list.map(m =>
+    `<a class="index-pill" href="#${m.id}" onclick="openAndScroll('${m.id}',event)">${m.emoji} ${m.name}</a>`
+  ).join('');
+}
+
+function toggleRecipe(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function openAndScroll(id, e) {
+  e.preventDefault();
+  const card = document.getElementById(id);
+  if (!card) return;
+  if (!card.classList.contains('open')) card.classList.add('open');
+  setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+
+function filterMeals(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+// ── DEEP LINK from creatine.html ──────────────────────────────────────────────
+function handleHash() {
+  const hash = window.location.hash.slice(1);
+  if (!hash) return;
+  const card = document.getElementById(hash);
+  if (!card) return;
+  card.classList.add('open');
+  card.classList.add('highlight-anchor');
+  setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+  setTimeout(() => card.classList.remove('highlight-anchor'), 2500);
+}
+
+renderAll();
+handleHash();
+window.addEventListener('hashchange', handleHash);
+</script>
+</body>
+</html>

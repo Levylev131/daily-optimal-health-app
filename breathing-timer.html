@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Breathing Timer — Daily Optimal Health</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --r: 14px; --r-sm: 10px;
+      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
+    }
+    body.degen {
+      --acc: #c800ff; --acc2: #7a00aa; --glow: rgba(200,0,255,0.35);
+      --bg1: #060008; --bg2: #180028; --bg3: #060008;
+      --glass: rgba(100,0,160,0.1); --glass-b: rgba(200,0,255,0.18);
+      --glass-h: rgba(100,0,160,0.2);
+      --text: #eedeff; --muted: rgba(220,190,255,0.55);
+    }
+    html { min-height: 100%; }
+    body { min-width: 320px; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+      color: var(--text); min-height: 100vh;
+    }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+    /* TOP BAR */
+    .top-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 24px; max-width: 760px; margin: 0 auto;
+      border-bottom: 1px solid var(--glass-b);
+    }
+    .back-btn {
+      color: var(--muted); text-decoration: none; font-size: .88rem;
+      font-weight: 600; transition: color .2s; white-space: nowrap;
+    }
+    .back-btn:hover { color: var(--acc); }
+    .top-title {
+      flex: 1; text-align: center; font-size: 1rem; font-weight: 800;
+      text-shadow: 0 0 20px var(--glow);
+    }
+    .pf-pill {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: 20px; padding: 4px 11px 4px 5px;
+      font-size: .8rem; color: var(--muted); white-space: nowrap;
+      cursor: pointer; transition: border-color .15s, box-shadow .15s; position: relative;
+    }
+    .pf-pill:hover { border-color: var(--acc); box-shadow: 0 0 8px var(--glow); }
+    .pf-avatar-sm {
+      width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .66rem; font-weight: 800; color: #000;
+    }
+
+    /* LAYOUT */
+    .page { max-width: 760px; margin: 0 auto; padding: clamp(16px, 4vw, 28px) clamp(12px, 3vw, 20px) 80px; }
+
+    /* CARDS */
+    .card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px);
+      padding: clamp(16px, 4vw, 28px); margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: .78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.2px; color: var(--muted); margin-bottom: 16px;
+    }
+
+    /* BREATHING CIRCLE */
+    .breath-stage {
+      display: flex; flex-direction: column; align-items: center;
+      padding-top: 24px;
+    }
+    .breath-container {
+      position: relative;
+      width: clamp(220px, 56vw, 320px); height: clamp(150px, 38vw, 220px);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 10px;
+    }
+    .breath-circle {
+      width: clamp(140px, 36vw, 210px); height: clamp(140px, 36vw, 210px);
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      background: radial-gradient(circle at 50% 60%, rgba(255,255,255,0.28) 0%, var(--acc) 45%, var(--acc2) 100%);
+      filter: drop-shadow(0 0 12px var(--glow)) drop-shadow(0 0 28px var(--glow));
+      transform: scale(0.38);
+    }
+    .breath-circle.glow-high {
+      filter: drop-shadow(0 0 28px var(--glow)) drop-shadow(0 0 60px var(--glow)) drop-shadow(0 0 90px var(--glow));
+    }
+    .breath-circle.idle {
+      animation: idlePulse 3s ease-in-out infinite;
+    }
+    @keyframes idlePulse {
+      0%,100% { transform: scale(0.38); filter: drop-shadow(0 0 12px var(--glow)) drop-shadow(0 0 28px var(--glow)); }
+      50%      { transform: scale(0.44); filter: drop-shadow(0 0 18px var(--glow)) drop-shadow(0 0 40px var(--glow)); }
+    }
+
+    /* PHASE LABEL + COUNTDOWN */
+    .phase-label {
+      font-size: clamp(1rem, 3.5vw, 1.3rem); font-weight: 900; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--acc);
+      text-shadow: 0 0 18px var(--glow); min-height: 1.8rem;
+      text-align: center;
+    }
+    .count-num {
+      font-size: clamp(2.4rem, 8vw, 3.8rem); font-weight: 900; line-height: 1;
+      color: var(--text); text-shadow: 0 0 20px var(--glow);
+      min-height: clamp(3rem, 8vw, 4.6rem); text-align: center; margin-top: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+    .next-label-wrap {
+      height: 32px; display: flex; align-items: center; justify-content: center;
+      margin-top: 8px;
+    }
+    .next-label {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: 999px; padding: 5px 16px;
+      font-size: .72rem; font-weight: 800; letter-spacing: 1.4px;
+      text-transform: uppercase; color: var(--muted);
+      opacity: 0; transform: translateY(4px);
+      transition: opacity .3s ease, transform .3s ease;
+    }
+    .next-label.visible { opacity: 1; transform: translateY(0); }
+    .next-label .nl-arrow { color: var(--acc); font-size: .8rem; }
+    .round-info {
+      font-size: .84rem; color: var(--muted); font-weight: 600;
+      margin-top: 14px; min-height: 1.2rem; text-align: center;
+    }
+    .round-dots {
+      display: flex; gap: 8px; justify-content: center; margin-top: 10px; min-height: 16px;
+    }
+    .round-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--glass-b); border: 1px solid var(--glass-b);
+      transition: background .3s, border-color .3s, box-shadow .3s;
+    }
+    .round-dot.done    { background: var(--acc); border-color: var(--acc); }
+    .round-dot.current { background: transparent; border-color: var(--acc); box-shadow: 0 0 6px var(--glow); }
+
+    /* PHASE GUIDE */
+    .phase-guide {
+      display: flex; width: 100%; margin-top: 22px;
+      background: rgba(0,0,0,.18); border-radius: var(--r-sm);
+      overflow: hidden; border: 1px solid var(--glass-b);
+    }
+    .phase-seg {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      padding: 10px 4px; border-right: 1px solid var(--glass-b);
+      position: relative; overflow: hidden;
+    }
+    .phase-seg:last-child { border-right: none; }
+    .ps-fill {
+      position: absolute; left: 0; top: 0; height: 100%; width: 0%;
+      background: rgba(45,212,110,0.22); pointer-events: none;
+    }
+    body.degen .ps-fill { background: rgba(200,0,255,0.22); }
+    .ps-label { font-size: .62rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; position: relative; }
+    .ps-dur   { font-size: .82rem; font-weight: 900; color: var(--text); margin-top: 3px; position: relative; }
+    .phase-seg.active .ps-label { color: var(--acc); }
+    .phase-seg.active .ps-dur   { color: var(--acc); text-shadow: 0 0 8px var(--glow); }
+
+    @media (max-width: 480px) {
+      .top-bar { padding: 10px 14px; }
+      .ps-label { font-size: .55rem; letter-spacing: 0; }
+      .ps-dur   { font-size: .72rem; }
+      .phase-seg { padding: 8px 2px; }
+    }
+
+    /* PATTERN GRID */
+    .pattern-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;
+    }
+    @media (max-width: 620px) { .pattern-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 400px) { .pattern-grid { grid-template-columns: 1fr; } }
+    .pattern-btn {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); padding: 14px 16px;
+      cursor: pointer; text-align: center; transition: var(--trans);
+      font-family: inherit; color: var(--text);
+      display: flex; flex-direction: column; justify-content: center; width: 100%; height: 100%;
+    }
+    .pattern-btn:hover { background: var(--glass-h); border-color: var(--acc); }
+    .pattern-btn.active {
+      border-color: var(--acc); background: rgba(45,212,110,0.1);
+      box-shadow: 0 0 14px var(--glow);
+    }
+    body.degen .pattern-btn.active { background: rgba(200,0,255,0.1); }
+    .pb-top  { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 6px; }
+    .pb-emoji { font-size: 1.5rem; line-height: 1; }
+    .pb-name  { font-size: .88rem; font-weight: 800; }
+    .pb-desc  { font-size: .72rem; color: var(--muted); line-height: 1.4; }
+
+    /* ROUNDS */
+    .rounds-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .rounds-label { font-size: .82rem; color: var(--muted); font-weight: 600; flex-shrink: 0; }
+    .rounds-btn {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: 999px; color: var(--text);
+      font-size: .88rem; font-weight: 700; padding: 6px 14px;
+      cursor: pointer; transition: var(--trans); font-family: inherit;
+    }
+    .rounds-btn:hover { background: var(--glass-h); }
+    .rounds-btn.active {
+      background: var(--acc); color: #000; border-color: var(--acc);
+      box-shadow: 0 0 8px var(--glow);
+    }
+    body.degen .rounds-btn.active { color: #fff; }
+
+    /* START BUTTON */
+    .btn-start {
+      width: 100%; padding: 18px; border: none; border-radius: var(--r);
+      background: var(--acc); color: #000; font-weight: 900;
+      font-size: 1.1rem; letter-spacing: .4px;
+      cursor: pointer; transition: var(--trans);
+      box-shadow: 0 0 20px var(--glow); font-family: inherit;
+      margin-bottom: 16px;
+    }
+    body.degen .btn-start { color: #fff; }
+    .btn-start:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .btn-start.stop {
+      background: rgba(224,85,85,0.85); color: #fff;
+      box-shadow: 0 0 20px rgba(224,85,85,0.3);
+    }
+    .btn-start.stop:hover { background: rgba(240,96,96,.9); }
+
+    /* COMPLETE BANNER */
+    .complete-banner {
+      text-align: center; padding: 22px;
+      background: rgba(45,212,110,0.1); border: 1px solid var(--acc);
+      border-radius: var(--r); margin-bottom: 16px;
+    }
+    body.degen .complete-banner { background: rgba(200,0,255,0.1); }
+    .cb-icon  { font-size: 2.4rem; margin-bottom: 8px; }
+    .cb-title { font-size: 1.1rem; font-weight: 900; color: var(--acc); }
+    .cb-sub   { font-size: .82rem; color: var(--muted); margin-top: 5px; }
+
+    /* HISTORY */
+    .hist-entry {
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(0,0,0,.15); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); padding: 13px 16px; margin-bottom: 8px;
+    }
+    .hist-icon    { font-size: 1.4rem; flex-shrink: 0; }
+    .hist-info    { flex: 1; }
+    .hist-pattern { font-size: .9rem; font-weight: 700; }
+    .hist-meta    { font-size: .75rem; color: var(--muted); margin-top: 3px; }
+    .hist-del {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: .95rem; padding: 4px 6px;
+      border-radius: 6px; transition: color .2s, background .2s;
+    }
+    .hist-del:hover { color: #ff5a5a; background: rgba(255,90,90,.1); }
+    .empty-hint { font-size: .85rem; color: var(--muted); text-align: center; padding: 24px 0; }
+
+    /* TOAST */
+    #toast {
+      position: fixed; bottom: 26px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--acc); color: #000; padding: 10px 22px;
+      border-radius: 22px; font-size: .88rem; font-weight: 700;
+      transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+      z-index: 200; box-shadow: 0 4px 20px var(--glow);
+      pointer-events: none; white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+    body.degen #toast { color: #fff; }
+
+    /* RIPPLE RINGS */
+    .ripple-ring {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none; opacity: 0;
+    }
+
+    /* SHAPE PICKER */
+    .shape-row { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+    .shape-btn {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); color: var(--text);
+      font-size: 1.1rem; padding: 7px 14px; cursor: pointer;
+      transition: var(--trans); font-family: inherit; line-height: 1;
+    }
+    .shape-btn:hover { background: var(--glass-h); }
+    .shape-btn.active {
+      background: var(--acc); color: #000; border-color: var(--acc);
+      box-shadow: 0 0 8px var(--glow);
+    }
+    body.degen .shape-btn.active { color: #fff; }
+    /* inhale — rings expand outward */
+    @keyframes ripple-expand {
+      0%   { transform: scale(0.65); opacity: 0.8; }
+      100% { transform: scale(1.3);  opacity: 0; }
+    }
+    /* inhale2 — tight quick burst */
+    @keyframes ripple-expand-fast {
+      0%   { transform: scale(0.72); opacity: 0.9; }
+      100% { transform: scale(1.1);  opacity: 0; }
+    }
+    /* exhale — rings collapse inward */
+    @keyframes ripple-contract {
+      0%   { transform: scale(1.25); opacity: 0.65; }
+      100% { transform: scale(0.62); opacity: 0; }
+    }
+    /* hold after inhale — pulsing ring, contained energy */
+    @keyframes ring-pulse {
+      0%, 100% { transform: scale(0.86); opacity: 0.65; }
+      50%       { transform: scale(0.90); opacity: 0.45; }
+    }
+    /* hold2/rest after exhale — softer slower pulse */
+    @keyframes ring-pulse-soft {
+      0%, 100% { transform: scale(0.74); opacity: 0.35; }
+      50%       { transform: scale(0.77); opacity: 0.2; }
+    }
+
+    /* GUITAR HERO LANE */
+    .gh-lane {
+      position: relative; width: 100%; height: 81px;
+      background: rgba(0,0,0,0.22); border-radius: var(--r-sm);
+      border: 1px solid var(--glass-b);
+      overflow: hidden; margin-top: 18px;
+      display: none;
+    }
+    .gh-lane.active { display: block; }
+    .gh-now {
+      position: absolute; left: 76px; top: 0; bottom: 0; width: 2px;
+      background: var(--acc); box-shadow: none;
+      z-index: 3;
+      transition: background .35s ease;
+    }
+    .gh-now::after {
+      content: ''; position: absolute;
+      left: 2px; top: 50%; transform: translateY(-50%);
+      border-top: 8px solid transparent; border-bottom: 8px solid transparent;
+      border-left: 11px solid var(--acc);
+      transition: border-left-color .35s ease;
+    }
+    .gh-now[data-phase="inhale"],
+    .gh-now[data-phase="inhale2"] { background: #2dd46e; }
+    .gh-now[data-phase="inhale"]::after,
+    .gh-now[data-phase="inhale2"]::after { border-left-color: #2dd46e; }
+    .gh-now[data-phase="exhale"] { background: #38bdf8; }
+    .gh-now[data-phase="exhale"]::after { border-left-color: #38bdf8; }
+    .gh-now[data-phase="hold"]  { background: #4a5568; }
+    .gh-now[data-phase="hold"]::after  { border-left-color: #4a5568; }
+    .gh-now[data-phase="hold2"] { background: #4a5568; }
+    .gh-now[data-phase="hold2"]::after { border-left-color: #4a5568; }
+    .gh-now[data-phase="rest"]  { background: #4a5568; }
+    .gh-now[data-phase="rest"]::after  { border-left-color: #4a5568; }
+    @keyframes gh-now-flash {
+      0%   { filter: brightness(3.5); }
+      100% { filter: brightness(1); }
+    }
+    .gh-fade-l {
+      position: absolute; left: 0; top: 0; bottom: 0; width: 76px;
+      background: linear-gradient(to right, rgba(6,26,12,1) 60%, transparent);
+      z-index: 2; pointer-events: none;
+    }
+    .gh-fade-r {
+      position: absolute; right: 0; top: 0; bottom: 0; width: 50px;
+      background: linear-gradient(to left, rgba(6,26,12,1) 20%, transparent);
+      z-index: 2; pointer-events: none;
+    }
+    body.degen .gh-fade-l { background: linear-gradient(to right, rgba(6,0,8,1) 60%, transparent); }
+    body.degen .gh-fade-r { background: linear-gradient(to left, rgba(6,0,8,1) 20%, transparent); }
+    .gh-track {
+      position: absolute; top: 14px; bottom: 14px; left: 76px;
+      display: flex; gap: 0; align-items: center; will-change: transform;
+    }
+    .gh-block {
+      height: 100%; display: flex; align-items: center; flex-shrink: 0;
+    }
+    .gh-head {
+      width: 80px; max-width: 100%; height: 54px; border-radius: 14px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.55);
+      text-transform: uppercase; letter-spacing: 0.3px;
+      text-align: center; white-space: nowrap;
+      overflow: hidden; padding: 2px 6px;
+    }
+    .gh-tail { flex: 1; height: 12px; border-radius: 0 6px 6px 0; transition: height .25s ease, opacity .3s ease; }
+    .gh-inhale  .gh-head { background: #2dd46e; }
+    .gh-inhale  .gh-tail { background: #2dd46e; opacity: 0.35; }
+    .gh-inhale2 .gh-head { background: #2dd46e; opacity: 0.7; }
+    .gh-inhale2 .gh-tail { background: #2dd46e; opacity: 0.25; }
+    .gh-exhale  .gh-head { background: #38bdf8; }
+    .gh-exhale  .gh-tail { background: #38bdf8; opacity: 0.35; }
+    .gh-hold    .gh-head { background: #4a5568; }
+    .gh-hold    .gh-tail { background: #4a5568; opacity: 0.35; }
+    .gh-hold2   .gh-head { background: #4a5568; }
+    .gh-hold2   .gh-tail { background: #4a5568; opacity: 0.35; }
+    .gh-rest    .gh-head { background: #4a5568; }
+    .gh-rest    .gh-tail { background: #4a5568; opacity: 0.35; }
+    .gh-block.gh-active .gh-tail { height: 27px; opacity: 1; }
+    .gh-finish {
+      width: 14px; height: 100%; flex-shrink: 0; margin-left: 12px; border-radius: 3px;
+      background-color: #111;
+      background-image:
+        linear-gradient(45deg, rgba(255,255,255,0.88) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.88) 75%),
+        linear-gradient(45deg, rgba(255,255,255,0.88) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.88) 75%);
+      background-size: 7px 7px;
+      background-position: 0 0, 3.5px 3.5px;
+      box-shadow: 0 0 14px rgba(255,255,255,0.5), 0 0 28px rgba(255,255,255,0.2);
+    }
+
+    /* ── FEATURE: PHASE ARC ── */
+    .phase-arc-svg {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 2;
+    }
+
+    /* ── FEATURE: CARD WASH ── */
+    #breath-card { transition: background 0.9s ease; position: relative; }
+    .vs-btn {
+      position: absolute; top: 12px; right: 12px;
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: 50%; width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: .88rem; z-index: 10;
+      transition: var(--trans); color: var(--muted);
+    }
+    .vs-btn:hover { background: var(--glass-h); border-color: var(--acc); color: var(--text); }
+    .vs-backdrop {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.45); backdrop-filter: blur(3px);
+      display: none;
+    }
+    .vs-backdrop.open { display: block; }
+    .vs-popup {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      z-index: 201; width: min(300px, calc(100vw - 32px));
+      background: var(--bg2); border: 1px solid var(--glass-b);
+      border-radius: var(--r); padding: 20px 22px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.7);
+      display: none;
+    }
+    .vs-popup.open { display: block; }
+    .vs-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .vs-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 1rem; cursor: pointer; padding: 2px 6px;
+      border-radius: 6px; transition: color .2s, background .2s;
+    }
+    .vs-close:hover { color: var(--text); background: var(--glass); }
+    .vs-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 11px 0; border-bottom: 1px solid var(--glass-b);
+    }
+    .vs-row:last-of-type { border-bottom: none; }
+    .vs-label { font-size: .88rem; font-weight: 700; }
+    .vs-desc  { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+    .vs-toggle {
+      width: 42px; height: 24px; border-radius: 12px; flex-shrink: 0;
+      background: rgba(255,255,255,0.1); border: 1px solid var(--glass-b);
+      position: relative; cursor: pointer;
+      transition: background .2s, border-color .2s;
+    }
+    .vs-toggle::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--muted);
+      transition: transform .2s ease, background .2s;
+    }
+    .vs-toggle.on { background: var(--acc); border-color: var(--acc); }
+    .vs-toggle.on::after { transform: translateX(18px); background: #000; }
+    body.degen .vs-toggle.on::after { background: #fff; }
+
+    /* ── FEATURE: WAVEFORM STRIP ── */
+    #waveform-strip {
+      margin-top: 14px; width: 100%; display: none;
+    }
+    #waveform-strip.active {
+      display: block; position: relative;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm);
+      overflow: hidden;
+    }
+    #wf-ball {
+      position: absolute; width: 11px; height: 11px; border-radius: 50%;
+      transform: translate(-50%, -50%); pointer-events: none; z-index: 3;
+      background: #fff; box-shadow: 0 0 6px 2px rgba(255,255,255,0.7);
+      transition: background-color .3s ease, box-shadow .3s ease;
+    }
+    #wf-phase-label {
+      position: absolute; top: 50%; transform: translateX(-50%) translateY(-50%);
+      font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+      pointer-events: none; white-space: nowrap;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+      transition: left .3s ease, color .3s ease;
+    }
+
+    @keyframes confetti-fall {
+      0%   { transform: translateY(0) rotate(0deg) scale(1); opacity:1; }
+      80%  { opacity:1; }
+      100% { transform: translateY(100vh) rotate(720deg) scale(.5); opacity:0; }
+    }
+  </style>
+</head>
+<body>
+
+<svg width="0" height="0" aria-hidden="true" style="position:absolute;overflow:hidden">
+  <defs>
+    <clipPath id="bt-hollow-triangle" clipPathUnits="objectBoundingBox">
+      <path fill-rule="evenodd" d="M0.5,0 L0,1 L1,1 Z M0.5,0.133 L0.1,0.934 L0.9,0.934 Z"/>
+    </clipPath>
+    <clipPath id="bt-hollow-square" clipPathUnits="objectBoundingBox">
+      <path fill-rule="evenodd" d="M0,0 L1,0 L1,1 L0,1 Z M0.08,0.08 L0.92,0.08 L0.92,0.92 L0.08,0.92 Z"/>
+    </clipPath>
+    <!--
+      Lung silhouette: pear/teardrop shape — narrow apex at top,
+      steadily widening downward, widest near the base (like the emoji).
+      Trachea trunk at top centre connects the two lobes.
+    -->
+    <clipPath id="bt-lung" clipPathUnits="objectBoundingBox">
+      <path d="
+        M 0.47,0.00 L 0.47,0.06 C 0.46,0.15 0.46,0.24 0.46,0.33 L 0.54,0.33 C 0.54,0.24 0.54,0.15 0.53,0.06 L 0.53,0.00 Z
+        M 0.46,0.13
+        C 0.48,0.05 0.43,0.02 0.36,0.05
+        C 0.26,0.10 0.17,0.24 0.13,0.40
+        C 0.10,0.54 0.09,0.68 0.10,0.80
+        C 0.12,0.90 0.18,0.97 0.28,1.00
+        C 0.36,1.00 0.48,0.94 0.46,0.88
+        L 0.46,0.13 Z
+        M 0.54,0.13
+        C 0.52,0.05 0.57,0.02 0.64,0.05
+        C 0.74,0.10 0.83,0.24 0.87,0.40
+        C 0.90,0.54 0.91,0.68 0.90,0.80
+        C 0.88,0.90 0.82,0.97 0.72,1.00
+        C 0.64,1.00 0.52,0.94 0.54,0.88
+        L 0.54,0.13 Z
+      "/>
+    </clipPath>
+    <clipPath id="bt-hollow-lung" clipPathUnits="objectBoundingBox">
+      <path fill-rule="evenodd" d="
+        M 0.47,0.00 L 0.47,0.06 C 0.46,0.15 0.46,0.24 0.46,0.33 L 0.54,0.33 C 0.54,0.24 0.54,0.15 0.53,0.06 L 0.53,0.00 Z
+        M 0.46,0.13
+        C 0.48,0.05 0.43,0.02 0.36,0.05
+        C 0.26,0.10 0.17,0.24 0.13,0.40
+        C 0.10,0.54 0.09,0.68 0.10,0.80
+        C 0.12,0.90 0.18,0.97 0.28,1.00
+        C 0.36,1.00 0.48,0.94 0.46,0.88
+        L 0.46,0.13 Z
+        M 0.40,0.17
+        C 0.42,0.11 0.42,0.09 0.38,0.11
+        C 0.31,0.15 0.24,0.27 0.21,0.41
+        C 0.18,0.53 0.17,0.65 0.18,0.75
+        C 0.20,0.83 0.25,0.89 0.34,0.92
+        C 0.38,0.93 0.40,0.90 0.40,0.86
+        L 0.40,0.17 Z
+        M 0.54,0.13
+        C 0.52,0.05 0.57,0.02 0.64,0.05
+        C 0.74,0.10 0.83,0.24 0.87,0.40
+        C 0.90,0.54 0.91,0.68 0.90,0.80
+        C 0.88,0.90 0.82,0.97 0.72,1.00
+        C 0.64,1.00 0.52,0.94 0.54,0.88
+        L 0.54,0.13 Z
+        M 0.60,0.17
+        C 0.58,0.11 0.58,0.09 0.62,0.11
+        C 0.69,0.15 0.76,0.27 0.79,0.41
+        C 0.82,0.53 0.83,0.65 0.82,0.75
+        C 0.80,0.83 0.75,0.89 0.66,0.92
+        C 0.62,0.93 0.60,0.90 0.60,0.86
+        L 0.60,0.17 Z
+      "/>
+    </clipPath>
+  </defs>
+</svg>
+
+<div class="top-bar">
+  <a href="index.html" class="back-btn">← Home</a>
+  <div class="top-title">🫁 Breathing Timer</div>
+  <div class="pf-pill" id="pf-pill">
+    <span style="font-size:.85rem">👤</span><span>Guest</span>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- CIRCLE CARD -->
+  <div class="card" id="breath-card">
+    <button class="vs-btn" onclick="openVisualSettings()" title="Visual settings">⚙️</button>
+    <div class="breath-stage">
+      <div class="breath-container" id="breath-container">
+        <div class="breath-circle idle" id="breath-circle"></div>
+        <!-- FEATURE: Phase Arc -->
+        <svg class="phase-arc-svg" viewBox="0 0 100 100" id="phase-arc-svg">
+          <circle cx="50" cy="50" r="47" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
+          <circle id="phase-arc-fill" cx="50" cy="50" r="47" fill="none" stroke-width="3"
+            stroke-linecap="round" stroke-dasharray="295" stroke-dashoffset="295"
+            transform="rotate(-90 50 50)" stroke="rgba(255,255,255,0.15)"/>
+        </svg>
+      </div>
+      <div class="phase-label" id="phase-label">Ready</div>
+      <div class="count-num" id="count-num">—</div>
+      <div class="next-label-wrap"><div class="next-label" id="next-label"></div></div>
+      <div class="round-info" id="round-info">Select a pattern and press Start</div>
+      <div class="round-dots" id="round-dots"></div>
+      <div class="phase-guide" id="phase-guide"></div>
+    </div>
+    <!-- FEATURE: Waveform Strip -->
+    <div id="waveform-strip"></div>
+    <div class="gh-lane" id="gh-lane">
+      <div class="gh-fade-l"></div>
+      <div class="gh-fade-r"></div>
+      <div class="gh-now" id="gh-now"></div>
+      <div class="gh-track" id="gh-track"></div>
+    </div>
+  </div>
+
+  <!-- COMPLETE BANNER -->
+  <div class="complete-banner" id="complete-banner" style="display:none">
+    <div class="cb-icon">🌟</div>
+    <div class="cb-title">Session Complete!</div>
+    <div class="cb-sub" id="complete-sub"></div>
+  </div>
+
+  <button class="btn-start" id="start-btn" onclick="toggleSession()">▶ Start</button>
+
+  <!-- SETTINGS CARD -->
+  <div class="card" id="settings-card">
+    <div class="card-title">Shape</div>
+    <div class="shape-row" id="shape-row"></div>
+    <div class="card-title">Pattern</div>
+    <div class="pattern-grid" id="pattern-grid"></div>
+    <div class="card-title">Rounds</div>
+    <div class="rounds-row" id="rounds-row"></div>
+  </div>
+
+  <!-- HISTORY CARD -->
+  <div class="card">
+    <div class="card-title">Recent Sessions</div>
+    <div id="history-list"></div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<!-- Visual Settings Popup -->
+<div class="vs-backdrop" id="vs-backdrop" onclick="closeVisualSettings()"></div>
+<div class="vs-popup" id="vs-popup">
+  <div class="vs-header">
+    <div class="card-title" style="margin:0">Visuals</div>
+    <button class="vs-close" onclick="closeVisualSettings()">✕</button>
+  </div>
+  <div class="vs-row">
+    <div><div class="vs-label">Phase Arc</div><div class="vs-desc">Depleting ring around the shape</div></div>
+    <div class="vs-toggle" id="vs-toggle-arc" onclick="toggleVisual('arc')"></div>
+  </div>
+  <div class="vs-row">
+    <div><div class="vs-label">Card Wash</div><div class="vs-desc">Background tints with each phase</div></div>
+    <div class="vs-toggle" id="vs-toggle-wash" onclick="toggleVisual('wash')"></div>
+  </div>
+  <div class="vs-row">
+    <div><div class="vs-label">Waveform</div><div class="vs-desc">Rhythm preview strip with live ball</div></div>
+    <div class="vs-toggle" id="vs-toggle-waveform" onclick="toggleVisual('waveform')"></div>
+  </div>
+  <div class="vs-row">
+    <div><div class="vs-label">Note Lane</div><div class="vs-desc">Guitar Hero scrolling lane</div></div>
+    <div class="vs-toggle" id="vs-toggle-ghLane" onclick="toggleVisual('ghLane')"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var PATTERNS = [
+    {
+      id: 'box', name: 'Box Breathing', emoji: '⬜',
+      desc: 'Navy SEAL technique | equal 4s sides',
+      phases: [
+        { name: 'inhale', label: 'Inhale', dur: 4 },
+        { name: 'hold',   label: 'Hold',   dur: 4 },
+        { name: 'exhale', label: 'Exhale', dur: 4 },
+        { name: 'hold2',  label: 'Hold',   dur: 4 }
+      ]
+    },
+    {
+      id: '478', name: '4-7-8', emoji: '💤',
+      desc: "Dr. Weil's sleep & anxiety technique",
+      phases: [
+        { name: 'inhale', label: 'Inhale', dur: 4 },
+        { name: 'hold',   label: 'Hold',   dur: 7 },
+        { name: 'exhale', label: 'Exhale', dur: 8 }
+      ]
+    },
+    {
+      id: 'coherent', name: 'Coherent', emoji: '❤️',
+      desc: 'Heart rate variability boost | 5 breaths per minute',
+      phases: [
+        { name: 'inhale', label: 'Inhale', dur: 5 },
+        { name: 'exhale', label: 'Exhale', dur: 5 }
+      ]
+    },
+    {
+      id: 'sigh', name: 'Physiological Sigh', emoji: '😮‍💨',
+      desc: 'Double inhale | fastest stress relief',
+      phases: [
+        { name: 'inhale',  label: 'Inhale',      dur: 4 },
+        { name: 'inhale2', label: 'Inhale more…', dur: 2 },
+        { name: 'exhale',  label: 'Long exhale', dur: 6 }
+      ]
+    },
+    {
+      id: 'digestive', name: 'Digestive Breathing', emoji: '🌿',
+      desc: 'Stimulates vagus nerve | calms gut & aids digestion',
+      phases: [
+        { name: 'inhale', label: 'Belly inhale', dur: 4 },
+        { name: 'hold',   label: 'Hold',         dur: 2 },
+        { name: 'exhale', label: 'Slow exhale',  dur: 7 },
+        { name: 'rest',   label: 'Rest',         dur: 1 }
+      ]
+    },
+    {
+      id: 'energize', name: 'Energizing Breath', emoji: '⚡',
+      desc: 'Quick turnover | boosts alertness and energy',
+      phases: [
+        { name: 'inhale', label: 'Sharp inhale', dur: 3 },
+        { name: 'exhale', label: 'Strong exhale', dur: 2 }
+      ]
+    }
+  ];
+
+  var ROUND_PRESETS = [1, 3, 5, 10];
+
+  var SHAPES = [
+    { id: 'circle',   label: '<span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:#000;vertical-align:middle"></span>', clip: 'circle(50%)',                                  radius: '50%', w: null, h: null },
+    { id: 'triangle', label: '<span style="display:inline-block;width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:17px solid #000;vertical-align:middle"></span>', clip: 'polygon(50% 0%, 0% 100%, 100% 100%)',          radius: '0',   w: null, h: null },
+    { id: 'square',   label: '<span style="display:inline-block;width:17px;height:17px;background:#000;vertical-align:middle"></span>', clip: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', radius: '10%', w: null, h: null },
+    { id: 'lung',     label: '<span style="display:inline-block;vertical-align:middle;filter:brightness(0)">🫁</span>', clip: 'url(#bt-lung)',                               radius: '0',   w: 'clamp(190px,50vw,280px)', h: 'clamp(110px,28vw,160px)' }
+  ];
+
+  var patternIdx      = 0;
+  var totalRounds     = 5;
+  var currentShape    = localStorage.getItem('bt:shape') || 'triangle';
+  var running         = false;
+  var currentPhaseIdx = 0;
+  var currentRound    = 0;
+  var tickInterval    = null;
+
+  /* ── HELPERS ── */
+  function getActiveId() { return localStorage.getItem('doh_active_profile') || null; }
+  function store()       { return getActiveId() ? localStorage : sessionStorage; }
+
+  function fmtDate(iso) {
+    var d = new Date(iso), now = new Date();
+    var isToday = d.toDateString() === now.toDateString();
+    var t = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    if (isToday) return 'Today at ' + t;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' at ' + t;
+  }
+
+  function fmtDuration(s) {
+    var m = Math.floor(s / 60), sec = s % 60;
+    if (m === 0) return sec + 's';
+    if (sec === 0) return m + 'm';
+    return m + 'm ' + sec + 's';
+  }
+
+  function pat() { return PATTERNS[patternIdx]; }
+
+  function getHistory() {
+    try { return JSON.parse(store().getItem('bt:history') || '[]'); } catch(e) { return []; }
+  }
+  function setHistory(arr) { store().setItem('bt:history', JSON.stringify(arr)); }
+
+  /* ── SHAPE ── */
+  function shapeObj() { return SHAPES.find(function(s){ return s.id === currentShape; }) || SHAPES[1]; }
+
+  function getRingStyle(color) {
+    if (currentShape === 'circle') {
+      return {
+        background: 'radial-gradient(circle at center, transparent 52%, ' + color + ' 52%, ' + color + ' 66%, transparent 66%)',
+        clipPath: 'none'
+      };
+    }
+    return { background: color, clipPath: 'url(#bt-hollow-' + currentShape + ')' };
+  }
+
+  function applyShape(id) {
+    currentShape = id;
+    localStorage.setItem('bt:shape', id);
+    var s = shapeObj();
+    var c = document.getElementById('breath-circle');
+    c.style.clipPath     = s.clip;
+    c.style.borderRadius = s.radius;
+    c.style.width        = s.w || '';
+    c.style.height       = s.h || '';
+    renderShapePicker();
+  }
+
+  function renderShapePicker() {
+    document.getElementById('shape-row').innerHTML = SHAPES.map(function(s) {
+      return '<button class="shape-btn' + (s.id === currentShape ? ' active' : '') +
+        '" onclick="selectShape(\'' + s.id + '\')">' + (s.label || '') + '</button>';
+    }).join('');
+  }
+
+  /* ── THEME + PROFILE ── */
+  function applyTheme() {
+    if (localStorage.getItem('doh_mode') === 'degen') document.body.classList.add('degen');
+    else document.body.classList.remove('degen');
+  }
+
+  function renderProfilePill() {
+    var id = getActiveId(); if (!id) return;
+    var profiles = JSON.parse(localStorage.getItem('doh_profiles') || '{}');
+    var p = profiles[id]; if (!p) return;
+    var initials = p.name.split(' ').slice(0, 2).map(function(w){ return w[0] ? w[0].toUpperCase() : ''; }).join('');
+    var pill = document.getElementById('pf-pill');
+    pill.innerHTML = '<div class="pf-avatar-sm" style="background:' + p.color + '">' + initials + '</div><span>' + p.name + '</span>';
+  }
+
+  /* ── CIRCLE ── */
+  function setCircle(scale, dur) {
+    var c = document.getElementById('breath-circle');
+    c.classList.remove('idle');
+    c.style.transition = 'transform ' + dur + 's ease-in-out, filter 1s ease-in-out';
+    c.style.transform  = 'scale(' + scale + ')';
+    if (scale > 0.6) c.classList.add('glow-high');
+    else             c.classList.remove('glow-high');
+  }
+
+  function resetCircle() {
+    var c = document.getElementById('breath-circle');
+    c.style.transition = 'transform 0.5s ease-in-out, filter 0.5s ease-in-out';
+    c.style.transform  = 'scale(0.38)';
+    c.classList.remove('glow-high');
+    setTimeout(function () {
+      // Clear only animation-related styles; preserve shape-specific w/h overrides
+      c.style.transition = '';
+      c.style.transform  = '';
+      c.style.filter     = '';
+      c.classList.add('idle');
+    }, 600);
+  }
+
+  /* ── RIPPLE ── */
+  var activeRingEls = [];
+
+  function clearActiveRings() {
+    activeRingEls.forEach(function (el) { if (el.parentNode) el.remove(); });
+    activeRingEls = [];
+  }
+
+  function spawnRing(container, color, animName, dur, delay, persist) {
+    setTimeout(function () {
+      var rs = getRingStyle(color);
+      var ring = document.createElement('div');
+      ring.className = 'ripple-ring';
+      ring.style.background = rs.background;
+      ring.style.clipPath   = rs.clipPath;
+      ring.style.animation  = animName + ' ' + dur + 's ' + (persist ? 'linear infinite' : 'ease-out forwards');
+      if (persist) { ring.style.opacity = '1'; activeRingEls.push(ring); }
+      container.appendChild(ring);
+      if (!persist) setTimeout(function () { ring.remove(); }, dur * 1000 + 100);
+    }, delay);
+  }
+
+
+  function triggerPhaseRipple(phase) {
+    clearActiveRings();
+    var container = document.getElementById('breath-container');
+    var acc = 'var(--acc)';
+    if (phase.name === 'inhale') {
+      spawnRing(container, acc,                     'ripple-expand', 0.9, 0);
+      spawnRing(container, acc,                     'ripple-expand', 0.9, 200);
+      spawnRing(container, acc,                     'ripple-expand', 0.9, 400);
+    } else if (phase.name === 'inhale2') {
+      spawnRing(container, acc,                     'ripple-expand-fast', 0.45, 0);
+      spawnRing(container, acc,                     'ripple-expand-fast', 0.45, 160);
+    } else if (phase.name === 'exhale') {
+      spawnRing(container, 'rgba(120,210,255,0.8)', 'ripple-contract', 0.45, 0);
+      spawnRing(container, 'rgba(120,210,255,0.8)', 'ripple-contract', 0.45, 120);
+    } else if (phase.name === 'hold') {
+      var rs1 = getRingStyle(acc), r1 = document.createElement('div');
+      r1.className = 'ripple-ring';
+      r1.style.background = rs1.background;
+      r1.style.clipPath   = rs1.clipPath;
+      r1.style.opacity    = '1';
+      r1.style.animation  = 'ring-pulse 1.8s ease-in-out infinite';
+      container.appendChild(r1); activeRingEls.push(r1);
+    } else if (phase.name === 'hold2' || phase.name === 'rest') {
+      var rs2 = getRingStyle('rgba(255,255,255,0.45)'), r2 = document.createElement('div');
+      r2.className = 'ripple-ring';
+      r2.style.background = rs2.background;
+      r2.style.clipPath   = rs2.clipPath;
+      r2.style.opacity    = '1';
+      r2.style.animation  = 'ring-pulse-soft 2.5s ease-in-out infinite';
+      container.appendChild(r2); activeRingEls.push(r2);
+    }
+  }
+
+  /* ── GUITAR HERO LANE ── */
+  var GH_PX_SEC        = 70;
+  var ghRaf            = null;
+  var ARC_CIRC         = 295; // 2π × 47
+  var sessionStartTs   = null; // rAF timestamp when breathing begins (after countdown)
+  var phaseTimeline    = [];   // [{phase, phaseIdx, round, startSec, endSec}]
+  var totalSessionSec  = 0;
+  var ghLastPhaseKey   = null; // 'round-phaseIdx' — detects transitions
+  var ghLastSecsLeft   = -1;   // batches countdown DOM writes
+
+  function buildPhaseTimeline() {
+    phaseTimeline   = [];
+    totalSessionSec = 0;
+    var p = pat();
+    for (var r = 0; r < totalRounds; r++) {
+      for (var i = 0; i < p.phases.length; i++) {
+        var ph = p.phases[i];
+        phaseTimeline.push({ phase: ph, phaseIdx: i, round: r, startSec: totalSessionSec, endSec: totalSessionSec + ph.dur });
+        totalSessionSec += ph.dur;
+      }
+    }
+  }
+
+  function buildGHTrack(preroll) {
+    var track = document.getElementById('gh-track');
+    track.innerHTML = '';
+    var p = pat();
+    var HEAD = 80;
+    for (var r = 0; r < totalRounds; r++) {
+      for (var i = 0; i < p.phases.length; i++) {
+        var ph     = p.phases[i];
+        var total  = ph.dur * GH_PX_SEC;
+        var tailW  = Math.max(0, total - HEAD);
+        var div    = document.createElement('div');
+        div.className  = 'gh-block gh-' + ph.name;
+        div.style.width = total + 'px';
+        var ghLabel = { inhale: 'Inhale', inhale2: 'Inhale', exhale: 'Exhale', hold: 'Hold', hold2: 'Hold', rest: 'Rest' }[ph.name] || ph.name;
+        div.innerHTML = '<div class="gh-head">' + ghLabel + '</div>' +
+                        (tailW > 0 ? '<div class="gh-tail"></div>' : '');
+        track.appendChild(div);
+      }
+    }
+    var finish = document.createElement('div');
+    finish.className = 'gh-finish';
+    track.appendChild(finish);
+    track.style.transform = 'translateX(' + ((preroll || 0) * GH_PX_SEC) + 'px)';
+  }
+
+  function startGH(prerollSec) {
+    sessionStartTs  = null;
+    ghLastPhaseKey  = null;
+    ghLastSecsLeft  = -1;
+    var preroll     = prerollSec || 0;
+    document.getElementById('gh-lane').classList.add('active');
+
+    function frame(ts) {
+      if (!running) return;
+      if (!sessionStartTs) sessionStartTs = ts + preroll * 1000;
+      var elapsed = (ts - sessionStartTs) / 1000;
+
+      // Scroll — rAF timestamp is the authoritative clock
+      document.getElementById('gh-track').style.transform = 'translateX(' + (-elapsed * GH_PX_SEC) + 'px)';
+
+      // During preroll countdown: just scroll, no phase logic
+      if (elapsed < 0) { ghRaf = requestAnimationFrame(frame); return; }
+
+      // Session complete
+      if (elapsed >= totalSessionSec) { finishSession(); return; }
+
+      // Find the active timeline entry
+      var entry = null;
+      for (var i = 0; i < phaseTimeline.length; i++) {
+        if (elapsed >= phaseTimeline[i].startSec && elapsed < phaseTimeline[i].endSec) {
+          entry = phaseTimeline[i]; break;
+        }
+      }
+      if (!entry) { ghRaf = requestAnimationFrame(frame); return; }
+
+      // FEATURE: arc + waveform cursor updated every frame
+      updateArc((elapsed - entry.startSec) / entry.phase.dur, entry.phase.name);
+      updateWaveformCursor(elapsed);
+
+      // Phase transition
+      var phaseKey = entry.round + '-' + entry.phaseIdx;
+      if (phaseKey !== ghLastPhaseKey) {
+        ghLastPhaseKey  = phaseKey;
+        ghLastSecsLeft  = -1;
+        currentPhaseIdx = entry.phaseIdx;
+        currentRound    = entry.round;
+        applyPhase(entry.phase);
+        renderRoundDots();
+      }
+
+      // Countdown display — only write DOM when integer changes
+      var secsLeft = Math.max(1, Math.ceil(entry.endSec - elapsed));
+      if (secsLeft !== ghLastSecsLeft) {
+        ghLastSecsLeft = secsLeft;
+        document.getElementById('count-num').textContent = secsLeft;
+
+        var nextPhaseIdx = (entry.phaseIdx + 1) % pat().phases.length;
+        var isLastPhase  = entry.phaseIdx === pat().phases.length - 1;
+        var isLastRound  = entry.round + 1 >= totalRounds;
+        var nextPhase    = pat().phases[nextPhaseIdx];
+
+        if (secsLeft <= 2) {
+          if (isLastPhase && isLastRound) {
+            setNextLabel('Almost done!');
+          } else if (isLastPhase) {
+            setNextLabel(pat().phases[0].label);
+          } else {
+            setNextLabel(nextPhase.label);
+          }
+          if (secsLeft === 1 && nextPhase && nextPhase.name === 'exhale') {
+            triggerPhaseRipple(nextPhase);
+          }
+        } else {
+          setNextLabel('');
+        }
+      }
+
+      ghRaf = requestAnimationFrame(frame);
+    }
+    ghRaf = requestAnimationFrame(frame);
+  }
+
+  function updateGHNow(phaseName) {
+    var el = document.getElementById('gh-now');
+    if (!el) return;
+    el.setAttribute('data-phase', phaseName);
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = 'gh-now-flash 0.5s ease-out forwards';
+
+    var blocks = document.getElementById('gh-track').querySelectorAll('.gh-block');
+    blocks.forEach(function(b) { b.classList.remove('gh-active'); });
+    var idx = currentRound * pat().phases.length + currentPhaseIdx;
+    if (blocks[idx]) blocks[idx].classList.add('gh-active');
+  }
+
+  function stopGH() {
+    if (ghRaf) { cancelAnimationFrame(ghRaf); ghRaf = null; }
+    document.getElementById('gh-lane').classList.remove('active');
+    var el = document.getElementById('gh-now');
+    if (el) { el.removeAttribute('data-phase'); el.style.animation = ''; }
+    document.getElementById('gh-track').querySelectorAll('.gh-block').forEach(function(b) {
+      b.classList.remove('gh-active');
+    });
+  }
+
+  /* VISUAL SETTINGS */
+  var VISUAL_DEFAULTS = { arc: true, wash: true, waveform: true, ghLane: true };
+  var visuals = {};
+  function loadVisuals() {
+    try { visuals = Object.assign({}, VISUAL_DEFAULTS, JSON.parse(localStorage.getItem('bt:visuals') || '{}')); }
+    catch (e) { visuals = Object.assign({}, VISUAL_DEFAULTS); }
+  }
+  function saveVisuals() {
+    try { localStorage.setItem('bt:visuals', JSON.stringify(visuals)); } catch (e) {}
+  }
+  function renderVisualToggles() {
+    ['arc','wash','waveform','ghLane'].forEach(function(k) {
+      var el = document.getElementById('vs-toggle-' + k);
+      if (el) { if (visuals[k]) el.classList.add('on'); else el.classList.remove('on'); }
+    });
+  }
+  function applyVisualSettings() {
+    var arcSvg = document.getElementById('phase-arc-svg');
+    if (arcSvg) arcSvg.style.display = visuals.arc ? '' : 'none';
+    var wfEl = document.getElementById('waveform-strip');
+    if (wfEl) wfEl.style.display = visuals.waveform ? '' : 'none';
+    var ghEl = document.getElementById('gh-lane');
+    if (ghEl) ghEl.style.display = visuals.ghLane ? '' : 'none';
+    if (!visuals.wash) clearCardWash();
+  }
+  window.openVisualSettings = function() {
+    renderVisualToggles();
+    document.getElementById('vs-backdrop').classList.add('open');
+    document.getElementById('vs-popup').classList.add('open');
+  };
+  window.closeVisualSettings = function() {
+    document.getElementById('vs-backdrop').classList.remove('open');
+    document.getElementById('vs-popup').classList.remove('open');
+  };
+  window.toggleVisual = function(key) {
+    visuals[key] = !visuals[key];
+    saveVisuals();
+    renderVisualToggles();
+    applyVisualSettings();
+    if (running && key === 'waveform') {
+      if (visuals.waveform) buildWaveform(); else clearWaveform();
+    }
+  };
+
+  /* ── FEATURE: PHASE ARC ── */
+  var ARC_PHASE_COLORS = { inhale: '#2dd46e', inhale2: '#2dd46e', exhale: '#38bdf8',
+                           hold: '#718096', hold2: '#718096', rest: '#718096' };
+  function updateArc(progress, phaseName) {
+    if (!visuals.arc) return;
+    var fill = document.getElementById('phase-arc-fill');
+    if (!fill) return;
+    fill.setAttribute('stroke-dashoffset', (1 - progress) * ARC_CIRC);
+    if (phaseName) fill.setAttribute('stroke', ARC_PHASE_COLORS[phaseName] || 'rgba(255,255,255,0.4)');
+  }
+  function resetArc() {
+    var fill = document.getElementById('phase-arc-fill');
+    if (fill) { fill.setAttribute('stroke-dashoffset', ARC_CIRC); fill.setAttribute('stroke', 'rgba(255,255,255,0.15)'); }
+  }
+
+  /* ── FEATURE: CARD WASH ── */
+  var WASH_COLORS = { inhale: 'rgba(45,212,110,0.12)', inhale2: 'rgba(45,212,110,0.12)',
+                      exhale: 'rgba(56,189,248,0.12)',
+                      hold: 'rgba(74,85,104,0.1)', hold2: 'rgba(74,85,104,0.1)', rest: 'rgba(74,85,104,0.1)' };
+  function applyCardWash(phaseName) {
+    if (!visuals.wash) return;
+    var card = document.getElementById('breath-card');
+    if (card) card.style.background = WASH_COLORS[phaseName] || '';
+  }
+  function clearCardWash() {
+    var card = document.getElementById('breath-card');
+    if (card) card.style.background = '';
+  }
+
+  /* ── FEATURE: WAVEFORM STRIP ── */
+  var WAVE_Y = { inhale: 6, inhale2: 6, exhale: 34, hold: 6, hold2: 34, rest: 34 };
+  var wfSegments = [];
+  function buildWaveform() {
+    if (!visuals.waveform) return;
+    var el = document.getElementById('waveform-strip');
+    if (!el) return;
+    var p = pat();
+    var W = 700, H = 52, TOP = 7, BOT = 45;
+    var roundSec = p.phases.reduce(function(s, ph) { return s + ph.dur; }, 0);
+    var pxPerSec = W / (roundSec * totalRounds);
+    var WC = { inhale: '#2dd46e', inhale2: '#2dd46e', exhale: '#38bdf8',
+               hold: '#718096', hold2: '#718096', rest: '#718096' };
+    var PY = { inhale: TOP, inhale2: TOP, exhale: BOT, hold: TOP, hold2: BOT, rest: BOT };
+
+    // Build per-phase segments
+    wfSegments = [];
+    var segs = [], bx = 0, x = 0, y = BOT, accSec = 0;
+    for (var r = 0; r < totalRounds; r++) {
+      for (var i = 0; i < p.phases.length; i++) {
+        var ph = p.phases[i], w = ph.dur * pxPerSec;
+        var ty = PY[ph.name] !== undefined ? PY[ph.name] : (H / 2);
+        var col = WC[ph.name] || '#fff';
+        var sd, fd;
+        if (ph.name === 'hold' || ph.name === 'hold2' || ph.name === 'rest') {
+          sd = 'M'+x+','+y+' L'+(x+w)+','+y;
+          fd = sd+' L'+(x+w)+','+H+' L'+x+','+H+' Z';
+        } else {
+          sd = 'M'+x+','+y+' C'+(x+w*0.35)+','+y+' '+(x+w*0.65)+','+ty+' '+(x+w)+','+ty;
+          fd = sd+' L'+(x+w)+','+H+' L'+x+','+H+' Z';
+        }
+        segs.push({ col: col, sd: sd, fd: fd });
+        wfSegments.push({ startX: x, endX: x+w, startY: y, endY: ty,
+                          startSec: accSec, endSec: accSec + ph.dur,
+                          round: r, phaseIdx: i, phaseName: ph.name, col: col });
+        y = ty; x += w; accSec += ph.dur;
+      }
+      bx += roundSec * pxPerSec;
+    }
+
+    // SVG defs: gradients + cursor glow filter
+    var svg = '<defs>';
+    [['wfg0','#2dd46e'],['wfg1','#38bdf8'],['wfg2','#718096']].forEach(function(g) {
+      svg += '<linearGradient id="'+g[0]+'" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0%" stop-color="'+g[1]+'" stop-opacity="0.38"/>' +
+        '<stop offset="100%" stop-color="'+g[1]+'" stop-opacity="0.03"/>' +
+        '</linearGradient>';
+    });
+    svg += '<filter id="wfglow" x="-50%" y="-50%" width="200%" height="200%">' +
+      '<feGaussianBlur stdDeviation="2.5" result="b"/>' +
+      '<feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+    svg += '</defs>';
+
+    var CG = { '#2dd46e': 'url(#wfg0)', '#38bdf8': 'url(#wfg1)', '#718096': 'url(#wfg2)' };
+
+    // Gradient fills
+    segs.forEach(function(s) { svg += '<path d="'+s.fd+'" fill="'+(CG[s.col]||'none')+'"/>'; });
+
+    // Round-boundary dashed ticks
+    var rx = 0;
+    for (var rr = 1; rr < totalRounds; rr++) {
+      rx += roundSec * pxPerSec;
+      svg += '<line x1="'+rx+'" y1="4" x2="'+rx+'" y2="'+(H-4)+'" stroke="rgba(255,255,255,0.18)" stroke-width="1" stroke-dasharray="3,3"/>';
+    }
+
+    // Active segment highlight (updated by updateWaveformPhase)
+    svg += '<rect id="wf-highlight" x="0" y="0" width="0" height="'+H+'" fill="white" fill-opacity="0.1" rx="2"/>';
+
+    // Colored strokes on top
+    segs.forEach(function(s) {
+      svg += '<path d="'+s.sd+'" fill="none" stroke="'+s.col+'" stroke-width="2.5" stroke-opacity="0.85" stroke-linecap="round"/>';
+    });
+
+    // Glowing cursor
+    svg += '<line id="wf-cursor" x1="0" y1="0" x2="0" y2="'+H+'" stroke="rgba(255,255,255,0.95)" stroke-width="2" filter="url(#wfglow)"/>';
+
+    el.classList.add('active');
+    el.innerHTML = '<svg width="100%" height="'+H+'" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="display:block">'+svg+'</svg>';
+    var lbl = document.createElement('div'); lbl.id = 'wf-phase-label'; el.appendChild(lbl);
+    var ball = document.createElement('div'); ball.id = 'wf-ball'; el.appendChild(ball);
+  }
+  function updateWaveformCursor(elapsed) {
+    var cursor = document.getElementById('wf-cursor');
+    if (!cursor || totalSessionSec <= 0) return;
+    var cx = Math.max(0, Math.min(700, (elapsed / totalSessionSec) * 700));
+    cursor.setAttribute('x1', cx); cursor.setAttribute('x2', cx);
+
+    // Ball: find active segment and interpolate position along the bezier
+    var ball = document.getElementById('wf-ball');
+    if (!ball || !wfSegments.length) return;
+    var seg = null;
+    for (var si = 0; si < wfSegments.length; si++) {
+      if (elapsed >= wfSegments[si].startSec && elapsed < wfSegments[si].endSec) { seg = wfSegments[si]; break; }
+    }
+    if (!seg) return;
+    var t = Math.max(0, Math.min(1, (elapsed - seg.startSec) / (seg.endSec - seg.startSec)));
+    var bx = seg.startX + t * (seg.endX - seg.startX);
+    var by;
+    if (seg.phaseName === 'hold' || seg.phaseName === 'hold2' || seg.phaseName === 'rest') {
+      by = seg.startY;
+    } else {
+      var st = t * t * (3 - 2 * t); // smoothstep matches the bezier control points
+      by = seg.startY + (seg.endY - seg.startY) * st;
+    }
+    // Map SVG coords (0-700, 0-52) to % for HTML positioning
+    ball.style.left = (bx / 700 * 100).toFixed(2) + '%';
+    ball.style.top  = (by / 52 * 100).toFixed(2) + '%';
+  }
+  function updateWaveformPhase(roundIdx, phaseIdx) {
+    var seg = null;
+    for (var si = 0; si < wfSegments.length; si++) {
+      if (wfSegments[si].round === roundIdx && wfSegments[si].phaseIdx === phaseIdx) { seg = wfSegments[si]; break; }
+    }
+    if (!seg) return;
+    var rect = document.getElementById('wf-highlight');
+    if (rect) { rect.setAttribute('x', seg.startX); rect.setAttribute('width', seg.endX - seg.startX); rect.setAttribute('fill', seg.col); }
+    var cursor = document.getElementById('wf-cursor');
+    if (cursor) cursor.setAttribute('stroke', seg.col);
+    var ball = document.getElementById('wf-ball');
+    if (ball) { ball.style.backgroundColor = seg.col; ball.style.boxShadow = '0 0 6px 3px '+seg.col; }
+    var lbl = document.getElementById('wf-phase-label');
+    if (lbl) {
+      var names = { inhale: 'Inhale', inhale2: 'Inhale', exhale: 'Exhale', hold: 'Hold', hold2: 'Hold', rest: 'Rest' };
+      lbl.textContent = names[seg.phaseName] || seg.phaseName;
+      lbl.style.color = seg.col;
+      lbl.style.left = ((seg.startX + seg.endX) / 2 / 700 * 100).toFixed(1) + '%';
+    }
+  }
+  function clearWaveform() {
+    var el = document.getElementById('waveform-strip');
+    if (el) { el.classList.remove('active'); el.innerHTML = ''; }
+    wfSegments = [];
+  }
+
+  /* ── PHASE ── */
+  function setNextLabel(text) {
+    var el = document.getElementById('next-label');
+    if (text) {
+      el.innerHTML = '<span class="nl-arrow">▸</span>' + text;
+      el.classList.add('visible');
+    } else {
+      el.innerHTML = '';
+      el.classList.remove('visible');
+    }
+  }
+
+  function applyPhase(phase) {
+    document.getElementById('phase-label').textContent = phase.label;
+    document.getElementById('count-num').textContent   = phase.dur;
+    setNextLabel('');
+    renderPhaseGuide(currentPhaseIdx, phase.dur);
+    triggerPhaseRipple(phase);
+    updateGHNow(phase.name);
+    applyCardWash(phase.name); // FEATURE: card wash
+    updateWaveformPhase(currentRound, currentPhaseIdx); // FEATURE: waveform highlight
+
+    var expand   = phase.name === 'inhale' || phase.name === 'inhale2';
+    var contract = phase.name === 'exhale';
+    if (expand)   setCircle(1.0, phase.dur);
+    else if (contract) setCircle(0.38, phase.dur);
+    // holds: no circle change
+  }
+
+  /* ── SESSION CONTROL ── */
+  function toggleSession() {
+    if (running) stopSession(); else startSession();
+  }
+
+  function startSession() {
+    running = true;
+    currentPhaseIdx = 0;
+    currentRound    = 0;
+
+    document.getElementById('complete-banner').style.display = 'none';
+    document.getElementById('settings-card').style.opacity       = '0.45';
+    document.getElementById('settings-card').style.pointerEvents = 'none';
+    document.getElementById('start-btn').textContent = '■ Stop';
+    document.getElementById('start-btn').classList.add('stop');
+
+    var c = document.getElementById('breath-circle');
+    c.classList.remove('idle');
+    c.style.transition = 'none';
+    c.style.transform  = 'scale(0.38)';
+    c.classList.remove('glow-high');
+
+    renderRoundDots();
+    buildPhaseTimeline();
+    buildGHTrack(3);
+    startGH(3);
+    runCountdown(3);
+    buildWaveform(); // FEATURE: waveform
+    resetArc();      // FEATURE: arc
+  }
+
+  function runCountdown(n) {
+    document.getElementById('phase-label').textContent = 'Get Ready';
+    document.getElementById('count-num').textContent   = n;
+    document.getElementById('round-info').textContent  = '';
+    renderPhaseGuide(-1);
+    if (n > 1) {
+      tickInterval = setTimeout(function () { runCountdown(n - 1); }, 1000);
+    } else {
+      tickInterval = setTimeout(function () {
+        tickInterval = null;
+      }, 1000);
+    }
+  }
+
+  function stopSession() {
+    running = false;
+    clearInterval(tickInterval); clearTimeout(tickInterval); tickInterval = null;
+    document.getElementById('phase-label').textContent = 'Stopped';
+    document.getElementById('count-num').textContent   = '—';
+    document.getElementById('round-info').textContent  = 'Select a pattern and press Start';
+    setNextLabel('');
+    document.getElementById('settings-card').style.opacity       = '';
+    document.getElementById('settings-card').style.pointerEvents = '';
+    document.getElementById('start-btn').textContent = '▶ Start';
+    document.getElementById('start-btn').classList.remove('stop');
+    clearActiveRings();
+    resetCircle();
+    stopGH();
+    renderPhaseGuide(-1);
+    renderRoundDots();
+    clearCardWash(); resetArc(); clearWaveform(); // FEATURE: cleanup
+    showToast('Session stopped.');
+  }
+
+  function finishSession() {
+    running = false;
+    clearInterval(tickInterval); tickInterval = null;
+
+    var p = pat();
+    var totalSecs = p.phases.reduce(function(acc, ph){ return acc + ph.dur; }, 0) * totalRounds;
+
+    var history = getHistory();
+    history.unshift({ pattern: p.name, emoji: p.emoji, rounds: totalRounds, duration_s: totalSecs, date: new Date().toISOString() });
+    if (history.length > 20) history = history.slice(0, 20);
+    setHistory(history);
+
+    awardXP(10);
+
+    document.getElementById('phase-label').textContent = 'Complete!';
+    document.getElementById('count-num').textContent   = '🌟';
+    document.getElementById('round-info').textContent  = '';
+    setNextLabel('');
+    document.getElementById('settings-card').style.opacity       = '';
+    document.getElementById('settings-card').style.pointerEvents = '';
+    document.getElementById('start-btn').textContent = '▶ Start Again';
+    document.getElementById('start-btn').classList.remove('stop');
+    document.getElementById('complete-sub').textContent =
+      p.name + ' · ' + totalRounds + ' round' + (totalRounds !== 1 ? 's' : '') + ' · ' + fmtDuration(totalSecs) + ' · +10 XP';
+    document.getElementById('complete-banner').style.display = 'block';
+
+    clearActiveRings();
+    resetCircle();
+    stopGH();
+    renderPhaseGuide(-1);
+    renderRoundDots();
+    clearCardWash(); resetArc(); clearWaveform(); // FEATURE: cleanup
+    renderHistory();
+    triggerConfetti();
+    showToast('🎉 Session complete! +10 XP');
+  }
+
+  /* ── XP ── */
+  function awardXP(amount) {
+    var id = getActiveId(); if (!id) return;
+    var key = 'doh_' + id + '_xp';
+    var cur = parseInt(localStorage.getItem(key) || '0');
+    localStorage.setItem(key, String(cur + amount));
+  }
+
+  /* ── RENDER ── */
+  function renderPatternGrid() {
+    document.getElementById('pattern-grid').innerHTML = PATTERNS.map(function(p, i) {
+      return '<button class="pattern-btn' + (i === patternIdx ? ' active' : '') + '" onclick="selectPattern(' + i + ')">' +
+        '<div class="pb-top"><span class="pb-emoji">' + p.emoji + '</span><span class="pb-name">' + p.name + '</span></div>' +
+        '<div class="pb-desc">' + p.desc + '</div></button>';
+    }).join('');
+  }
+
+  function renderRoundsRow() {
+    document.getElementById('rounds-row').innerHTML =
+      '<span class="rounds-label">Rounds:</span>' +
+      ROUND_PRESETS.map(function(r) {
+        return '<button class="rounds-btn' + (r === totalRounds ? ' active' : '') + '" onclick="selectRounds(' + r + ')">' + r + '</button>';
+      }).join('');
+  }
+
+  function renderPhaseGuide(activeIdx, dur) {
+    var guide = document.getElementById('phase-guide');
+    guide.innerHTML = pat().phases.map(function(ph, i) {
+      return '<div class="phase-seg' + (i === activeIdx ? ' active' : '') + '">' +
+        '<div class="ps-fill"></div>' +
+        '<div class="ps-label">' + ph.label + '</div>' +
+        '<div class="ps-dur">' + ph.dur + 's</div></div>';
+    }).join('');
+    var fills = guide.querySelectorAll('.ps-fill');
+    fills.forEach(function (f, i) {
+      if (i < activeIdx) {
+        f.style.transition = 'none';
+        f.style.width = '100%';
+      }
+    });
+    if (activeIdx >= 0 && dur) {
+      var fill = fills[activeIdx];
+      if (fill) {
+        fill.style.transition = 'none';
+        fill.style.width = '0%';
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            fill.style.transition = 'width ' + dur + 's linear';
+            fill.style.width = '100%';
+          });
+        });
+      }
+    }
+  }
+
+  function renderRoundDots() {
+    var info = document.getElementById('round-info');
+    var dots = document.getElementById('round-dots');
+    if (!running && currentRound === 0) { dots.innerHTML = ''; return; }
+    if (running) info.textContent = 'Round ' + (currentRound + 1) + ' of ' + totalRounds;
+    dots.innerHTML = Array.from({ length: totalRounds }, function(_, i) {
+      var cls = i < currentRound ? 'done' : (i === currentRound && running ? 'current' : '');
+      return '<div class="round-dot ' + cls + '"></div>';
+    }).join('');
+  }
+
+  function renderHistory() {
+    var history = getHistory();
+    var el = document.getElementById('history-list');
+    if (!history.length) {
+      el.innerHTML = '<div class="empty-hint">No sessions yet — complete your first one!</div>';
+      return;
+    }
+    el.innerHTML = history.slice(0, 8).map(function(e, i) {
+      return '<div class="hist-entry">' +
+        '<div class="hist-icon">' + (e.emoji || '🫁') + '</div>' +
+        '<div class="hist-info">' +
+          '<div class="hist-pattern">' + e.pattern + '</div>' +
+          '<div class="hist-meta">' + e.rounds + ' round' + (e.rounds !== 1 ? 's' : '') +
+            ' · ' + fmtDuration(e.duration_s) + ' · ' + fmtDate(e.date) + '</div>' +
+        '</div>' +
+        '<button class="hist-del" onclick="deleteHistory(' + i + ')">✕</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  /* ── CONFETTI ── */
+  function triggerConfetti() {
+    var colors = ['#4ade80','#22d3ee','#f472b6','#facc15','#a78bfa','#fb923c','#fff'];
+    for (var i = 0; i < 60; i++) {
+      (function(i) {
+        setTimeout(function() {
+          var el = document.createElement('div');
+          el.style.position = 'fixed'; el.style.top = '-10px';
+          el.style.left = (Math.random() * 100) + 'vw';
+          el.style.width  = (6 + Math.random() * 8) + 'px';
+          el.style.height = (10 + Math.random() * 8) + 'px';
+          el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+          el.style.background = colors[Math.floor(Math.random() * colors.length)];
+          el.style.zIndex = '9999'; el.style.pointerEvents = 'none';
+          el.style.animationName = 'confetti-fall';
+          el.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+          el.style.animationTimingFunction = 'linear';
+          el.style.animationFillMode = 'forwards';
+          document.body.appendChild(el);
+          setTimeout(function(){ el.remove(); }, 3500);
+        }, i * 22);
+      })(i);
+    }
+  }
+
+  /* ── TOAST ── */
+  var toastTimer = null;
+  function showToast(msg) {
+    var el = document.getElementById('toast');
+    el.textContent = msg; el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ el.classList.remove('show'); }, 3000);
+  }
+
+  /* ── EXPOSED ── */
+  window.selectPattern = function(i) {
+    if (running) return;
+    patternIdx = i;
+    renderPatternGrid();
+    renderPhaseGuide(-1);
+    buildWaveform(); // FEATURE: waveform preview
+  };
+  window.selectRounds = function(r) {
+    if (running) return;
+    totalRounds = r;
+    renderRoundsRow();
+    buildWaveform(); // FEATURE: waveform preview
+  };
+  window.selectShape = function(id) {
+    if (running) return;
+    applyShape(id);
+  };
+  window.toggleSession  = toggleSession;
+  window.deleteHistory  = function(i) {
+    var h = getHistory(); h.splice(i, 1); setHistory(h); renderHistory();
+  };
+
+  /* ── INIT ── */
+  loadVisuals();
+  applyTheme();
+  renderProfilePill();
+  applyShape(currentShape);
+  renderShapePicker();
+  renderPatternGrid();
+  renderRoundsRow();
+  renderPhaseGuide(-1);
+  renderHistory();
+  buildWaveform(); // FEATURE: waveform preview on load
+  applyVisualSettings();
+})();
+</script>
+</body>
+</html>

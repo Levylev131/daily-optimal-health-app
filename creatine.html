@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Creatine Guide — Daily Optimal Health</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --r: 14px; --r-sm: 10px;
+      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
+      --amber: #f5a623; --red: #ff5c5c;
+    }
+    html { min-height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+      color: var(--text); min-height: 100vh; overflow-x: hidden;
+    }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+    .top-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 24px; max-width: 820px; margin: 0 auto;
+      border-bottom: 1px solid var(--glass-b);
+    }
+    .back-btn {
+      color: var(--muted); text-decoration: none; font-size: .88rem;
+      font-weight: 600; transition: color .2s; background: none; border: none; cursor: pointer;
+    }
+    .back-btn:hover { color: var(--acc); }
+    .top-title { flex: 1; text-align: center; font-size: 1rem; font-weight: 800; text-shadow: 0 0 20px var(--glow); }
+    .top-spacer { width: 60px; }
+
+    .page { max-width: 820px; margin: 0 auto; padding: clamp(16px,4vw,28px) clamp(12px,3vw,20px) 100px; }
+
+    .hero { text-align: center; padding: clamp(20px,5vw,36px) 0 clamp(14px,3vw,24px); }
+    .hero-emoji { font-size: clamp(3rem,8vw,4.5rem); display: block; margin-bottom: 10px; filter: drop-shadow(0 0 18px var(--glow)); }
+    .hero-title {
+      font-size: clamp(1.8rem,5vw,2.8rem); font-weight: 900; letter-spacing: -1px; line-height: 1.1;
+      background: linear-gradient(135deg, #fff 30%, var(--acc));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px;
+    }
+    .hero-sub { color: var(--muted); font-size: clamp(.85rem,2vw,1rem); max-width: 500px; margin: 0 auto 20px; line-height: 1.6; }
+    .hero-stats { display: flex; justify-content: center; gap: clamp(8px,2vw,16px); flex-wrap: wrap; }
+    .hero-stat { background: var(--glass); border: 1px solid var(--glass-b); border-radius: 10px; padding: 10px 16px; text-align: center; }
+    .hero-stat-val { font-size: 1.3rem; font-weight: 900; color: var(--acc); }
+    .hero-stat-lbl { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-top: 2px; }
+
+    .card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px);
+      padding: clamp(16px,4vw,24px); margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: .75rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.3px; color: var(--muted); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .card-title::after { content:''; flex:1; height:1px; background: var(--glass-b); }
+
+    /* PROTOCOL */
+    .protocol-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+    @media(max-width:540px){ .protocol-grid { grid-template-columns: 1fr; } }
+    .proto-card {
+      border: 2px solid var(--glass-b); border-radius: var(--r); padding: 16px 14px;
+      cursor: pointer; transition: var(--trans); background: var(--glass); text-align: center; position: relative;
+    }
+    .proto-card:hover { border-color: var(--acc); box-shadow: 0 0 14px var(--glow); }
+    .proto-card.active { border-color: var(--acc); background: rgba(45,212,110,0.1); box-shadow: 0 0 20px var(--glow); }
+    .proto-card.active::before { content:'✓'; position:absolute; top:8px; right:10px; color:var(--acc); font-weight:900; font-size:.8rem; }
+    .proto-icon { font-size: 1.8rem; margin-bottom: 8px; }
+    .proto-name { font-weight: 800; font-size: .9rem; margin-bottom: 4px; }
+    .proto-tag { display: inline-block; background: var(--glass-b); border-radius: 20px; font-size: .65rem; padding: 2px 8px; color: var(--muted); margin-bottom: 8px; }
+    .proto-card.active .proto-tag { background: rgba(45,212,110,0.2); color: var(--acc); }
+    .proto-desc { font-size: .76rem; color: var(--muted); line-height: 1.5; }
+
+    /* TIMELINE */
+    .timeline { position: relative; padding-left: 26px; margin-top: 18px; }
+    .timeline::before { content:''; position:absolute; left:8px; top:6px; bottom:6px; width:2px; background: linear-gradient(to bottom, var(--acc), var(--glass-b)); border-radius:2px; }
+    .tl-item { position: relative; margin-bottom: 16px; }
+    .tl-item:last-child { margin-bottom: 0; }
+    .tl-dot { position:absolute; left:-21px; top:4px; width:11px; height:11px; border-radius:50%; background:var(--acc); border:2px solid var(--bg1); box-shadow:0 0 8px var(--glow); }
+    .tl-dot.dim { background: var(--glass-b); box-shadow: none; }
+    .tl-day { font-size: .7rem; color: var(--acc); font-weight: 700; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 2px; }
+    .tl-text { font-size: .84rem; line-height: 1.5; }
+    .tl-sub { font-size: .76rem; color: var(--muted); margin-top: 2px; }
+
+    .sat-bar-wrap { margin: 14px 0 6px; }
+    .sat-bar-labels { display: flex; justify-content: space-between; font-size: .7rem; color: var(--muted); margin-bottom: 5px; }
+    .sat-bar-track { height: 9px; background: var(--glass-b); border-radius: 10px; overflow: hidden; }
+    .sat-bar-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, #1a8a50, #2dd46e, #7fff9a); box-shadow: 0 0 10px var(--glow); transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+    .sat-note { font-size: .75rem; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
+    /* DOSAGE CALCULATOR */
+    .calc-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 14px; }
+    .calc-field { flex: 1; min-width: 110px; }
+    .calc-label { font-size: .72rem; color: var(--muted); font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .7px; }
+    .calc-input {
+      width: 100%; background: var(--glass-b); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); color: var(--text); font-size: 1.1rem; font-weight: 700;
+      padding: 10px 14px; outline: none; transition: var(--trans); font-family: inherit;
+    }
+    .calc-input:focus { border-color: var(--acc); box-shadow: 0 0 10px var(--glow); }
+    .unit-toggle { display: flex; background: var(--glass-b); border-radius: var(--r-sm); overflow: hidden; }
+    .unit-btn { flex: 1; padding: 10px 14px; border: none; background: transparent; color: var(--muted); font-weight: 700; font-size: .88rem; cursor: pointer; transition: var(--trans); font-family: inherit; }
+    .unit-btn.active { background: var(--acc); color: #000; }
+    .calc-results { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 10px; }
+    .crb { background: var(--glass); border: 1px solid var(--glass-b); border-radius: var(--r-sm); padding: 14px; text-align: center; }
+    .crb.hi { border-color: var(--acc); box-shadow: 0 0 12px var(--glow); background: rgba(45,212,110,0.08); }
+    .crb-val { font-size: 1.7rem; font-weight: 900; color: var(--acc); line-height: 1; }
+    .crb-unit { font-size: .76rem; color: var(--acc); font-weight: 600; }
+    .crb-lbl { font-size: .68rem; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .7px; }
+    .calc-note { font-size: .78rem; color: var(--muted); margin-top: 12px; line-height: 1.5; }
+
+    /* TABS */
+    .tab-bar {
+      display: flex; gap: 4px; background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: 12px; padding: 4px; margin-bottom: 14px; overflow-x: auto;
+    }
+    .tab-btn {
+      flex: none; padding: 8px 13px; border: none; background: transparent;
+      color: var(--muted); font-size: .8rem; font-weight: 700; cursor: pointer;
+      border-radius: 9px; transition: var(--trans); white-space: nowrap; font-family: inherit;
+    }
+    .tab-btn.active { background: var(--acc); color: #000; box-shadow: 0 2px 10px var(--glow); }
+    .tab-btn:hover:not(.active) { background: var(--glass-h); color: var(--text); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeUp .22s ease; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
+
+    /* INFO ITEMS */
+    .info-grid { display: grid; gap: 10px; }
+    .info-item { background: var(--glass); border: 1px solid var(--glass-b); border-radius: var(--r-sm); padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start; }
+    .info-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 2px; }
+    .info-head { font-weight: 700; font-size: .88rem; margin-bottom: 4px; }
+    .info-body { font-size: .8rem; color: var(--muted); line-height: 1.6; }
+
+    /* MYTHS */
+    .myth-card { background: var(--glass); border: 1px solid var(--glass-b); border-radius: var(--r-sm); overflow: hidden; margin-bottom: 8px; }
+    .myth-header { display: flex; align-items: center; gap: 10px; padding: 13px 15px; cursor: pointer; transition: background .15s; }
+    .myth-header:hover { background: var(--glass-h); }
+    .myth-badge { font-size: .62rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; text-transform: uppercase; letter-spacing: .7px; flex-shrink: 0; }
+    .badge-false { background: rgba(255,92,92,0.2); color: var(--red); }
+    .badge-true { background: rgba(45,212,110,0.2); color: var(--acc); }
+    .badge-partial { background: rgba(245,166,35,0.2); color: var(--amber); }
+    .myth-claim { font-weight: 700; font-size: .86rem; flex: 1; }
+    .myth-arrow { color: var(--muted); font-size: .75rem; transition: transform .2s; flex-shrink: 0; }
+    .myth-card.open .myth-arrow { transform: rotate(180deg); }
+    .myth-body { font-size: .8rem; color: var(--muted); line-height: 1.6; padding: 0 15px; max-height: 0; overflow: hidden; transition: max-height .3s ease, padding .3s; }
+    .myth-card.open .myth-body { max-height: 300px; padding: 0 15px 14px; }
+
+    /* FAQ */
+    .faq-item { background: var(--glass); border: 1px solid var(--glass-b); border-radius: var(--r-sm); overflow: hidden; margin-bottom: 8px; }
+    .faq-q { padding: 13px 15px; font-weight: 700; font-size: .86rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; transition: background .15s; }
+    .faq-q:hover { background: var(--glass-h); }
+    .faq-arrow { color: var(--acc); font-size: .75rem; transition: transform .2s; flex-shrink: 0; }
+    .faq-item.open .faq-arrow { transform: rotate(180deg); }
+    .faq-a { font-size: .8rem; color: var(--muted); line-height: 1.6; padding: 0 15px; max-height: 0; overflow: hidden; transition: max-height .35s ease, padding .3s; }
+    .faq-item.open .faq-a { max-height: 260px; padding: 0 15px 14px; }
+
+    /* TIMING */
+    .timing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media(max-width:460px){ .timing-grid { grid-template-columns: 1fr; } }
+    .timing-card { border-radius: var(--r-sm); padding: 14px; text-align: center; border: 1px solid var(--glass-b); background: var(--glass); }
+    .timing-card.best { border-color: var(--acc); background: rgba(45,212,110,0.08); }
+    .timing-card.good { border-color: var(--amber); background: rgba(245,166,35,0.06); }
+    .timing-lbl { font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 5px; }
+    .timing-card.best .timing-lbl { color: var(--acc); }
+    .timing-card.good .timing-lbl { color: var(--amber); }
+    .timing-card.ok .timing-lbl { color: var(--muted); }
+    .timing-icon { font-size: 1.6rem; margin-bottom: 5px; }
+    .timing-title { font-weight: 800; font-size: .86rem; margin-bottom: 4px; }
+    .timing-body { font-size: .74rem; color: var(--muted); line-height: 1.5; }
+
+    /* DAILY TRACKER */
+    .tracker-row { display: flex; align-items: center; gap: 14px; }
+    .tracker-circle {
+      width: 68px; height: 68px; border-radius: 50%; flex-shrink: 0;
+      border: 3px solid var(--glass-b); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; cursor: pointer;
+      transition: var(--trans); background: var(--glass);
+    }
+    .tracker-circle:hover { border-color: var(--acc); box-shadow: 0 0 14px var(--glow); }
+    .tracker-circle.done { border-color: var(--acc); background: rgba(45,212,110,0.15); box-shadow: 0 0 18px var(--glow); }
+    .tc-icon { font-size: 1.5rem; }
+    .tc-label { font-size: .52rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin-top: 2px; }
+    .tracker-info { flex: 1; }
+    .tracker-title { font-weight: 800; font-size: .96rem; margin-bottom: 4px; }
+    .tracker-sub { font-size: .78rem; color: var(--muted); margin-bottom: 8px; }
+    .streak-row { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+    .streak-dot { width: 13px; height: 13px; border-radius: 50%; background: var(--glass-b); transition: background .3s; }
+    .streak-dot.filled { background: var(--acc); box-shadow: 0 0 5px var(--glow); }
+    .streak-count { font-size: .76rem; color: var(--muted); margin-left: 4px; }
+
+    .log-week { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+    .log-day-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .log-day-dot { width: 30px; height: 30px; border-radius: 7px; background: var(--glass-b); border: 1px solid var(--glass-b); display: flex; align-items: center; justify-content: center; font-size: .72rem; font-weight: 800; transition: var(--trans); }
+    .log-day-dot.taken { background: rgba(45,212,110,0.2); border-color: var(--acc); color: var(--acc); }
+    .log-day-dot.today-dot { border-color: var(--acc); box-shadow: 0 0 8px var(--glow); }
+    .log-day-name { font-size: .58rem; color: var(--muted); text-transform: uppercase; }
+
+    .log-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
+    .log-dose-input { width: 72px; background: var(--glass-b); border: 1px solid var(--glass-b); border-radius: var(--r-sm); color: var(--text); font-size: 1rem; font-weight: 700; padding: 8px 10px; outline: none; transition: var(--trans); font-family: inherit; }
+    .log-dose-input:focus { border-color: var(--acc); }
+    .log-unit-lbl { color: var(--muted); font-size: .84rem; font-weight: 600; }
+
+    .btn { border: none; border-radius: var(--r-sm); padding: 9px 16px; font-weight: 800; font-size: .83rem; cursor: pointer; transition: var(--trans); font-family: inherit; }
+    .btn-primary { background: var(--acc); color: #000; }
+    .btn-primary:hover { background: #3fef80; box-shadow: 0 0 14px var(--glow); }
+    .btn-ghost { background: var(--glass); border: 1px solid var(--glass-b); color: var(--muted); }
+    .btn-ghost:hover { border-color: var(--acc); color: var(--acc); }
+    .btn-danger { background: rgba(255,92,92,0.12); border: 1px solid rgba(255,92,92,0.3); color: var(--red); }
+    .btn-danger:hover { background: rgba(255,92,92,0.22); }
+
+    .highlight-box { background: rgba(45,212,110,0.08); border: 1px solid rgba(45,212,110,0.3); border-radius: var(--r-sm); padding: 13px 15px; margin-top: 10px; font-size: .82rem; line-height: 1.6; }
+    .warn-box { background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.3); border-radius: var(--r-sm); padding: 13px 15px; margin-top: 10px; font-size: .82rem; color: var(--amber); line-height: 1.6; }
+    .safety-list { list-style: none; }
+    .safety-list li { padding: 9px 0; border-bottom: 1px solid var(--glass-b); font-size: .82rem; line-height: 1.5; display: flex; gap: 10px; align-items: flex-start; }
+    .safety-list li:last-child { border-bottom: none; }
+    .s-icon { flex-shrink: 0; }
+
+    .compare-table { width: 100%; border-collapse: collapse; font-size: .8rem; margin-top: 14px; }
+    .compare-table th { background: var(--glass-b); padding: 8px 11px; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); text-align: left; }
+    .compare-table td { padding: 8px 11px; border-bottom: 1px solid rgba(255,255,255,0.04); line-height: 1.4; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .star { color: var(--acc); } .neg { color: var(--amber); } .neutral { color: var(--muted); }
+
+    .log-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+    .log-table th { color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .7px; font-weight: 700; padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--glass-b); }
+    .log-table td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .log-table tr:last-child td { border-bottom: none; }
+    .dose-badge { background: rgba(45,212,110,0.15); color: var(--acc); border-radius: 6px; padding: 2px 8px; font-weight: 700; }
+    .no-log { text-align: center; color: var(--muted); font-size: .82rem; padding: 24px; }
+
+    .pill-list { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+    .pill { background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px; padding: 4px 11px; font-size: .76rem; color: var(--muted); }
+    .pill.green { border-color: rgba(45,212,110,0.4); color: var(--acc); background: rgba(45,212,110,0.08); }
+    .pill.amber { border-color: rgba(245,166,35,0.4); color: var(--amber); background: rgba(245,166,35,0.08); }
+
+    /* MEAL CARDS */
+    .meal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+    .meal-card {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: var(--r-sm);
+      padding: 14px; display: flex; flex-direction: column; gap: 6px;
+      transition: var(--trans);
+    }
+    .meal-card:hover { border-color: var(--acc); box-shadow: 0 0 10px var(--glow); }
+    .meal-header { display: flex; align-items: center; gap: 9px; }
+    .meal-emoji { font-size: 1.6rem; flex-shrink: 0; }
+    .meal-name { font-weight: 800; font-size: .88rem; line-height: 1.2; }
+    .meal-macros { display: flex; gap: 6px; flex-wrap: wrap; }
+    .macro-pill {
+      font-size: .65rem; font-weight: 700; padding: 2px 7px; border-radius: 20px;
+      background: var(--glass-b); color: var(--muted);
+    }
+    .macro-pill.p { background: rgba(45,212,110,0.15); color: var(--acc); }
+    .macro-pill.c { background: rgba(62,207,255,0.12); color: #3ecfff; }
+    .macro-pill.f { background: rgba(245,166,35,0.12); color: var(--amber); }
+    .meal-why { font-size: .74rem; color: var(--muted); line-height: 1.5; }
+    .meal-timing { font-size: .68rem; font-weight: 700; color: var(--acc); text-transform: uppercase; letter-spacing: .6px; }
+
+    .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--acc); color: #000; border-radius: 28px; padding: 10px 22px; font-weight: 800; font-size: .9rem; z-index: 999; transition: transform .35s cubic-bezier(.4,0,.2,1), opacity .35s; opacity: 0; white-space: nowrap; box-shadow: 0 4px 20px var(--glow); }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .section-gap { margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="history.back()">← Back</button>
+  <div class="top-title">💪 Creatine Guide</div>
+  <div class="top-spacer"></div>
+</div>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <span class="hero-emoji">⚡</span>
+    <div class="hero-title">Creatine Monohydrate</div>
+    <div class="hero-sub">The most studied sports supplement on Earth. Here's everything you need to know to start — and succeed.</div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-val">3–5g</div><div class="hero-stat-lbl">Daily Dose</div></div>
+      <div class="hero-stat"><div class="hero-stat-val">500+</div><div class="hero-stat-lbl">Studies</div></div>
+      <div class="hero-stat"><div class="hero-stat-val">~8%</div><div class="hero-stat-lbl">Strength Gain</div></div>
+      <div class="hero-stat"><div class="hero-stat-val">Safe</div><div class="hero-stat-lbl">Well Researched</div></div>
+    </div>
+  </div>
+
+  <!-- DAILY TRACKER -->
+  <div class="card">
+    <div class="card-title">Today's Dose</div>
+    <div class="tracker-row">
+      <div class="tracker-circle" id="todayCircle" onclick="toggleToday()" title="Tap to log today">
+        <div class="tc-icon" id="tcIcon">💊</div>
+        <div class="tc-label" id="tcLabel">Tap</div>
+      </div>
+      <div class="tracker-info">
+        <div class="tracker-title" id="trackerTitle">Log today's creatine</div>
+        <div class="tracker-sub" id="trackerSub">Tap the circle once you've taken your dose</div>
+        <div class="streak-row" id="streakRow"></div>
+      </div>
+    </div>
+    <div class="log-form">
+      <input type="number" class="log-dose-input" id="logDoseInput" value="5" min="1" max="25" step="0.5">
+      <span class="log-unit-lbl">g</span>
+      <button class="btn btn-primary" onclick="logDose()">Log Dose</button>
+      <button class="btn btn-ghost" onclick="clearToday()" id="clearBtn" style="display:none">Clear Today</button>
+    </div>
+    <div class="log-week" id="logWeek"></div>
+  </div>
+
+  <!-- PROTOCOL SELECTOR -->
+  <div class="card section-gap">
+    <div class="card-title">Choose Your Protocol</div>
+    <div class="protocol-grid">
+      <div class="proto-card" id="proto-loading" onclick="selectProtocol('loading')">
+        <div class="proto-icon">🚀</div>
+        <div class="proto-name">Loading Phase</div>
+        <div class="proto-tag">Fastest Results</div>
+        <div class="proto-desc">20g/day for 5–7 days, then 3–5g/day. Saturates muscles in ~1 week.</div>
+      </div>
+      <div class="proto-card active" id="proto-gradual" onclick="selectProtocol('gradual')">
+        <div class="proto-icon">🌱</div>
+        <div class="proto-name">Gradual (No-Load)</div>
+        <div class="proto-tag">Recommended</div>
+        <div class="proto-desc">3–5g/day from day one. Saturates in 3–4 weeks. Fewer side effects.</div>
+      </div>
+      <div class="proto-card" id="proto-maintenance" onclick="selectProtocol('maintenance')">
+        <div class="proto-icon">🔄</div>
+        <div class="proto-name">Maintenance Only</div>
+        <div class="proto-tag">Already Loaded</div>
+        <div class="proto-desc">3–5g/day ongoing. For those already using creatine consistently.</div>
+      </div>
+    </div>
+
+    <div id="protoTimeline"></div>
+
+    <div class="sat-bar-wrap">
+      <div class="sat-bar-labels"><span>Day 1</span><span id="satLabel">Week 4 (full)</span></div>
+      <div class="sat-bar-track"><div class="sat-bar-fill" id="satBar" style="width:0%"></div></div>
+      <div class="sat-note" id="satNote"></div>
+    </div>
+
+    <table class="compare-table">
+      <thead><tr><th>Protocol</th><th>Saturates In</th><th>Daily Dose</th><th>GI Risk</th><th>Cost/Week</th></tr></thead>
+      <tbody>
+        <tr><td>Loading</td><td><span class="star">5–7 days</span></td><td>20g → 5g</td><td><span class="neg">Moderate</span></td><td><span class="neg">~$2.50</span></td></tr>
+        <tr><td>Gradual</td><td><span class="neutral">3–4 weeks</span></td><td>5g</td><td><span class="star">Low</span></td><td><span class="star">~$0.75</span></td></tr>
+        <tr><td>Maintenance</td><td><span class="neutral">Already full</span></td><td>3–5g</td><td><span class="star">Very Low</span></td><td><span class="star">~$0.60</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- DOSAGE CALCULATOR -->
+  <div class="card section-gap">
+    <div class="card-title">Dosage Calculator</div>
+    <div class="calc-row">
+      <div class="calc-field">
+        <div class="calc-label">Body Weight</div>
+        <input type="number" class="calc-input" id="weightInput" placeholder="70" oninput="calcDose()">
+      </div>
+      <div class="calc-field" style="max-width:110px">
+        <div class="calc-label">Unit</div>
+        <div class="unit-toggle">
+          <button class="unit-btn active" id="btnKg" onclick="setUnit('kg')">kg</button>
+          <button class="unit-btn" id="btnLbs" onclick="setUnit('lbs')">lbs</button>
+        </div>
+      </div>
+    </div>
+    <div class="calc-results">
+      <div class="crb"><div class="crb-val" id="crb-maint">—</div><div class="crb-unit">g/day</div><div class="crb-lbl">Maintenance</div></div>
+      <div class="crb hi"><div class="crb-val" id="crb-load">—</div><div class="crb-unit">g/day</div><div class="crb-lbl">Loading Dose</div></div>
+      <div class="crb"><div class="crb-val" id="crb-per">—</div><div class="crb-unit">g</div><div class="crb-lbl">Per Serving (load)</div></div>
+      <div class="crb"><div class="crb-val" id="crb-water">—</div><div class="crb-unit">L/day</div><div class="crb-lbl">Min. Water</div></div>
+    </div>
+    <div class="calc-note" id="calcNote">Enter your body weight above for a personalized dose recommendation.</div>
+  </div>
+
+  <!-- INFO TABS -->
+  <div class="card section-gap">
+    <div class="card-title">Learn More</div>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('benefits',this)">💪 Benefits</button>
+      <button class="tab-btn" onclick="switchTab('timing',this)">⏰ Timing</button>
+      <button class="tab-btn" onclick="switchTab('myths',this)">🚫 Myths</button>
+      <button class="tab-btn" onclick="switchTab('safety',this)">🛡️ Safety</button>
+      <button class="tab-btn" onclick="switchTab('types',this)">🧪 Types</button>
+      <button class="tab-btn" onclick="switchTab('faq',this)">❓ FAQ</button>
+    </div>
+
+    <!-- BENEFITS -->
+    <div class="tab-panel active" id="tab-benefits">
+      <div class="info-grid">
+        <div class="info-item"><div class="info-icon">💪</div><div><div class="info-head">Increases Strength & Power Output</div><div class="info-body">Creatine replenishes ATP (your muscles' energy currency) faster during high-intensity efforts. This translates directly to more reps, heavier lifts, and greater peak power — especially during short, intense bursts like sprints and heavy sets.</div></div></div>
+        <div class="info-item"><div class="info-icon">📈</div><div><div class="info-head">More Muscle Mass Over Time</div><div class="info-body">By enabling more training volume and intensity, creatine indirectly drives greater hypertrophy. Studies consistently show 1–2 kg more lean mass gained over 4–12 weeks compared to placebo groups doing the same program.</div></div></div>
+        <div class="info-item"><div class="info-icon">⚡</div><div><div class="info-head">Faster Recovery Between Sets</div><div class="info-body">Higher phosphocreatine stores mean faster ATP resynthesis between sets. You'll feel fresher on later sets, which compounds into significantly greater total volume over the course of a session.</div></div></div>
+        <div class="info-item"><div class="info-icon">🧠</div><div><div class="info-head">Cognitive Benefits</div><div class="info-body">The brain uses creatine too. Research shows improvements in working memory, processing speed, and mental fatigue resistance — especially noticeable under sleep deprivation or high cognitive stress.</div></div></div>
+        <div class="info-item"><div class="info-icon">🏃</div><div><div class="info-head">Improved High-Intensity Performance</div><div class="info-body">Effective for any sport involving repeated short bursts: sprinting, football, basketball, martial arts, rowing, swimming, climbing. Less impactful for pure endurance (marathons, long-distance cycling).</div></div></div>
+        <div class="info-item"><div class="info-icon">🦴</div><div><div class="info-head">Bone Health & Aging</div><div class="info-body">Emerging research suggests creatine may support bone density and help preserve muscle mass during aging, making it valuable for older adults — not just athletes.</div></div></div>
+      </div>
+      <div class="highlight-box"><strong style="color:var(--acc)">Bottom line:</strong> Creatine has some of the most consistent, replicated evidence in all of sports science. The effect sizes are real and clinically meaningful — not marginal.</div>
+    </div>
+
+    <!-- TIMING -->
+    <div class="tab-panel" id="tab-timing">
+      <div class="timing-grid">
+        <div class="timing-card best"><div class="timing-lbl">Best</div><div class="timing-icon">🏋️</div><div class="timing-title">Post-Workout</div><div class="timing-body">Muscles are primed for uptake. Insulin from carbs/protein helps creatine enter cells faster. Mix into your post-workout shake.</div></div>
+        <div class="timing-card good"><div class="timing-lbl">Good</div><div class="timing-icon">⚡</div><div class="timing-title">Pre-Workout</div><div class="timing-body">Works well. The dose you take pre-workout won't fuel today's session directly — but daily consistency is what drives saturation.</div></div>
+        <div class="timing-card ok"><div class="timing-lbl">Also Fine</div><div class="timing-icon">🌅</div><div class="timing-title">With Breakfast</div><div class="timing-body">Convenient and easy to remember. Any time you'll take it consistently beats the "perfect" time you'll skip.</div></div>
+        <div class="timing-card ok"><div class="timing-lbl">Required</div><div class="timing-icon">🌙</div><div class="timing-title">Rest Days Too</div><div class="timing-body">Still take it on rest days. The body uses creatine daily — skipping days causes gradual de-saturation.</div></div>
+      </div>
+      <div class="highlight-box"><strong style="color:var(--acc)">Key insight:</strong> Timing is a minor variable. <strong>Daily consistency is everything.</strong> Post-workout is slightly optimal, but the difference vs. other times is small.</div>
+      <div style="margin-top:16px">
+        <div class="card-title" style="margin-bottom:8px">What to Mix With</div>
+        <div class="pill-list">
+          <div class="pill green">✓ Water</div>
+          <div class="pill green">✓ Protein shake</div>
+          <div class="pill green">✓ Fruit juice (adds carbs)</div>
+          <div class="pill green">✓ Warm water (dissolves better)</div>
+          <div class="pill amber">⚠ Coffee (may slightly blunt uptake)</div>
+          <div class="pill">Milk</div>
+          <div class="pill">Smoothie</div>
+        </div>
+        <div class="info-body" style="margin-top:10px">Creatine is nearly tasteless and slightly chalky. It doesn't fully dissolve in cold water — shake well. Avoid boiling hot liquids as heat can degrade it.</div>
+      </div>
+
+      <div style="margin-top:18px">
+        <div class="card-title" style="margin-bottom:12px">🍽️ Meals That Maximize Creatine Uptake</div>
+        <div class="info-body" style="margin-bottom:14px">Insulin is the key — it helps shuttle creatine into muscle cells. Pairing creatine with <strong style="color:var(--text)">carbs + protein</strong> can increase muscle uptake by up to 25–40% compared to taking it alone. You don't need a massive meal — a moderate carb/protein combo is enough.</div>
+        <div class="meal-grid" id="mealGrid"></div>
+        <button id="mealToggleBtn" class="btn btn-ghost" onclick="toggleMeals()" style="width:100%;margin-top:10px">▼ Show 6 More</button>
+        <div class="warn-box" style="margin-top:12px">⏱️ <strong>Timing tip:</strong> Eat the meal first, then take your creatine within 30–60 minutes while insulin is elevated — or simply mix it directly into a carb + protein drink.</div>
+      </div>
+    </div>
+
+    <!-- MYTHS -->
+    <div class="tab-panel" id="tab-myths"><div id="mythList"></div></div>
+
+    <!-- SAFETY -->
+    <div class="tab-panel" id="tab-safety">
+      <ul class="safety-list">
+        <li><span class="s-icon">✅</span><div><strong>Most studied supplement in sports science</strong><br><span style="color:var(--muted)">Over 500 peer-reviewed studies. No long-term harm found in healthy individuals at standard doses.</span></div></li>
+        <li><span class="s-icon">✅</span><div><strong>Safe for kidneys in healthy people</strong><br><span style="color:var(--muted)">Creatine raises creatinine levels in bloodwork (a normal byproduct) — sometimes misread as kidney stress. It does NOT damage kidneys in people without pre-existing kidney disease.</span></div></li>
+        <li><span class="s-icon">✅</span><div><strong>No need to cycle</strong><br><span style="color:var(--muted)">No evidence that cycling creatine (taking breaks) provides any benefit. Continuous use is safe and effective.</span></div></li>
+        <li><span class="s-icon">⚠️</span><div><strong>Consult your doctor if you have kidney disease</strong><br><span style="color:var(--muted)">If you have pre-existing kidney problems or a family history of renal disease, get medical clearance before starting.</span></div></li>
+        <li><span class="s-icon">⚠️</span><div><strong>Loading phase may cause GI discomfort</strong><br><span style="color:var(--muted)">20g/day during loading can cause bloating or loose stools in some. Split into 4–5 smaller doses across the day to reduce this risk.</span></div></li>
+        <li><span class="s-icon">⚠️</span><div><strong>Water weight gain is normal and expected</strong><br><span style="color:var(--muted)">Creatine draws water into muscle cells. Expect 0.5–2 kg of scale increase in the first 1–2 weeks. This is not fat — it's intramuscular fluid that makes muscles look fuller.</span></div></li>
+        <li><span class="s-icon">❌</span><div><strong>Not recommended during pregnancy</strong><br><span style="color:var(--muted)">Insufficient safety data during pregnancy and breastfeeding. Avoid supplementation.</span></div></li>
+        <li><span class="s-icon">💧</span><div><strong>Stay well hydrated</strong><br><span style="color:var(--muted)">Because creatine pulls water into muscles, aim for at least 2–3L of water per day while supplementing.</span></div></li>
+      </ul>
+      <div class="warn-box">⚠️ <strong>Quality matters:</strong> Buy from brands with third-party testing (NSF, Informed Sport, Labdoor). Pure creatine monohydrate powder is the cheapest and most effective form — avoid expensive "creatine blends."</div>
+    </div>
+
+    <!-- TYPES -->
+    <div class="tab-panel" id="tab-types">
+      <div class="info-grid">
+        <div class="info-item"><div class="info-icon">🏆</div><div><div class="info-head">Creatine Monohydrate — The Gold Standard</div><div class="info-body">The original and still the best. Most studied, cheapest, and equally effective as any other form. All the landmark research is based on this. Stick with it.</div></div></div>
+        <div class="info-item"><div class="info-icon">💊</div><div><div class="info-head">Micronized Creatine Monohydrate</div><div class="info-body">Same compound, ground into finer particles. Dissolves better in water and may cause slightly less GI discomfort. Good choice if you have stomach sensitivity. Equally effective.</div></div></div>
+        <div class="info-item"><div class="info-icon">🧪</div><div><div class="info-head">Creatine HCL</div><div class="info-body">Highly soluble and gentle on the stomach. Marketed as needing a lower dose (1–2g), but evidence doesn't show it outperforms monohydrate. Significantly more expensive per serving.</div></div></div>
+        <div class="info-item"><div class="info-icon">⚗️</div><div><div class="info-head">Creatine Ethyl Ester (CEE)</div><div class="info-body">Popular in the early 2000s. Claims of superior absorption were never proven — studies found it actually converts to creatinine (waste) faster than monohydrate. Not recommended.</div></div></div>
+        <div class="info-item"><div class="info-icon">🔬</div><div><div class="info-head">Buffered Creatine (Kre-Alkalyn)</div><div class="info-body">Marketed as more stomach-stable. Head-to-head studies show no performance difference vs. monohydrate. Significantly more expensive with no proven upside.</div></div></div>
+      </div>
+      <div class="highlight-box"><strong style="color:var(--acc)">Verdict:</strong> Creatine monohydrate (or micronized if you have GI sensitivity). All other forms are marketing, not better science.</div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="tab-panel" id="tab-faq"><div id="faqList"></div></div>
+  </div>
+
+  <!-- LOG HISTORY -->
+  <div class="card section-gap">
+    <div class="card-title">Intake Log</div>
+    <div id="logHistory"></div>
+    <button class="btn btn-danger" style="margin-top:14px;font-size:.76rem" onclick="clearAllLog()">Clear All Log Data</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = 'doh_creatine_log';
+function getLog() { try { return JSON.parse(localStorage.getItem(KEY)||'[]'); } catch(e){ return []; } }
+function saveLog(a) { localStorage.setItem(KEY, JSON.stringify(a)); }
+function todayStr() { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+let toastTimer;
+function showToast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+function hasTodayEntry() { return getLog().some(e=>e.date===todayStr()); }
+
+function renderTracker() {
+  const done=hasTodayEntry();
+  document.getElementById('todayCircle').classList.toggle('done',done);
+  document.getElementById('tcIcon').textContent=done?'✅':'💊';
+  document.getElementById('tcLabel').textContent=done?'Done!':'Tap';
+  document.getElementById('trackerTitle').textContent=done?'Creatine taken today!':'Log today\'s creatine';
+  const entry=getLog().find(e=>e.date===todayStr());
+  document.getElementById('trackerSub').textContent=done?(entry?.dose+'g logged'):'Tap the circle or use the form below';
+  document.getElementById('clearBtn').style.display=done?'':'none';
+  renderStreak(); renderWeekDots(); renderHistory();
+}
+
+function toggleToday() {
+  if(hasTodayEntry()) return;
+  logEntry(parseFloat(document.getElementById('logDoseInput').value)||5);
+}
+function logDose() {
+  const dose=parseFloat(document.getElementById('logDoseInput').value)||5;
+  if(hasTodayEntry()) {
+    const log=getLog(); const idx=log.findIndex(e=>e.date===todayStr());
+    if(idx!==-1){ log[idx].dose=dose; saveLog(log); } showToast('Updated: '+dose+'g');
+  } else { logEntry(dose); }
+  renderTracker();
+}
+function logEntry(dose) {
+  const log=getLog(); log.unshift({date:todayStr(),dose});
+  if(log.length>90) log.length=90; saveLog(log); showToast('Logged '+dose+'g ✓'); renderTracker();
+}
+function clearToday() { saveLog(getLog().filter(e=>e.date!==todayStr())); renderTracker(); showToast('Cleared today'); }
+function clearAllLog() { if(!confirm('Clear all creatine log data?')) return; saveLog([]); renderTracker(); showToast('Log cleared'); }
+
+function renderStreak() {
+  const dates=new Set(getLog().map(e=>e.date));
+  let streak=0, d=new Date();
+  while(true){ const s=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); if(dates.has(s)){streak++;d.setDate(d.getDate()-1);}else break; }
+  document.getElementById('streakRow').innerHTML=Array.from({length:14},(_,i)=>`<div class="streak-dot${i<streak?' filled':''}"></div>`).join('')+`<span class="streak-count">${streak} day streak</span>`;
+}
+
+function renderWeekDots() {
+  const dates=new Set(getLog().map(e=>e.date)); const today=new Date(); const days=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  document.getElementById('logWeek').innerHTML=Array.from({length:14},(_,i)=>{
+    const d=new Date(today); d.setDate(today.getDate()-(13-i));
+    const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    const isToday=ds===todayStr(); const taken=dates.has(ds);
+    return `<div class="log-day-cell"><div class="log-day-dot${taken?' taken':''}${isToday?' today-dot':''}">${taken?'✓':d.getDate()}</div><div class="log-day-name">${days[d.getDay()]}</div></div>`;
+  }).join('');
+}
+
+function renderHistory() {
+  const log=getLog().slice(0,30);
+  document.getElementById('logHistory').innerHTML=log.length
+    ?`<table class="log-table"><thead><tr><th>Date</th><th>Dose</th></tr></thead><tbody>${log.map(e=>`<tr><td>${formatDate(e.date)}${e.date===todayStr()?' <span style="color:var(--acc);font-size:.7rem">(today)</span>':''}</td><td><span class="dose-badge">${e.dose}g</span></td></tr>`).join('')}</tbody></table>`
+    :'<div class="no-log">No entries yet — log your first dose above.</div>';
+}
+
+function formatDate(s) {
+  const [y,m,d]=s.split('-'); const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[parseInt(m)-1]+' '+parseInt(d)+', '+y;
+}
+
+// PROTOCOLS
+const PROTOCOLS = {
+  loading:{
+    tl:[
+      {day:'Days 1–7',text:'Loading Phase: 20g/day split into 4 × 5g doses',sub:'Take with food to reduce GI discomfort. Space doses ~4–5 hours apart.',bright:true},
+      {day:'Day 8 onward',text:'Maintenance Phase: 3–5g/day — muscles now fully saturated',sub:'Continue daily to maintain creatine levels.',bright:true},
+      {day:'Ongoing',text:'Take every day including rest days',sub:'Skipping days gradually reduces muscle creatine stores.',bright:false},
+    ],
+    pct:100, label:'~1 week (full)', note:"Loading rapidly saturates muscle creatine in 5–7 days. You'll notice strength changes in the second week."
+  },
+  gradual:{
+    tl:[
+      {day:'Week 1–2',text:'3–5g/day — stores building up slowly (~40–60% saturated)',sub:'Minimal noticeable change yet. Keep going.',bright:false},
+      {day:'Week 2–3',text:'~75–85% saturation — pump and recovery may improve',sub:'You might start noticing a difference. Stay consistent.',bright:true},
+      {day:'Week 3–4',text:'Full saturation (~100%) — same end-state as loading',sub:'Performance benefits are now fully active.',bright:true},
+      {day:'Ongoing',text:'3–5g/day maintenance forever',sub:'Daily consistency is what matters.',bright:false},
+    ],
+    pct:75, label:'~3–4 weeks (full)', note:'Gradual dosing reaches the same saturation as loading — just takes 3–4x longer. Fewer side effects, lower cost.'
+  },
+  maintenance:{
+    tl:[
+      {day:'Day 1+',text:'3–5g/day — maintaining existing creatine stores',sub:"Ideal if you've already loaded or been taking creatine for 3+ weeks.",bright:true},
+      {day:'Every day',text:'Same dose daily, including rest days',sub:'Your body uses a small amount daily — replace it with your dose.',bright:true},
+      {day:'Long-term',text:'No need to cycle. Take indefinitely.',sub:'Continuous use is safe and effective.',bright:false},
+    ],
+    pct:50, label:'Already saturated', note:"If you're in maintenance mode, your stores are presumably already full. 3–5g/day simply replaces what your body uses daily."
+  }
+};
+
+function selectProtocol(key) {
+  ['loading','gradual','maintenance'].forEach(k=>document.getElementById('proto-'+k).classList.toggle('active',k===key));
+  const p=PROTOCOLS[key];
+  document.getElementById('protoTimeline').innerHTML=`<div class="timeline">${p.tl.map(item=>`<div class="tl-item"><div class="tl-dot${item.bright?'':' dim'}"></div><div class="tl-day">${item.day}</div><div class="tl-text">${item.text}</div><div class="tl-sub">${item.sub}</div></div>`).join('')}</div>`;
+  const bar=document.getElementById('satBar'); bar.style.width='0%'; setTimeout(()=>bar.style.width=p.pct+'%',50);
+  document.getElementById('satLabel').textContent=p.label;
+  document.getElementById('satNote').textContent=p.note;
+}
+selectProtocol('gradual');
+
+// CALCULATOR
+let unit='kg';
+function setUnit(u){ unit=u; document.getElementById('btnKg').classList.toggle('active',u==='kg'); document.getElementById('btnLbs').classList.toggle('active',u==='lbs'); calcDose(); }
+function calcDose() {
+  const raw=parseFloat(document.getElementById('weightInput').value);
+  if(!raw||raw<=0){ ['crb-maint','crb-load','crb-per','crb-water'].forEach(id=>document.getElementById(id).textContent='—'); document.getElementById('calcNote').textContent='Enter your body weight above for a personalized dose recommendation.'; return; }
+  const kg=unit==='kg'?raw:raw*0.4536;
+  const maint=Math.min(Math.max(Math.round(kg*0.1*10)/10,3),5);
+  const loading=Math.round(kg*0.3*10)/10;
+  const perDose=Math.round(loading/4*10)/10;
+  const water=Math.round((2+kg*0.02)*10)/10;
+  document.getElementById('crb-maint').textContent=maint;
+  document.getElementById('crb-load').textContent=loading;
+  document.getElementById('crb-per').textContent=perDose;
+  document.getElementById('crb-water').textContent=water;
+  document.getElementById('logDoseInput').value=maint;
+  document.getElementById('calcNote').textContent=`For a ${Math.round(kg)}kg person: take ${maint}g/day for maintenance, or ${loading}g/day (${perDose}g × 4 doses) during a loading week. Drink at least ${water}L of water daily.`;
+}
+
+// TABS
+function switchTab(id,btn){ document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active')); btn.classList.add('active'); document.getElementById('tab-'+id).classList.add('active'); }
+
+// MYTHS
+const MYTHS=[
+  {badge:'false',claim:'Creatine damages your kidneys',body:'The most persistent myth. Creatine raises serum creatinine in bloodwork (a normal byproduct of creatine metabolism) — sometimes misread as kidney damage. Multiple long-term studies confirm no kidney harm in healthy adults at standard doses.'},
+  {badge:'false',claim:'Creatine is a steroid',body:'Completely false. Creatine is a naturally occurring compound found in red meat and fish. Your body produces it from amino acids in the liver and kidneys. It has no hormonal effects and is nothing like anabolic steroids.'},
+  {badge:'false',claim:'You need to cycle creatine on and off',body:"No evidence supports this. Unlike steroids, there's no receptor downregulation or hormonal feedback loop. Continuous use is safe and effective. The cycling advice is a holdover from confusion with other substances."},
+  {badge:'partial',claim:'Creatine causes hair loss',body:'Comes from one small 2009 study that found creatine loading increased DHT levels by ~50%. This study was small, never replicated, and didn\'t directly measure hair loss. If you\'re genetically predisposed to male-pattern baldness, a cautious approach is reasonable — but current evidence is weak.'},
+  {badge:'false',claim:'Creatine causes bloating and fat gain',body:'Water retention from loading phase is real but temporary — it\'s intramuscular (inside muscles), not belly bloat. It goes away. As for fat: creatine has zero calories and zero hormonal effects. Any fat gain comes from eating more due to training harder, not from creatine itself.'},
+  {badge:'false',claim:'Creatine only works for bodybuilders',body:'False. Creatine benefits anyone doing high-intensity repeated-effort exercise: sprinters, swimmers, team sport athletes, martial artists, rowers, climbers. It also has cognitive benefits independent of physical training.'},
+  {badge:'true',claim:'You should drink more water on creatine',body:'True. Creatine draws water into muscle cells, pulling it from circulation. Staying well hydrated (2–3L+ per day) helps prevent cramping and supports optimal creatine uptake.'},
+  {badge:'false',claim:'Creatine must be refrigerated and expires quickly',body:'False. Creatine monohydrate powder is very stable at room temperature. Store it in a dry, cool place away from sunlight. A sealed tub can last 2–3 years without meaningful degradation.'},
+];
+document.getElementById('mythList').innerHTML=MYTHS.map((m,i)=>`<div class="myth-card" id="myth-${i}"><div class="myth-header" onclick="document.getElementById('myth-${i}').classList.toggle('open')"><span class="myth-badge badge-${m.badge}">${m.badge==='false'?'Myth':m.badge==='true'?'True':'Partial'}</span><span class="myth-claim">${m.claim}</span><span class="myth-arrow">▼</span></div><div class="myth-body">${m.body}</div></div>`).join('');
+
+// FAQ
+const FAQS=[
+  {q:'How long until I see results?',a:'With loading: improved pump and performance by week 2. With gradual dosing: 3–4 weeks for full saturation. Strength gains typically become measurable after 4–6 weeks of consistent training + creatine.'},
+  {q:'Should I take creatine on rest days?',a:'Yes. Take your normal 3–5g dose even on days you don\'t train. Maintaining daily saturation is what matters — not just taking it around workouts.'},
+  {q:'What brand should I buy?',a:'Look for Creapure-certified or third-party tested pure creatine monohydrate. Brands like Thorne, Klean Athlete, or any NSF/Informed Sport certified product. Avoid fancy "creatine blends" — you\'re just paying for fillers.'},
+  {q:'Can I take creatine with caffeine / pre-workout?',a:'Yes, generally fine. An older study suggested caffeine may blunt creatine\'s effect, but more recent research doesn\'t confirm this. Most people take both without issue.'},
+  {q:'Will creatine help me lose weight?',a:'Not directly. It enables harder training, which can help fat loss. However, expect 0.5–2kg of scale weight gain in the first 1–2 weeks from water retention. This is not fat — it\'s intramuscular fluid.'},
+  {q:'What if I miss a day?',a:"Don't stress. One missed day won't meaningfully reduce muscle creatine stores. Just resume your normal dose the next day. No need to double up."},
+  {q:'Is creatine safe for teenagers?',a:'The ISSN (International Society of Sports Nutrition) considers it safe for adolescents involved in serious athletic training at appropriate doses. Consult a doctor or sports dietitian first.'},
+  {q:'Can women take creatine?',a:'Absolutely. Women benefit similarly to men — improved strength, muscle mass, and potentially greater cognitive benefits. Dosing is the same.'},
+  {q:'How much does creatine cost?',a:'Creatine monohydrate is extremely affordable — roughly $15–25 for 500g (a 3–4 month supply at 5g/day). Roughly $0.10–$0.20 per day.'},
+  {q:'Do I need to take it with food?',a:'Not required, but taking it with a meal (especially with carbs and protein) can improve uptake due to the insulin response. During loading, food also reduces GI discomfort.'},
+];
+document.getElementById('faqList').innerHTML=FAQS.map((f,i)=>`<div class="faq-item" id="faq-${i}"><div class="faq-q" onclick="document.getElementById('faq-${i}').classList.toggle('open')"><span>${f.q}</span><span class="faq-arrow">▼</span></div><div class="faq-a">${f.a}</div></div>`).join('');
+
+// MEALS
+const MEALS = [
+  { emoji:'🍚', name:'Rice + Chicken + Banana', id:'rice-chicken-banana', timing:'Post-workout classic', protein:'~40g', carbs:'~70g', fat:'~6g', why:'High glycemic carbs from rice and banana spike insulin fast. Chicken provides fast-digesting protein. One of the best creatine windows you can create.' },
+  { emoji:'🥣', name:'Oatmeal + Banana + Protein Powder', id:'oatmeal-banana-protein', timing:'Morning or pre-workout', protein:'~35g', carbs:'~65g', fat:'~8g', why:'Slow + fast carbs blended together. The banana boosts insulin while oats sustain energy. Mix your creatine right into the bowl.' },
+  { emoji:'🥛', name:'Protein Shake + Milk + Banana', id:'protein-shake-milk-banana', timing:'Quick post-workout', protein:'~35g', carbs:'~45g', fat:'~5g', why:'Fastest option. Lactose in milk and sugars in banana spike insulin. Blend your creatine right in — nearly undetectable.' },
+  { emoji:'🍠', name:'Sweet Potato + Eggs + Turkey', id:'sweet-potato-eggs-turkey', timing:'Breakfast or post-workout', protein:'~30g', carbs:'~50g', fat:'~10g', why:'Sweet potato raises insulin steadily. Eggs and turkey provide complete protein with all essential amino acids. Great whole-food option.' },
+  { emoji:'🍝', name:'Pasta + Lean Meat Sauce', id:'pasta-meat-sauce', timing:'Pre-workout (2 hrs before)', protein:'~35g', carbs:'~80g', fat:'~10g', why:'High-carb meal that fills glycogen stores and provides a lasting insulin response. Best 2+ hours before training so you\'re not heavy during the session.' },
+  { emoji:'🍞', name:'Toast + Peanut Butter + Honey + Shake', id:'toast-pb-honey-shake', timing:'Morning or pre-workout', protein:'~30g', carbs:'~55g', fat:'~14g', why:'Honey is fast-acting glucose — great for a quick insulin spike. Peanut butter adds healthy fat and protein. Easy to mix creatine into the shake.' },
+  { emoji:'🫐', name:'Greek Yogurt + Berries + Granola + Honey', id:'greek-yogurt-berries', timing:'Morning or snack', protein:'~20g', carbs:'~45g', fat:'~6g', why:'Greek yogurt provides leucine-rich protein that potently stimulates muscle protein synthesis. Berries and honey create the insulin response. Stir creatine right in.' },
+  { emoji:'🌯', name:'Chicken & Rice Burrito Bowl', id:'burrito-bowl', timing:'Lunch or post-workout', protein:'~45g', carbs:'~75g', fat:'~12g', why:'Complete meal with high protein and high carbs. Rice is the insulin trigger, chicken covers protein. Add creatine to a side drink.' },
+  { emoji:'🥞', name:'Pancakes + Maple Syrup + Eggs', id:'pancakes-eggs', timing:'Morning or post-workout', protein:'~25g', carbs:'~70g', fat:'~12g', why:'Maple syrup is high glycemic index and triggers a solid insulin spike. Eggs add protein. A surprisingly effective combo for creatine uptake.' },
+  { emoji:'🍌', name:'Banana + Peanut Butter + Whey Shake', id:'banana-pb-shake', timing:'Quick snack or post-workout', protein:'~30g', carbs:'~40g', fat:'~10g', why:'Simple and portable. Banana provides fast carbs, whey is the fastest-digesting protein. Together they hit both the carb and protein insulin triggers.' },
+  { emoji:'🥩', name:'Steak + White Rice + Orange Juice', id:'steak-rice-oj', timing:'Post-workout or dinner', protein:'~42g', carbs:'~60g', fat:'~14g', why:'OJ provides fast-acting fructose and glucose. White rice is quickly digested. Steak delivers a full amino acid profile plus creatine naturally found in red meat.' },
+  { emoji:'🫙', name:'Cottage Cheese + Pineapple + Honey', id:'cottage-cheese-pineapple', timing:'Morning or snack', protein:'~25g', carbs:'~38g', fat:'~4g', why:'Cottage cheese is high in casein and leucine. Pineapple and honey provide fast carbs for the insulin response. Light, low-fat, and easy to eat any time.' },
+];
+
+let mealsExpanded = false;
+function renderMeals() {
+  const mealGrid = document.getElementById('mealGrid');
+  if (!mealGrid) return;
+  const visible = mealsExpanded ? MEALS : MEALS.slice(0, 6);
+  mealGrid.innerHTML = visible.map(m => `
+    <div class="meal-card" onclick="window.location.href='meals.html#${m.id}'" style="cursor:pointer" title="View full recipe →">
+      <div class="meal-header"><span class="meal-emoji">${m.emoji}</span><span class="meal-name">${m.name}</span></div>
+      <div class="meal-macros">
+        <span class="macro-pill p">protein ${m.protein}</span>
+        <span class="macro-pill c">carbs ${m.carbs}</span>
+        <span class="macro-pill f">fat ${m.fat}</span>
+      </div>
+      <div class="meal-why">${m.why}</div>
+      <div class="meal-timing">⏰ ${m.timing} &nbsp;·&nbsp; <span style="color:var(--acc)">View recipe →</span></div>
+    </div>`).join('');
+  document.getElementById('mealToggleBtn').textContent = mealsExpanded ? '▲ Show Less' : '▼ Show 6 More';
+}
+function toggleMeals() { mealsExpanded = !mealsExpanded; renderMeals(); }
+renderMeals();
+
+renderTracker();
+</script>
+</body>
+</html>

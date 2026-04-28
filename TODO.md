@@ -1,6 +1,8 @@
 # Daily Optimal Health — TODO
 
 ## Version History
+- **v1.3** — Creatine Guide (`creatine.html`) + Meal Recipes (`meals.html`) — hub cards, dosage calc, recipe browser
+- **v1.2** — Breathing Timer (`breathing-timer.html`) — patterns, lung SVG shape, ripple rings, XP, history
 - **v1.1** — Blog Feed page, editor/feed context handoff, toolbar active states, list backspace fix, unlink on clear fmt
 - **v1.0** — Blog tool, streak milestones, snowflake freeze animation, toast overhaul, dohDebug helper
 - **v0.9** — Body map granular segments (upper/lower torso, arm, leg, knees), strength/cardio/mobility workout tabs on drill-down pages
@@ -44,6 +46,9 @@
 - [x] Toast overhaul — slide-in animation, ack toast with "Got it" button
 - [x] `checkAllDone()` — celebration toast when all tasks checked
 - [x] `dohDebug` console helper on hub + schedule pages
+- [x] Breathing Timer (`breathing-timer.html`) — 6 patterns, rounds, lung/circle/triangle/square shapes, ripple rings, session history, XP
+- [x] Creatine Guide (`creatine.html`) — protocols, dosage calculator, myths, safety, daily logging
+- [x] Meal Recipes (`meals.html`) — recipe browser
 - [x] Blog Feed page (`blog-reader.html`) — card grid, filters, search, reader overlay
 - [x] Editor ↔ Feed context handoff — swap buttons preserve active post
 - [x] Blog toolbar active states (B/I/U/S highlight when format is on)
