@@ -310,6 +310,7 @@
 
   function getActiveId() { return localStorage.getItem('doh_active_profile') || null; }
   function store()       { return getActiveId() ? localStorage : sessionStorage; }
+  function pfx()         { var id = getActiveId(); return id ? 'doh_' + id + '_' : 'doh_guest_'; }
 
   var EMOJIS = ['💧','🏃','🧘','📚','😴','🥗','💊','🧴','🚶','☀️','📝','🎯','🛁','🧠','💪','🌿'];
   var selectedEmoji = EMOJIS[0];
