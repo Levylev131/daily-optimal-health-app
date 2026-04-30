@@ -1,6 +1,7 @@
 # Daily Optimal Health — TODO
 
 ## Version History
+- **v1.4** — 3 independent hub widgets — each configurable, S/M/L sizes, 3-column row layout (3×S or M+S fits one row), arrange/hide per widget
 - **v1.3** — Creatine Guide (`creatine.html`) + Meal Recipes (`meals.html`) — hub cards, dosage calc, recipe browser
 - **v1.2** — Breathing Timer (`breathing-timer.html`) — patterns, lung SVG shape, ripple rings, XP, history
 - **v1.1** — Blog Feed page, editor/feed context handoff, toolbar active states, list backspace fix, unlink on clear fmt
@@ -55,6 +56,7 @@
 - [x] ¶ button unwraps blockquotes and inline code
 - [x] Backspace at list item start strips bullet, stays on same line
 - [x] Clear formatting also unlinks links
+- [x] 3 independent hub widgets (`__widget1/2/3`) — each has its own type (water/habits/sleep/supplements) and size (S/M/L), rendered in a 3-column `.hub-widget-row` so 3×small or medium+small share one row
 
 ## In Progress
 <!-- Add what you're currently working on -->

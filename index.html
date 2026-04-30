@@ -26,6 +26,133 @@
   <div id="modal-wrap"></div>
 
 <script>
+// ─── HUB ARRANGE ─────────────────────────────────────────────────────────────
+let hubArrangeMode = false;
+let _dragSrcId = null;
+
+function getHubHidden() {
+  try { return JSON.parse(localStorage.getItem('doh_hub_hidden')||'[]'); } catch(e) { return []; }
+}
+function toggleCardHidden(id) {
+  const h=getHubHidden(), idx=h.indexOf(id);
+  if(idx===-1) h.push(id); else h.splice(idx,1);
+  localStorage.setItem('doh_hub_hidden', JSON.stringify(h));
+  renderHub();
+}
+
+function getHubGroups() {
+  try { return JSON.parse(localStorage.getItem('doh_hub_groups')||'[]'); } catch(e) { return []; }
+}
+function addHubGroup() {
+  const id='__grp_'+Date.now();
+  const groups=getHubGroups(); groups.push({id,name:'New Group'});
+  localStorage.setItem('doh_hub_groups', JSON.stringify(groups));
+  // Capture current DOM order so unsaved drags aren't lost
+  const grid=document.getElementById('arrange-grid');
+  let order=grid
+    ? Array.from(grid.querySelectorAll('[data-card-id],[data-group-id]')).map(el=>el.dataset.cardId||el.dataset.groupId)
+    : (()=>{try{return JSON.parse(localStorage.getItem('doh_hub_card_order')||'null');}catch(e){return null;}})()||getHubCards().map(c=>c.id);
+  localStorage.setItem('doh_hub_card_order', JSON.stringify([...order, id]));
+  renderHub();
+  setTimeout(()=>{
+    const el=document.querySelector(`[data-group-id="${id}"] .hub-grp-name`);
+    if(el){el.focus();const r=document.createRange();r.selectNodeContents(el);const s=window.getSelection();s.removeAllRanges();s.addRange(r);}
+  },50);
+}
+function deleteHubGroup(id) {
+  localStorage.setItem('doh_hub_groups', JSON.stringify(getHubGroups().filter(g=>g.id!==id)));
+  const o=(()=>{try{return JSON.parse(localStorage.getItem('doh_hub_card_order')||'null');}catch(e){return null;}})();
+  if(o) localStorage.setItem('doh_hub_card_order', JSON.stringify(o.filter(i=>i!==id)));
+  renderHub();
+}
+function saveGroupName(id, raw) {
+  const name=raw.trim()||'Untitled'; const groups=getHubGroups(); const g=groups.find(g=>g.id===id);
+  if(g){g.name=name; localStorage.setItem('doh_hub_groups', JSON.stringify(groups));}
+}
+function getHubCollapsed() {
+  try { return JSON.parse(localStorage.getItem('doh_hub_collapsed')||'[]'); } catch(e) { return []; }
+}
+function toggleGroupCollapsed(id) {
+  const c=getHubCollapsed(), idx=c.indexOf(id);
+  if(idx===-1) c.push(id); else c.splice(idx,1);
+  localStorage.setItem('doh_hub_collapsed', JSON.stringify(c));
+  renderHub();
+}
+function getCardGroups() {
+  try { return JSON.parse(localStorage.getItem('doh_hub_card_groups')||'{}'); } catch(e) { return {}; }
+}
+function assignCardToGroup(cardId, groupId) {
+  const m=getCardGroups();
+  if(groupId) m[cardId]=groupId; else delete m[cardId];
+  localStorage.setItem('doh_hub_card_groups', JSON.stringify(m));
+  renderHub();
+}
+function _hubGroupEl(g, arrange) {
+  if(arrange) return `<div class="hub-grp-hdr hub-grp-arrange" data-group-id="${g.id}" draggable="true" title="Drag to reorder · Drop a card here to add it to this group" ondragstart="hubDragStart(event,'${g.id}')" ondragover="hubDragOver(event)" ondragleave="hubDragLeave(event)" ondrop="hubDrop(event,'${g.id}')" ondragend="hubDragEnd(event)"><span class="hub-drag-handle" draggable="false" style="position:static;opacity:.5;font-size:.85rem">⠿</span><span class="hub-grp-name" contenteditable="true" draggable="false" spellcheck="false" onblur="saveGroupName('${g.id}',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}" onclick="event.stopPropagation()">${g.name}</span><button class="hub-grp-del" draggable="false" onmousedown="event.stopPropagation()" onclick="event.stopPropagation();deleteHubGroup('${g.id}')">×</button></div>`;
+  const collapsed=getHubCollapsed().includes(g.id);
+  return `<div class="hub-grp-hdr" data-collapsed="${collapsed}"><button class="hub-grp-toggle" onclick="toggleGroupCollapsed('${g.id}')" title="${collapsed?'Expand':'Collapse'}">${collapsed?'▸':'▾'}</button><span class="hub-grp-name">${g.name}</span></div>`;
+}
+
+function getHubCards() {
+  const all = [];
+  ['longevity','muscle','cardio','bone','brain','digestive'].forEach(id => {
+    const g=S[id], p=pct(id), r=22, circ=2*Math.PI*r, off=ringOffset(p,r);
+    all.push({ id, section:'health',
+      inner:`<div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="${r}"/><circle class="r-fill" cx="25" cy="25" r="${r}" stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"/></svg><div class="ring-icon">${g.icon}</div></div><div class="card-info"><div class="card-title">${g.title}</div><div class="card-desc">${g.subtitle}</div><div class="card-pct">${p>0?Math.round(p*100)+'% today':'Start →'}</div></div>`,
+      onclick:`openGoal('${id}')`
+    });
+  });
+  if (STATE.mode==='degen') ['degenerates','degenerates-plus','super-degenerate'].forEach(id => {
+    const g=S[id], p=pct(id), r=22, circ=2*Math.PI*r, off=ringOffset(p,r);
+    all.push({ id, section:'degen',
+      inner:`<div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="${r}"/><circle class="r-fill" cx="25" cy="25" r="${r}" stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}" style="stroke:#c800ff;filter:drop-shadow(0 0 3px #c800ff)"/></svg><div class="ring-icon">${g.icon}</div></div><div class="card-info"><div class="card-title">${g.title}</div><div class="card-desc">${g.subtitle}</div><div class="card-pct">${p>0?Math.round(p*100)+'% today':'Start →'}</div></div>`,
+      onclick:`openGoal('${id}')`
+    });
+  });
+  [
+    {id:'tools',          icon:'🛠️', title:'Tools &amp; Trackers',  desc:'Journal, water, mood, supplements, sleep log, and your personal checklist',              href:'tools.html'},
+    {id:'workout-log',    icon:'📋', title:'Workout Logger',         desc:'Log exercises, sets, reps, and weight. Track progressive overload day by day.',         href:'workout-log.html'},
+    {id:'nutrition-log',  icon:'🥗', title:'Nutrition Log',          desc:'Track meals and macros — protein, carbs, fat, and calories across the day.',             href:'nutrition-log.html'},
+    {id:'fasting-tracker',icon:'⏱️', title:'Fasting Tracker',        desc:'Start and track intermittent fasts. Set goals, monitor progress, log history.',         href:'fasting-tracker.html'},
+    {id:'habit-tracker',  icon:'✅', title:'Habit Tracker',          desc:'Build custom daily habits. Track streaks and stay consistent over time.',               href:'habit-tracker.html'},
+    {id:'challenges',     icon:'🏆', title:'30-Day Challenges',      desc:'Pick a challenge, check in daily, and build a new habit in 30 days.',                   href:'challenges.html'},
+    {id:'breathing-timer',icon:'🫁', title:'Breathing Timer',        desc:'Box breathing, 4-7-8, coherent breathing and more. Guided sessions with XP rewards.',   href:'breathing-timer.html'},
+    {id:'creatine',       icon:'⚡', title:'Creatine Guide',         desc:'Everything about creatine monohydrate — protocols, dosage calculator, myths, safety, and daily logging.', href:'creatine.html'},
+    {id:'body-map',       icon:'🫀', title:'Body Map',               desc:'Explore your body by region. Tap any area to see health info and tips.',                href:'body-map.html'},
+    {id:'blog-reader',    icon:'✍️', title:'Blogs',                  desc:'Write, publish, and browse your posts. Export as clean HTML to share anywhere.',        href:'blog-reader.html'},
+    {id:'dashboard',      icon:'📊', title:'Dashboard',              desc:'All your data at a glance — XP, streaks, habits, fasting, workouts, and nutrition.',    href:'dashboard.html'},
+  ].forEach(({id,icon,title,desc,href}) => all.push({ id, section:'tools',
+    inner:`<div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">${icon}</div></div><div class="card-info"><div class="card-title">${title}</div><div class="card-desc">${desc}</div><div class="card-pct">Open →</div></div>`,
+    onclick:`window.location.href='${href}'`
+  }));
+  const cs = JSON.parse(localStorage.getItem(storagePrefix()+'cscheds')||'[]');
+  cs.forEach(s => {
+    const r=22, circ=2*Math.PI*r;
+    const chk=JSON.parse(localStorage.getItem(`${storagePrefix()}${s.id}_${activeKey()}`)||'[]');
+    const p=s.tasks.length?chk.length/s.tasks.length:0, off=ringOffset(p,r);
+    all.push({ id:'custom-'+s.id, section:'custom',
+      inner:`<div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="${r}"/><circle class="r-fill" cx="25" cy="25" r="${r}" stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"/></svg><div class="ring-icon">${s.icon}</div></div><div class="card-info"><div class="card-title">${s.title}</div><div class="card-desc">${s.subtitle||s.tasks.length+' tasks'}</div><div class="card-pct">${p>0?Math.round(p*100)+'% today':'Start →'}</div></div>`,
+      onclick:`window.location.href='custom-view.html#${s.id}'`
+    });
+  });
+  return all;
+}
+
+function _hubCardEl(card, arrange) {
+  const tc = card.section==='health' ? ' gc-health' : card.section==='tools' ? ' gc-tools' : card.section==='custom' ? ' gc-custom' : '';
+  if (arrange) {
+    const hidden = getHubHidden().includes(card.id);
+    const visBtn = `<button class="hub-vis-btn ${hidden?'hub-vis-show':'hub-vis-hide'}" draggable="false" onmousedown="event.stopPropagation()" onclick="event.stopPropagation();toggleCardHidden('${card.id}')" title="${hidden?'Show card':'Hide card'}">${hidden?'↩':'×'}</button>`;
+    const currentGroupId = getCardGroups()[card.id];
+    const currentGroupName = currentGroupId ? (getHubGroups().find(g=>g.id===currentGroupId)||{name:'?'}).name : '';
+    const grpBadge = currentGroupId
+      ? `<div class="hub-grp-card-badge" draggable="false" onmousedown="event.stopPropagation()" onclick="event.stopPropagation();assignCardToGroup('${card.id}','')">📁 ${currentGroupName} ×</div>`
+      : '';
+    return `<div class="hub-arr-unit" data-card-id="${card.id}" draggable="true" ondragstart="hubDragStart(event,'${card.id}')" ondragover="hubDragOver(event)" ondragleave="hubDragLeave(event)" ondrop="hubDrop(event,'${card.id}')" ondragend="hubDragEnd(event)"><div class="goal-card hub-arrange-card${tc}${hidden?' gc-hidden-card':''}"><div class="hub-drag-handle" draggable="false">⠿</div>${visBtn}${card.inner}</div>${grpBadge}</div>`;
+  }
+  return `<div class="goal-card${tc}" data-card-id="${card.id}" onclick="${card.onclick}">${card.inner}</div>`;
+}
+
 // ─── RENDER HUB ──────────────────────────────────────────────────────────────
 function disableNotifFromHub(pageKey) {
   localStorage.removeItem('notif:' + pageKey + ':enabled');
@@ -41,9 +168,6 @@ function renderHub() {
   const xpFor = lv.next ? lv.next.min - lv.min : 1;
   const xpPct = lv.next ? Math.min(100,xpIn/xpFor*100) : 100;
   const done = todayDone();
-  const hGoals = ['longevity','muscle','cardio','bone','brain','digestive'];
-  const dGoals = ['degenerates','degenerates-plus','super-degenerate'];
-  const customScheds = JSON.parse(localStorage.getItem(storagePrefix()+'cscheds') || '[]');
 
   const NOTIF_NAMES = {
     'bone-health':           { name: 'Bone Health',          icon: '🦴' },
@@ -68,28 +192,100 @@ function renderHub() {
         </div>`;
       }).join('');
 
-  const card = id => {
-    const g=S[id], p=pct(id), r=22, circ=2*Math.PI*r;
-    const off=ringOffset(p,r);
-    const isDg=g.mode==='degen';
-    return `<div class="goal-card" onclick="openGoal('${id}')">
-      <div class="ring-wrap">
-        <svg viewBox="0 0 50 50">
-          <circle class="r-track" cx="25" cy="25" r="${r}"/>
-          <circle class="r-fill" cx="25" cy="25" r="${r}"
-            stroke-dasharray="${circ.toFixed(2)}"
-            stroke-dashoffset="${off.toFixed(2)}"
-            ${isDg?'style="stroke:#c800ff;filter:drop-shadow(0 0 3px #c800ff)"':''}/>
-        </svg>
-        <div class="ring-icon">${g.icon}</div>
-      </div>
-      <div class="card-info">
-        <div class="card-title">${g.title}</div>
-        <div class="card-desc">${g.subtitle}</div>
-        <div class="card-pct">${p>0?Math.round(p*100)+'% today':'Start →'}</div>
-      </div>
-    </div>`;
-  };
+  // Build cards section
+  const allCards = getHubCards();
+  const savedOrder = (() => { try { return JSON.parse(localStorage.getItem('doh_hub_card_order')||'null'); } catch(e) { return null; } })();
+  const arrange = hubArrangeMode;
+  const newSchBtn = `<div style="text-align:center;margin-bottom:20px"><button onclick="window.location.href='schedule-builder.html'" style="background:none;border:1px solid var(--glass-b);color:var(--muted);border-radius:20px;padding:6px 18px;font-size:.78rem;cursor:pointer;transition:var(--trans)" onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--glass-b)';this.style.color='var(--muted)'">＋ New Schedule</button></div>`;
+
+  const hiddenSet = new Set(getHubHidden());
+  let cardsHtml;
+  if (arrange || savedOrder) {
+    const cMap={}; allCards.forEach(c=>cMap[c.id]=c);
+    const gMap={}; getHubGroups().forEach(g=>gMap[g.id]=g);
+    let orderedIds;
+    if (savedOrder) {
+      orderedIds=[...savedOrder].filter(id=>id!=='__widget');
+      allCards.forEach(c=>{ if(!orderedIds.includes(c.id)) orderedIds.push(c.id); });
+      ['__widget1','__widget2','__widget3'].forEach(w=>{ if(!orderedIds.includes(w)) orderedIds.push(w); });
+    } else {
+      orderedIds=allCards.map(c=>c.id);
+      orderedIds.push('__widget1','__widget2','__widget3');
+    }
+    if (!arrange) orderedIds=orderedIds.filter(id=>id.startsWith('__grp_')||!hiddenSet.has(id));
+    const toolbar = arrange
+      ? `<div class="hub-arrange-bar"><button class="hub-arr-reset" onclick="resetHubOrder()">↺ Default Layout</button><button class="hub-arr-add-grp" onclick="addHubGroup()">＋ Group</button><button class="hub-arr-done" onclick="doneHubArrange()">✓ Save Order</button></div>`
+      : `<div class="hub-arrange-bar"><button class="hub-arr-btn" onclick="toggleHubArrange()">⠿ Arrange</button></div>`;
+    let itemsHtml;
+    if (arrange) {
+      itemsHtml=orderedIds.map(id=>{
+        if(id==='__widget1') return _hubWidgetArrangeEl(1);
+        if(id==='__widget2') return _hubWidgetArrangeEl(2);
+        if(id==='__widget3') return _hubWidgetArrangeEl(3);
+        if(id.startsWith('__grp_')){ const g=gMap[id]; return g?_hubGroupEl(g,true):''; }
+        const c=cMap[id]; return c?_hubCardEl(c,true):'';
+      }).join('');
+      cardsHtml=`${toolbar}<div class="goal-grid" id="arrange-grid">${itemsHtml}</div>`;
+    } else {
+      const collapsedSet=new Set(getHubCollapsed());
+      const cardGroupsMap=getCardGroups();
+      const renderedInGroup=new Set();
+      const viewItems=[];
+      for(const id of orderedIds){
+        if(id==='__widget1'){ viewItems.push({type:'widget',n:1}); continue; }
+        if(id==='__widget2'){ viewItems.push({type:'widget',n:2}); continue; }
+        if(id==='__widget3'){ viewItems.push({type:'widget',n:3}); continue; }
+        if(id.startsWith('__grp_')){
+          const g=gMap[id]; if(!g) continue;
+          const gcids=orderedIds.filter(cid=>!cid.startsWith('__grp_')&&!cid.startsWith('__widget')&&cMap[cid]&&cardGroupsMap[cid]===id);
+          gcids.forEach(cid=>renderedInGroup.add(cid));
+          viewItems.push({type:'group',g,cards:gcids});
+        } else {
+          if(renderedInGroup.has(id)) continue;
+          const c=cMap[id]; if(c) viewItems.push({type:'card',c});
+        }
+      }
+      const rawSecs=[]; let pending=[];
+      for(const item of viewItems){
+        if(item.type==='card'){ pending.push(item.c); }
+        else{ if(pending.length){rawSecs.push({type:'cards',cards:pending});pending=[];} rawSecs.push(item); }
+      }
+      if(pending.length) rawSecs.push({type:'cards',cards:pending});
+      const sections=[];
+      for(const sec of rawSecs){
+        if(sec.type==='widget'&&sections.length>0&&sections[sections.length-1].type==='widgets'){
+          sections[sections.length-1].nums.push(sec.n);
+        }else if(sec.type==='widget'){
+          sections.push({type:'widgets',nums:[sec.n]});
+        }else{ sections.push(sec); }
+      }
+      itemsHtml=sections.map(sec=>{
+        if(sec.type==='cards') return `<div class="goal-grid">${sec.cards.map(c=>_hubCardEl(c,false)).join('')}</div>`;
+        if(sec.type==='widgets'){
+          const wHtml=sec.nums.map(n=>{
+            const wtype=getWidgetType(n),wsize=getWidgetSz(n);
+            return `<div class="hub-widget-card" id="hub-widget-${n}" data-widget="${wtype}" data-size="${wsize}" style="position:relative"><div id="hww-${n}-body" class="hww-body">${_buildWidgetHTML(wtype,n)}</div></div>`;
+          }).join('');
+          return `<div class="sec-label" style="margin-top:28px">⚡ Quick Access</div><div class="hub-widget-row">${wHtml}</div>`;
+        }
+        const collapsed=collapsedSet.has(sec.g.id);
+        const countTag=collapsed&&sec.cards.length>0?` (${sec.cards.length})`:'';
+        const gcHtml=sec.cards.map(id=>_hubCardEl(cMap[id],false)).join('');
+        return `<div class="sec-label" style="margin-top:28px"><button class="hub-grp-toggle" onclick="toggleGroupCollapsed('${sec.g.id}')" title="${collapsed?'Expand':'Collapse'}">${collapsed?'▸':'▾'}</button> ${sec.g.name}${countTag}</div>${collapsed?'':`<div class="goal-grid">${gcHtml}</div>`}`;
+      }).join('');
+      cardsHtml=`${toolbar}${itemsHtml}${allCards.some(c=>c.section==='custom')?newSchBtn:''}`;
+    }
+  } else {
+    const health  = allCards.filter(c=>c.section==='health' && !hiddenSet.has(c.id));
+    const degenC  = allCards.filter(c=>c.section==='degen'  && !hiddenSet.has(c.id));
+    const tools   = allCards.filter(c=>c.section==='tools'  && !hiddenSet.has(c.id));
+    const custom  = allCards.filter(c=>c.section==='custom' && !hiddenSet.has(c.id));
+    const degenSec = degenC.length ? `<div class="degen-div"><span class="degen-label">Degenerate Fucks</span></div><div class="sec-label">Recovery Tiers</div><div class="goal-grid">${degenC.map(c=>_hubCardEl(c,false)).join('')}</div>` : '';
+    const customSec = custom.length ? `<div class="sec-label" style="margin-top:28px">My Schedules</div><div class="goal-grid">${custom.map(c=>_hubCardEl(c,false)).join('')}</div>${newSchBtn}` : '';
+    const visWidgets=[1,2,3].filter(n=>!hiddenSet.has('__widget'+n));
+    const widgetsSec=visWidgets.length?`<div class="sec-label" style="margin-top:28px">⚡ Quick Access</div><div class="hub-widget-row">${visWidgets.map(n=>{const wtype=getWidgetType(n),wsize=getWidgetSz(n);return`<div class="hub-widget-card" id="hub-widget-${n}" data-widget="${wtype}" data-size="${wsize}" style="position:relative"><div id="hww-${n}-body" class="hww-body">${_buildWidgetHTML(wtype,n)}</div></div>`;}).join('')}</div>`:'';
+    cardsHtml = `<div class="hub-arrange-bar"><button class="hub-arr-btn" onclick="toggleHubArrange()">⠿ Arrange</button></div><div class="sec-label">Health Goals</div><div class="goal-grid">${health.map(c=>_hubCardEl(c,false)).join('')}</div>${degenSec}<div class="sec-label" style="margin-top:28px">Tools &amp; Trackers</div><div class="goal-grid">${tools.map(c=>_hubCardEl(c,false)).join('')}</div>${customSec}${widgetsSec}`;
+  }
 
   document.getElementById('hub-view').innerHTML=`<div id="hub">
     ${!getActiveId() ? `
@@ -117,136 +313,265 @@ function renderHub() {
         <div class="xp-track"><div class="xp-fill" style="width:${xpPct.toFixed(1)}%"></div></div>
       </div>`:''}
     </div>
-    <div class="sec-label">Health Goals</div>
-    <div class="goal-grid">${hGoals.map(card).join('')}</div>
-    ${STATE.mode === 'degen' ? `
-    <div class="degen-div"><span class="degen-label">Degenerate Fucks</span></div>
-    <div class="sec-label">Recovery Tiers</div>
-    <div class="goal-grid">${dGoals.map(card).join('')}</div>` : ''}
-    <div class="sec-label" style="margin-top:28px">Tools &amp; Trackers</div>
-    <div class="goal-grid">
-      <div class="goal-card" onclick="window.location.href='tools.html'">
-        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">🛠️</div></div>
-        <div class="card-info">
-          <div class="card-title">Tools &amp; Trackers</div>
-          <div class="card-desc">Journal, water, mood, supplements, sleep log, and your personal checklist</div>
-          <div class="card-pct">Open →</div>
-        </div>
-      </div>
-      <div class="goal-card" onclick="window.location.href='workout-log.html'">
-        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">📋</div></div>
-        <div class="card-info">
-          <div class="card-title">Workout Logger</div>
-          <div class="card-desc">Log exercises, sets, reps, and weight. Track progressive overload day by day.</div>
-          <div class="card-pct">Open →</div>
-        </div>
-      </div>
-      <div class="goal-card" onclick="window.location.href='nutrition-log.html'">
-        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">🥗</div></div>
-        <div class="card-info">
-          <div class="card-title">Nutrition Log</div>
-          <div class="card-desc">Track meals and macros — protein, carbs, fat, and calories across the day.</div>
-          <div class="card-pct">Open →</div>
-        </div>
-      </div>
-      <div class="goal-card" onclick="window.location.href='fasting-tracker.html'">
-        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">⏱️</div></div>
-        <div class="card-info">
-          <div class="card-title">Fasting Tracker</div>
-          <div class="card-desc">Start and track intermittent fasts. Set goals, monitor progress, log history.</div>
-          <div class="card-pct">Open →</div>
-        </div>
-      </div>
-      <div class="goal-card" onclick="window.location.href='habit-tracker.html'">
-        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">✅</div></div>
-        <div class="card-info">
-          <div class="card-title">Habit Tracker</div>
-          <div class="card-desc">Build custom daily habits. Track streaks and stay consistent over time.</div>
-          <div class="card-pct">Open →</div>
-        </div>
-      </div>
-      <div class="goal-card" onclick="window.location.href='challenges.html'">
-        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">🏆</div></div>
-        <div class="card-info">
-          <div class="card-title">30-Day Challenges</div>
-          <div class="card-desc">Pick a challenge, check in daily, and build a new habit in 30 days.</div>
-          <div class="card-pct">Open →</div>
-        </div>
-      </div>
-      <div class="goal-card" onclick="window.location.href='breathing-timer.html'">
-        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">🫁</div></div>
-        <div class="card-info">
-          <div class="card-title">Breathing Timer</div>
-          <div class="card-desc">Box breathing, 4-7-8, coherent breathing and more. Guided sessions with XP rewards.</div>
-          <div class="card-pct">Open →</div>
-        </div>
-      </div>
-      <div class="goal-card" onclick="window.location.href='creatine.html'">
-        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">⚡</div></div>
-        <div class="card-info">
-          <div class="card-title">Creatine Guide</div>
-          <div class="card-desc">Everything about creatine monohydrate — protocols, dosage calculator, myths, safety, and daily logging.</div>
-          <div class="card-pct">Open →</div>
-        </div>
-      </div>
-      <div class="goal-card" onclick="window.location.href='body-map.html'">
-        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">🫀</div></div>
-        <div class="card-info">
-          <div class="card-title">Body Map</div>
-          <div class="card-desc">Explore your body by region. Tap any area to see health info and tips.</div>
-          <div class="card-pct">Open →</div>
-        </div>
-      </div>
-      <div class="goal-card" onclick="window.location.href='blog-reader.html'">
-        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">✍️</div></div>
-        <div class="card-info">
-          <div class="card-title">Blogs</div>
-          <div class="card-desc">Write, publish, and browse your posts. Export as clean HTML to share anywhere.</div>
-          <div class="card-pct">Open →</div>
-        </div>
-      </div>
-      <!-- DASHBOARD CARD — to remove: delete this block + dashboard.html -->
-      <div class="goal-card" onclick="window.location.href='dashboard.html'">
-        <div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">📊</div></div>
-        <div class="card-info">
-          <div class="card-title">Dashboard</div>
-          <div class="card-desc">All your data at a glance — XP, streaks, habits, fasting, workouts, and nutrition.</div>
-          <div class="card-pct">Open →</div>
-        </div>
-      </div>
-      <!-- END DASHBOARD CARD -->
-    </div>
-    ${customScheds.length > 0 ? `
-    <div class="sec-label" style="margin-top:28px">My Schedules</div>
-    <div class="goal-grid">${customScheds.map(cs => {
-      const r=22, circ=2*Math.PI*r;
-      const pfx = storagePrefix();
-      const today = activeKey();
-      const checked = JSON.parse(localStorage.getItem(`${pfx}${cs.id}_${today}`) || '[]');
-      const p = cs.tasks.length ? checked.length / cs.tasks.length : 0;
-      const off = ringOffset(p, r);
-      return `<div class="goal-card" onclick="window.location.href='custom-view.html#${cs.id}'">
-        <div class="ring-wrap">
-          <svg viewBox="0 0 50 50">
-            <circle class="r-track" cx="25" cy="25" r="${r}"/>
-            <circle class="r-fill" cx="25" cy="25" r="${r}" stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"/>
-          </svg>
-          <div class="ring-icon">${cs.icon}</div>
-        </div>
-        <div class="card-info">
-          <div class="card-title">${cs.title}</div>
-          <div class="card-desc">${cs.subtitle || cs.tasks.length + ' tasks'}</div>
-          <div class="card-pct">${p>0 ? Math.round(p*100)+'% today' : 'Start →'}</div>
-        </div>
-      </div>`;
-    }).join('')}
-    </div>
-    <div style="text-align:center;margin-bottom:20px">
-      <button onclick="window.location.href='schedule-builder.html'" style="background:none;border:1px solid var(--glass-b);color:var(--muted);border-radius:20px;padding:6px 18px;font-size:.78rem;cursor:pointer;transition:var(--trans)" onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--glass-b)';this.style.color='var(--muted)'">＋ New Schedule</button>
-    </div>` : ''}
+    ${cardsHtml}
     <div class="sec-label" style="margin-top:28px">🔔 Reminders <span class="notif-count">${enabledKeys.length}/3</span></div>
     <div class="notif-panel">${notifItems}</div>
   </div>`;
+  initHubWidget();
+}
+
+// ─── HUB WIDGET SYSTEM ───────────────────────────────────────────────────────
+function _hwwDate() { return new Date().toISOString().slice(0,10); }
+
+const _WIDGET_DEFAULTS = ['water','habits','sleep'];
+function getWidgetType(n) {
+  const key='doh_hub_widget_'+n;
+  if(n===1 && !localStorage.getItem(key) && localStorage.getItem('doh_hub_widget')) {
+    localStorage.setItem(key, localStorage.getItem('doh_hub_widget'));
+    localStorage.removeItem('doh_hub_widget');
+  }
+  return localStorage.getItem(key)||_WIDGET_DEFAULTS[n-1]||'water';
+}
+function setWidgetType(n,id) { localStorage.setItem('doh_hub_widget_'+n,id); renderHub(); }
+function getWidgetSz(n) {
+  const key='doh_hub_widget_size_'+n;
+  if(n===1 && !localStorage.getItem(key) && localStorage.getItem('doh_hub_widget_size')) {
+    localStorage.setItem(key, localStorage.getItem('doh_hub_widget_size'));
+    localStorage.removeItem('doh_hub_widget_size');
+  }
+  return parseInt(localStorage.getItem(key)||'2');
+}
+function setWidgetSz(n,v) { localStorage.setItem('doh_hub_widget_size_'+n,String(v)); renderHub(); }
+
+function _buildWidgetHTML(wtype, n) {
+  const M={
+    water:       {icon:'💧',title:'Water Tracker',   sub:'Daily hydration',       href:'tools.html'},
+    habits:      {icon:'✅',title:"Today's Habits",  sub:'Your habits for today',  href:'habit-tracker.html'},
+    sleep:       {icon:'😴',title:'Sleep Log',        sub:"Last night's rest",      href:'tools.html'},
+    supplements: {icon:'💊',title:'Supplement Check', sub:"Today's supplements",    href:'tools.html'},
+  };
+  const m=M[wtype]||M.water;
+  const extra=wtype==='water'?`<div class="hww-goal-ctrl"><button onclick="hubSetWaterGoal(_hwwGetGoal()-1,${n})">&#8249;</button><span id="hww-${n}-goal-display" class="hww-goal-val">8</span><button onclick="hubSetWaterGoal(_hwwGetGoal()+1,${n})">&#8250;</button></div>`:'';
+  const s=getWidgetSz(n);
+  const sizeBtns=`<div class="hww-size-ctrl"><button class="hww-size-btn${s===1?' hww-size-active':''}" onclick="setWidgetSz(${n},1)" title="Small">S</button><button class="hww-size-btn${s===2?' hww-size-active':''}" onclick="setWidgetSz(${n},2)" title="Medium">M</button><button class="hww-size-btn${s===3?' hww-size-active':''}" onclick="setWidgetSz(${n},3)" title="Large">L</button></div>`;
+  const bodies={
+    water:`<div class="hww-dots" id="hww-${n}-dots"></div><div class="hww-bar-wrap"><div class="hww-bar-fill" id="hww-${n}-fill" style="width:0%"></div><div class="hww-bar-label" id="hww-${n}-label">0 / 8 cups</div></div><div class="hww-btns"><button class="hww-btn hww-btn-sec" onclick="hubAdjustWater(-1,${n})">− Remove Cup</button><button class="hww-btn hww-btn-pri" onclick="hubAdjustWater(1,${n})">+ Add Cup 💧</button></div>`,
+    habits:`<div id="hww-${n}-habits-list" class="hww-check-list"></div>`,
+    sleep:`<div class="hww-sleep-row"><div class="hww-sleep-field"><label>Bedtime</label><input type="time" id="hww-${n}-sleep-bed" oninput="renderHubSleep(${n})"></div><div class="hww-sleep-field"><label>Wake time</label><input type="time" id="hww-${n}-sleep-wake" oninput="renderHubSleep(${n})"></div></div><div class="hww-sleep-result"><div class="hww-sleep-dur" id="hww-${n}-sleep-dur">—</div><div class="hww-sleep-q" id="hww-${n}-sleep-q">Enter your times above</div></div><button class="hww-btn hww-btn-pri" style="width:100%" id="hww-${n}-sleep-save" onclick="hubSaveSleep(${n})">Save Sleep Log</button>`,
+    supplements:`<div id="hww-${n}-supp-list" class="hww-check-list"></div>`,
+  };
+  return `<div class="hww-header"><span class="hww-icon">${m.icon}</span><div class="hww-info"><div class="hww-title">${m.title}</div><div class="hww-sub">${m.sub}</div></div>${extra}${sizeBtns}<button class="hww-change" onclick="showWidgetPicker(${n})">⊞ Change</button><button class="hww-open" onclick="window.location.href='${m.href}'">Open →</button></div>${bodies[wtype]||bodies.water}`;
+}
+
+function showWidgetPicker(n) {
+  const el=document.getElementById('hww-'+n+'-body');
+  if(!el) return;
+  const opts=[{id:'water',icon:'💧',label:'Water Tracker'},{id:'habits',icon:'✅',label:"Today's Habits"},{id:'sleep',icon:'😴',label:'Sleep Log'},{id:'supplements',icon:'💊',label:'Supplement Check'}];
+  const cur=getWidgetType(n);
+  el.innerHTML=`<div class="hww-picker"><div class="hww-picker-title">Choose a widget</div><div class="hww-picker-grid">${opts.map(o=>`<button class="hww-pick-btn${o.id===cur?' hww-pick-active':''}" onclick="setWidgetType(${n},'${o.id}')">${o.icon}<br><span>${o.label}</span></button>`).join('')}</div><button class="hww-picker-cancel" onclick="renderHub()">✕ Cancel</button></div>`;
+}
+
+function initHubWidget() {
+  for(let n=1;n<=3;n++){
+    const id=getWidgetType(n);
+    if(id==='water') renderHubWater(n);
+    else if(id==='habits') renderHubHabits(n);
+    else if(id==='sleep') initHubSleep(n);
+    else if(id==='supplements') renderHubSupps(n);
+  }
+}
+
+// — Water —
+function _hwwWaterKey() { return storagePrefix()+'water_'+_hwwDate(); }
+function _hwwGoalKey()  { return storagePrefix()+'water_goal'; }
+function _hwwGetWater() { return parseInt(localStorage.getItem(_hwwWaterKey())||'0'); }
+function _hwwGetGoal()  { return parseInt(localStorage.getItem(_hwwGoalKey())||'8'); }
+
+function renderHubWater(n) {
+  const count=_hwwGetWater(), goal=_hwwGetGoal();
+  const goalEl=document.getElementById('hww-'+n+'-goal-display');
+  if(goalEl) goalEl.textContent=goal;
+  const fillEl=document.getElementById('hww-'+n+'-fill');
+  if(fillEl) fillEl.style.width=(goal>0?Math.min(100,count/goal*100):0)+'%';
+  const labelEl=document.getElementById('hww-'+n+'-label');
+  if(labelEl) labelEl.textContent=goal===0?'Zero cups? Bold strategy. 🏜️':count+' / '+goal+' cups'+(count>=goal?' 🎉':'');
+  const dotsEl=document.getElementById('hww-'+n+'-dots');
+  if(dotsEl) dotsEl.innerHTML=goal>0?Array.from({length:goal},(_,i)=>`<div class="hww-dot${i<count?' filled':''}">${i<count?'💧':''}</div>`).join(''):'';
+}
+function hubAdjustWater(delta, n) {
+  const prev=_hwwGetWater(), goal=_hwwGetGoal();
+  if(delta>0&&prev>=48){toast('⚠️ 48 cups is the limit!');return;}
+  const count=Math.max(0,Math.min(48,prev+delta));
+  localStorage.setItem(_hwwWaterKey(),count);
+  for(let i=1;i<=3;i++) if(getWidgetType(i)==='water') renderHubWater(i);
+  if(count===goal&&prev<goal) toast('🎉 Hydration goal crushed!');
+}
+function hubSetWaterGoal(val, n) {
+  localStorage.setItem(_hwwGoalKey(),String(Math.max(0,Math.min(24,parseInt(val)||0))));
+  for(let i=1;i<=3;i++) if(getWidgetType(i)==='water') renderHubWater(i);
+}
+
+// — Habits —
+function renderHubHabits(n) {
+  const el=document.getElementById('hww-'+n+'-habits-list');
+  if(!el) return;
+  const date=_hwwDate();
+  const habits=(() => {try{return JSON.parse(localStorage.getItem('hab:list')||'[]');}catch(e){return[];}})();
+  if(!habits.length){el.innerHTML='<div class="hww-empty">No habits set yet. <span class="hww-link" onclick="window.location.href=\'habit-tracker.html\'">Set up habits →</span></div>';return;}
+  el.innerHTML=habits.map(h=>{
+    const done=localStorage.getItem('hab:'+h.id+':'+date)==='1';
+    return `<div class="hww-check-item${done?' hww-checked':''}" onclick="hubToggleHabit('${h.id}',${n})"><div class="hww-check-box">${done?'✓':''}</div><span class="hww-check-text">${h.icon?h.icon+' ':''}${h.name}</span></div>`;
+  }).join('');
+}
+function hubToggleHabit(id, n) {
+  const k='hab:'+id+':'+_hwwDate();
+  if(localStorage.getItem(k)==='1') localStorage.removeItem(k); else localStorage.setItem(k,'1');
+  for(let i=1;i<=3;i++) if(getWidgetType(i)==='habits') renderHubHabits(i);
+}
+
+// — Sleep —
+function initHubSleep(n) {
+  const bed=document.getElementById('hww-'+n+'-sleep-bed');
+  if(!bed) return;
+  const saved=localStorage.getItem(storagePrefix()+'sleep_'+_hwwDate());
+  if(saved){try{const d=JSON.parse(saved);bed.value=d.bed||'';document.getElementById('hww-'+n+'-sleep-wake').value=d.wake||'';}catch(e){}}
+  renderHubSleep(n);
+}
+function renderHubSleep(n) {
+  const bed=document.getElementById('hww-'+n+'-sleep-bed'), wake=document.getElementById('hww-'+n+'-sleep-wake');
+  const durEl=document.getElementById('hww-'+n+'-sleep-dur'), qEl=document.getElementById('hww-'+n+'-sleep-q');
+  if(!bed||!wake||!durEl||!qEl) return;
+  if(!bed.value||!wake.value){durEl.textContent='—';qEl.textContent='Enter your times above';return;}
+  const [bh,bm]=bed.value.split(':').map(Number), [wh,wm]=wake.value.split(':').map(Number);
+  let bMins=bh*60+bm, wMins=wh*60+wm;
+  if(wMins<=bMins) wMins+=1440;
+  const total=wMins-bMins, h=Math.floor(total/60), m=total%60;
+  durEl.textContent=h+'h'+(m?' '+m+'m':'');
+  qEl.textContent=total<300?'Very short — under 5 hours':total<360?'Under 6 hours — aim for 7+':total<420?'Decent — aim for 7–9 hours':total<=540?'Great — optimal sleep window':'Over 9 hours — ensure quality rest';
+}
+function hubSaveSleep(n) {
+  const bed=document.getElementById('hww-'+n+'-sleep-bed'), wake=document.getElementById('hww-'+n+'-sleep-wake');
+  if(!bed||!wake||!bed.value||!wake.value) return;
+  localStorage.setItem(storagePrefix()+'sleep_'+_hwwDate(),JSON.stringify({bed:bed.value,wake:wake.value}));
+  const btn=document.getElementById('hww-'+n+'-sleep-save');
+  if(btn){btn.textContent='Saved ✓';setTimeout(()=>{btn.textContent='Save Sleep Log';},1600);}
+}
+
+// — Supplements —
+function renderHubSupps(n) {
+  const el=document.getElementById('hww-'+n+'-supp-list');
+  if(!el) return;
+  const date=_hwwDate();
+  const list=(() => {try{return JSON.parse(localStorage.getItem(storagePrefix()+'supps_'+date)||'[]');}catch(e){return[];}})();
+  const checks=(() => {try{return JSON.parse(localStorage.getItem(storagePrefix()+'supp_checks_'+date)||'[]');}catch(e){return[];}})();
+  if(!list.length){el.innerHTML='<div class="hww-empty">No supplements for today. <span class="hww-link" onclick="window.location.href=\'tools.html\'">Add in Tools →</span></div>';return;}
+  el.innerHTML=list.map((s,i)=>{
+    const done=checks.indexOf(i)>=0;
+    return `<div class="hww-check-item${done?' hww-checked':''}" onclick="hubToggleSupp(${i},${n})"><div class="hww-check-box">${done?'✓':''}</div><span class="hww-check-text">${s}</span></div>`;
+  }).join('');
+}
+function hubToggleSupp(i, n) {
+  const key=storagePrefix()+'supp_checks_'+_hwwDate();
+  const checks=(() => {try{return JSON.parse(localStorage.getItem(key)||'[]');}catch(e){return[];}})();
+  const idx=checks.indexOf(i);
+  if(idx>=0) checks.splice(idx,1); else checks.push(i);
+  localStorage.setItem(key,JSON.stringify(checks));
+  for(let j=1;j<=3;j++) if(getWidgetType(j)==='supplements') renderHubSupps(j);
+}
+
+function _hubWidgetArrangeEl(n) {
+  const hidden=getHubHidden().includes('__widget'+n);
+  const wtype=getWidgetType(n), wsize=getWidgetSz(n);
+  const WMETA={water:{icon:'💧',title:'Water Tracker'},habits:{icon:'✅',title:"Today's Habits"},sleep:{icon:'😴',title:'Sleep Log'},supplements:{icon:'💊',title:'Supplement Check'}};
+  const m=WMETA[wtype]||WMETA.water;
+  const szLabel=wsize===1?'S':wsize===2?'M':'L';
+  const visBtn=`<button class="hub-vis-btn ${hidden?'hub-vis-show':'hub-vis-hide'}" draggable="false" onmousedown="event.stopPropagation()" onclick="event.stopPropagation();toggleCardHidden('__widget${n}')" title="${hidden?'Show widget':'Hide widget'}">${hidden?'↩':'×'}</button>`;
+  return `<div class="hub-arr-unit" data-card-id="__widget${n}" draggable="true" style="grid-column:span ${wsize}" ondragstart="hubDragStart(event,'__widget${n}')" ondragover="hubDragOver(event)" ondragleave="hubDragLeave(event)" ondrop="hubDrop(event,'__widget${n}')" ondragend="hubDragEnd(event)"><div class="hub-widget-card${hidden?' gc-hidden-card':''}" data-widget="${wtype}" data-size="${wsize}" style="position:relative;flex-direction:row;align-items:center;gap:12px;min-height:64px"><div class="hub-drag-handle" style="position:static;opacity:.55;font-size:1rem;flex-shrink:0" draggable="false">⠿</div>${visBtn}<span style="font-size:1.3rem;flex-shrink:0">${m.icon}</span><span style="font-weight:700;font-size:.9rem;flex:1">${m.title}</span><span style="font-size:.72rem;color:var(--muted);flex-shrink:0">Widget ${n} · ${szLabel}</span></div></div>`;
+}
+
+// ─── ARRANGE ACTIONS ─────────────────────────────────────────────────────────
+function toggleHubArrange() { hubArrangeMode=!hubArrangeMode; renderHub(); }
+
+function doneHubArrange() {
+  const items=document.querySelectorAll('#arrange-grid [data-card-id], #arrange-grid [data-group-id]');
+  localStorage.setItem('doh_hub_card_order', JSON.stringify(Array.from(items).map(el=>el.dataset.cardId||el.dataset.groupId)));
+  hubArrangeMode=false; renderHub();
+}
+
+function resetHubOrder() {
+  localStorage.removeItem('doh_hub_card_order');
+  localStorage.removeItem('doh_hub_groups');
+  localStorage.removeItem('doh_hub_hidden');
+  localStorage.removeItem('doh_hub_collapsed');
+  localStorage.removeItem('doh_hub_card_groups');
+  hubArrangeMode=false; renderHub();
+}
+
+function hubDragStart(e, id) {
+  _dragSrcId=id;
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain', id);
+  requestAnimationFrame(()=>{
+    const el=document.querySelector(`[data-card-id="${id}"], [data-group-id="${id}"]`);
+    if(el) el.classList.add('hub-dragging');
+  });
+}
+
+function hubDragOver(e) {
+  e.preventDefault();
+  const card=e.currentTarget;
+  if(!card) return;
+  const targetId=card.dataset.cardId||card.dataset.groupId;
+  if(targetId===_dragSrcId) return;
+  document.querySelectorAll('.hub-drop-before,.hub-drop-after,.hub-drop-assign').forEach(el=>el.classList.remove('hub-drop-before','hub-drop-after','hub-drop-assign'));
+  if(_dragSrcId && !_dragSrcId.startsWith('__grp_') && targetId && targetId.startsWith('__grp_')) {
+    card.classList.add('hub-drop-assign'); return;
+  }
+  const rect=card.getBoundingClientRect();
+  card.classList.add(e.clientX<rect.left+rect.width/2?'hub-drop-before':'hub-drop-after');
+}
+
+function hubDragLeave(e) {
+  if(!e.currentTarget.contains(e.relatedTarget))
+    e.currentTarget.classList.remove('hub-drop-before','hub-drop-after','hub-drop-assign');
+}
+
+function hubDrop(e, targetId) {
+  e.preventDefault();
+  document.querySelectorAll('.hub-drop-before,.hub-drop-after,.hub-drop-assign').forEach(el=>el.classList.remove('hub-drop-before','hub-drop-after','hub-drop-assign'));
+  if(!_dragSrcId||_dragSrcId===targetId) return;
+  const grid=document.getElementById('arrange-grid');
+  if(!grid) return;
+
+  // Card dropped onto group header → assign to group + insert after last existing group member
+  if(!_dragSrcId.startsWith('__grp_') && !_dragSrcId.startsWith('__widget') && targetId.startsWith('__grp_')) {
+    const domOrder=Array.from(grid.querySelectorAll('[data-card-id],[data-group-id]')).map(el=>el.dataset.cardId||el.dataset.groupId);
+    const newOrder=domOrder.filter(id=>id!==_dragSrcId);
+    const cardGroups=getCardGroups();
+    const grpIdx=newOrder.indexOf(targetId);
+    let insertIdx=grpIdx+1;
+    for(let i=grpIdx+1; i<newOrder.length; i++){
+      if(newOrder[i].startsWith('__grp_')) break;
+      if(cardGroups[newOrder[i]]===targetId) insertIdx=i+1;
+    }
+    newOrder.splice(insertIdx, 0, _dragSrcId);
+    localStorage.setItem('doh_hub_card_order', JSON.stringify(newOrder));
+    const m=getCardGroups(); m[_dragSrcId]=targetId;
+    localStorage.setItem('doh_hub_card_groups', JSON.stringify(m));
+    renderHub(); return;
+  }
+
+  const src=grid.querySelector(`[data-card-id="${_dragSrcId}"], [data-group-id="${_dragSrcId}"]`);
+  const tgt=grid.querySelector(`[data-card-id="${targetId}"], [data-group-id="${targetId}"]`);
+  if(!src||!tgt) return;
+  const rect=tgt.getBoundingClientRect();
+  grid.insertBefore(src, e.clientX<rect.left+rect.width/2 ? tgt : tgt.nextSibling);
+}
+
+function hubDragEnd(e) {
+  e.currentTarget.classList.remove('hub-dragging');
+  document.querySelectorAll('.hub-drop-before,.hub-drop-after,.hub-drop-assign').forEach(el=>el.classList.remove('hub-drop-before','hub-drop-after','hub-drop-assign'));
+  _dragSrcId=null;
 }
 
 // ─── RENDER SCHEDULE ─────────────────────────────────────────────────────────
