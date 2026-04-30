@@ -412,7 +412,7 @@ function hubAdjustWater(delta, n) {
         else localStorage.removeItem('hab:'+h.id+':'+_hwwDate());
       }
     });
-  } catch(e) {}
+  } catch(e) { console.error(e); }
   for(let i=1;i<=3;i++) if(getWidgetType(i)==='water') renderHubWater(i);
   if(count===goal&&prev<goal) toast('🎉 Hydration goal crushed!');
 }
@@ -444,7 +444,7 @@ function initHubSleep(n) {
   const bed=document.getElementById('hww-'+n+'-sleep-bed');
   if(!bed) return;
   const saved=localStorage.getItem(storagePrefix()+'sleep_'+_hwwDate());
-  if(saved){try{const d=JSON.parse(saved);bed.value=d.bed||'';document.getElementById('hww-'+n+'-sleep-wake').value=d.wake||'';}catch(e){}}
+  if(saved){try{const d=JSON.parse(saved);bed.value=d.bed||'';document.getElementById('hww-'+n+'-sleep-wake').value=d.wake||'';}catch(e){ console.error(e); }}
   renderHubSleep(n);
 }
 function renderHubSleep(n) {

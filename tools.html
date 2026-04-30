@@ -814,7 +814,7 @@ function syncWaterToHabits(count, goal) {
         else store().removeItem('hab:' + h.id + ':' + currentDate);
       }
     });
-  } catch(e) {}
+  } catch(e) { console.error(e); }
 }
 
 function triggerConfetti() {
@@ -1027,7 +1027,7 @@ function loadSleep() {
     document.getElementById('sleep-bed').value  = data.bed  || '';
     document.getElementById('sleep-wake').value = data.wake || '';
     updateSleepPreview();
-  } catch(e) {}
+  } catch(e) { console.error(e); }
 }
 
 function updateSleepPreview() {
