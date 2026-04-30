@@ -202,7 +202,8 @@
 
     .log-week { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
     .log-day-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-    .log-day-dot { width: 30px; height: 30px; border-radius: 7px; background: var(--glass-b); border: 1px solid var(--glass-b); display: flex; align-items: center; justify-content: center; font-size: .72rem; font-weight: 800; transition: var(--trans); }
+    .log-day-dot { width: 30px; height: 30px; border-radius: 7px; background: var(--glass-b); border: 1px solid var(--glass-b); display: flex; align-items: center; justify-content: center; font-size: .72rem; font-weight: 800; transition: var(--trans); cursor: pointer; }
+    .log-day-dot:hover { border-color: var(--acc); background: rgba(45,212,110,0.12); }
     .log-day-dot.taken { background: rgba(45,212,110,0.2); border-color: var(--acc); color: var(--acc); }
     .log-day-dot.today-dot { border-color: var(--acc); box-shadow: 0 0 8px var(--glow); }
     .log-day-name { font-size: .58rem; color: var(--muted); text-transform: uppercase; }
@@ -545,8 +546,23 @@ function renderWeekDots() {
     const d=new Date(today); d.setDate(today.getDate()-(13-i));
     const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     const isToday=ds===todayStr(); const taken=dates.has(ds);
-    return `<div class="log-day-cell"><div class="log-day-dot${taken?' taken':''}${isToday?' today-dot':''}">${taken?'✓':d.getDate()}</div><div class="log-day-name">${days[d.getDay()]}</div></div>`;
+    const tip=taken?'Click to remove':'Click to log dose';
+    return `<div class="log-day-cell"><div class="log-day-dot${taken?' taken':''}${isToday?' today-dot':''}" onclick="toggleDay('${ds}')" title="${tip}">${taken?'✓':d.getDate()}</div><div class="log-day-name">${days[d.getDay()]}</div></div>`;
   }).join('');
+}
+
+function toggleDay(ds) {
+  const log=getLog(); const idx=log.findIndex(e=>e.date===ds);
+  if(idx!==-1){
+    log.splice(idx,1); saveLog(log); showToast('Removed '+formatDate(ds));
+  } else {
+    const dose=parseFloat(document.getElementById('logDoseInput').value)||5;
+    log.push({date:ds,dose});
+    log.sort((a,b)=>b.date.localeCompare(a.date));
+    if(log.length>90) log.length=90;
+    saveLog(log); showToast('Logged '+dose+'g for '+formatDate(ds));
+  }
+  renderTracker();
 }
 
 function renderHistory() {
