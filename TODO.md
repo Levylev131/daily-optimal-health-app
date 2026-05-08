@@ -1,6 +1,8 @@
 # Daily Optimal Health — TODO
 
 ## Version History
+- **v1.6** — 30-day challenges: history dropdown, re-run same/different challenge, per-run stats (score, streak, grid, summary)
+- **v1.5** — Degenerate mode restored (mode toggle visible on hub), in-app notifications (Web Audio chime + banner, replaces broken browser Notification API on file://)
 - **v1.4** — 3 independent hub widgets — each configurable, S/M/L sizes, 3-column row layout (3×S or M+S fits one row), arrange/hide per widget
 - **v1.3** — Creatine Guide (`creatine.html`) + Meal Recipes (`meals.html`) — hub cards, dosage calc, recipe browser
 - **v1.2** — Breathing Timer (`breathing-timer.html`) — patterns, lung SVG shape, ripple rings, XP, history
@@ -66,8 +68,8 @@
 
 ## Backlog / Ideas
 - ~~**Stats/Dashboard page**~~ — done in v0.8 as `dashboard.html`.
-- **Degenerate mode** (back burner) — concept is solid, currently hidden in `index.html` via `false` flags in `renderHub()`. Pages intact. Restore by flipping those flags to `true`.
+- ~~**Degenerate mode**~~ — restored in v1.5.
 - ~~**Phase 3 refactor**~~ — done in v0.6.
-- Better notifications — browser notifications are unreliable on file:// URLs. Options: in-app chime/banner (easy), PWA install (medium), Electron desktop app (bigger lift).
+- ~~**Better notifications**~~ — done in v1.5 as in-app chime + banner (Web Audio API + fixed toast). PWA/Electron still possible for background notifications.
 - More profile icon alternatives — especially for Transcendent (rank 13). Currently ☀️ placeholder.
 - ~~**Old People Mode**~~ — done in v0.7 as Elder Mode.

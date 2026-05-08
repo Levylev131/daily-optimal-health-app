@@ -293,7 +293,7 @@ function renderHub() {
       <span>👤 You're in guest mode — your progress won't be saved when you close the browser.</span>
       <button class="guest-banner-btn" onclick="showLoginModal()">Create Profile</button>
     </div>` : ''}
-    ${false /* DEGEN HIDDEN — change false to true to restore */ ? `
+    ${true ? `
     <div class="mode-toggle">
       <button class="mode-btn ${!isDegen?'active':''}" onclick="setMode('health')">🌿 Health</button>
       <button class="mode-btn ${isDegen?'active':''}" onclick="setMode('degen')">💀 Degenerate</button>
