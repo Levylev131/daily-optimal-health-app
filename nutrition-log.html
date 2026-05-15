@@ -150,12 +150,27 @@
     .fi-m.c { background: rgba(255,179,71,0.15);  color: var(--carbs); }
     .fi-m.f { background: rgba(255,126,179,0.15); color: var(--fat); }
     .fi-m.k { background: rgba(45,212,110,0.12);  color: var(--cals); }
-    .fi-del {
-      background: none; border: none; cursor: pointer;
-      color: var(--muted); font-size: .9rem; padding: 4px 6px;
-      border-radius: 6px; transition: var(--trans); flex-shrink: 0;
+    .fi-edit, .fi-del {
+      cursor: pointer; font-weight: 700; border-radius: 6px;
+      transition: var(--trans); flex-shrink: 0;
+      height: 28px; padding: 0 10px; font-size: .78rem;
+      display: inline-flex; align-items: center;
     }
-    .fi-del:hover { background: var(--danger-glass); color: var(--danger); }
+    .fi-edit {
+      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.3); color: var(--acc);
+    }
+    .fi-edit:hover { background: rgba(45,212,110,0.22); border-color: var(--acc); }
+    .fi-del {
+      background: rgba(255,92,92,0.1); border: 1px solid rgba(255,92,92,0.3); color: var(--danger);
+    }
+    .fi-del:hover { background: var(--danger-glass); border-color: var(--danger); }
+
+    /* Inline edit form (inside items list) */
+    .edit-item-form {
+      margin: 4px 18px 8px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--acc-border, rgba(45,212,110,0.45));
+      border-radius: 12px; padding: 14px;
+    }
 
     /* Empty meal */
     .meal-empty {
@@ -384,9 +399,44 @@
 
   /* ── Inline form tracking ── */
   var openFormMealId = null;
+  var editingItem    = null; // { mealId, itemId }
+
+  /* ── Edit item ── */
+  window.startEditItem = function(mealId, itemId) {
+    editingItem    = { mealId: mealId, itemId: itemId };
+    openFormMealId = null;
+    render();
+    var form = document.getElementById('edit-form-' + itemId);
+    if (form) { var inp = form.querySelector('.aif-name-inp'); if (inp) { inp.focus(); inp.select(); } }
+  };
+
+  window.saveEditItem = function(mealId, itemId) {
+    var form = document.getElementById('edit-form-' + itemId);
+    if (!form) return;
+    var nameInp = form.querySelector('.aif-name-inp');
+    var name = nameInp ? nameInp.value.trim() : '';
+    if (!name) { if (nameInp) nameInp.focus(); return; }
+    name = name.charAt(0).toUpperCase() + name.slice(1);
+    function getVal(cls) { var el = form.querySelector('.' + cls); return el ? (parseFloat(el.value) || 0) : 0; }
+    var meal = meals.find(function(m) { return m.id === mealId; });
+    if (!meal) return;
+    var item = meal.items.find(function(it) { return it.id === itemId; });
+    if (!item) return;
+    item.name    = name;
+    item.protein = getVal('aif-protein');
+    item.carbs   = getVal('aif-carbs');
+    item.fat     = getVal('aif-fat');
+    item.cals    = getVal('aif-cals');
+    saveDay(meals);
+    editingItem = null;
+    render();
+  };
+
+  window.cancelEditItem = function() { editingItem = null; render(); };
 
   /* ── Add item form toggle ── */
   window.toggleItemForm = function(mealId) {
+    editingItem = null;
     if (openFormMealId === mealId) {
       // close it
       openFormMealId = null;
@@ -410,6 +460,7 @@
     var nameInp = form.querySelector('.aif-name-inp');
     var name = nameInp ? nameInp.value.trim() : '';
     if (!name) { if (nameInp) nameInp.focus(); return; }
+    name = name.charAt(0).toUpperCase() + name.slice(1);
 
     function getVal(cls) {
       var el = form.querySelector('.' + cls);
@@ -482,6 +533,24 @@
       } else {
         itemsHTML = '<div class="items-list">' +
           items.map(function(item) {
+            var isEditing = editingItem && editingItem.mealId === mealId && editingItem.itemId === item.id;
+            if (isEditing) {
+              return '<div class="edit-item-form" id="edit-form-' + item.id + '">' +
+                '<div class="aif-name-row">' +
+                  '<input class="aif-name-inp" type="text" value="' + escHTML(item.name) + '" autocomplete="off">' +
+                '</div>' +
+                '<div class="aif-macros">' +
+                  '<div class="aif-field p"><label>Protein (g)</label><input type="number" min="0" step="0.1" class="aif-protein" value="' + (item.protein||'') + '" placeholder="0"></div>' +
+                  '<div class="aif-field c"><label>Carbs (g)</label><input type="number" min="0" step="0.1" class="aif-carbs" value="' + (item.carbs||'') + '" placeholder="0"></div>' +
+                  '<div class="aif-field f"><label>Fat (g)</label><input type="number" min="0" step="0.1" class="aif-fat" value="' + (item.fat||'') + '" placeholder="0"></div>' +
+                  '<div class="aif-field k"><label>Calories</label><input type="number" min="0" step="1" class="aif-cals" value="' + (item.cals||'') + '" placeholder="0"></div>' +
+                '</div>' +
+                '<div class="aif-actions">' +
+                  '<button class="btn-confirm" onclick="saveEditItem(\'' + mealId + '\',\'' + item.id + '\')">Save</button>' +
+                  '<button class="btn-cancel" onclick="cancelEditItem()">Cancel</button>' +
+                '</div>' +
+              '</div>';
+            }
             return '<div class="food-item">' +
               '<span class="fi-name">' + escHTML(item.name) + '</span>' +
               '<div class="fi-macros">' +
@@ -490,6 +559,7 @@
                 (parseFloat(item.fat)     ? '<span class="fi-m f">' + fmt(item.fat)     + 'g F</span>' : '') +
                 (parseFloat(item.cals)    ? '<span class="fi-m k">' + fmt(item.cals)    + ' kcal</span>' : '') +
               '</div>' +
+              '<button class="fi-edit" onclick="startEditItem(\'' + mealId + '\',\'' + item.id + '\')">Edit</button>' +
               '<button class="fi-del" onclick="deleteItem(\'' + mealId + '\',\'' + item.id + '\')" title="Remove">✕</button>' +
             '</div>';
           }).join('') +
@@ -533,6 +603,28 @@
     }).join('');
 
     renderTotals();
+
+    // attach Enter/Escape key handlers to open edit form
+    if (editingItem) {
+      var ef = document.getElementById('edit-form-' + editingItem.itemId);
+      if (ef) {
+        var enInp = ef.querySelector('.aif-name-inp');
+        if (enInp) {
+          enInp.addEventListener('keydown', (function(mid, iid) {
+            return function(e) {
+              if (e.key === 'Enter') window.saveEditItem(mid, iid);
+              if (e.key === 'Escape') window.cancelEditItem();
+            };
+          })(editingItem.mealId, editingItem.itemId));
+        }
+        var ecInp = ef.querySelector('.aif-cals');
+        if (ecInp) {
+          ecInp.addEventListener('keydown', (function(mid, iid) {
+            return function(e) { if (e.key === 'Enter') window.saveEditItem(mid, iid); };
+          })(editingItem.mealId, editingItem.itemId));
+        }
+      }
+    }
 
     // attach Enter key handlers to open forms
     if (openFormMealId) {

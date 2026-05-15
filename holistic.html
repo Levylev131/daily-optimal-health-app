@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holistic Health Guide — Daily Optimal Health</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --r: 14px; --r-sm: 10px;
+      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
+      --amber: #f5a623; --blue: #3ecfff; --rose: #ff6b6b; --purple: #b89eff;
+    }
+    html { min-height: 100%; scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+      color: var(--text); min-height: 100vh; overflow-x: hidden;
+    }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+    .top-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 24px; max-width: 900px; margin: 0 auto;
+      border-bottom: 1px solid var(--glass-b);
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(6,26,12,0.85); backdrop-filter: blur(16px);
+    }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: .88rem; font-weight: 600; transition: color .2s; background: none; border: none; cursor: pointer; white-space: nowrap; }
+    .back-btn:hover { color: var(--acc); }
+    .top-title { flex: 1; text-align: center; font-size: 1rem; font-weight: 800; text-shadow: 0 0 20px var(--glow); }
+    .top-spacer { width: 60px; }
+
+    .page { max-width: 900px; margin: 0 auto; padding: clamp(16px,4vw,28px) clamp(12px,3vw,20px) 100px; }
+
+    .hero { text-align: center; padding: clamp(20px,4vw,32px) 0 clamp(14px,3vw,24px); }
+    .hero-emoji { font-size: clamp(2.5rem,7vw,4rem); display: block; margin-bottom: 10px; filter: drop-shadow(0 0 16px var(--glow)); }
+    .hero-title {
+      font-size: clamp(1.6rem,5vw,2.6rem); font-weight: 900; letter-spacing: -1px; line-height: 1.1;
+      background: linear-gradient(135deg, #fff 30%, var(--acc));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px;
+    }
+    .hero-sub { color: var(--muted); font-size: clamp(.84rem,2vw,.98rem); max-width: 540px; margin: 0 auto; line-height: 1.6; }
+
+    /* FILTER BAR */
+    .filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; padding-top: 4px; }
+    .filter-btn {
+      padding: 7px 14px; border-radius: 20px; border: 1px solid var(--glass-b);
+      background: var(--glass); color: var(--muted); font-size: .78rem; font-weight: 700;
+      cursor: pointer; transition: var(--trans); font-family: inherit; white-space: nowrap;
+    }
+    .filter-btn:hover { border-color: var(--acc); color: var(--text); }
+    .filter-btn.active { background: var(--acc); color: #000; border-color: var(--acc); box-shadow: 0 0 10px var(--glow); }
+
+    /* INDEX PILLS */
+    .practice-index { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+    .index-pill {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
+      padding: 5px 12px; font-size: .75rem; color: var(--muted); cursor: pointer;
+      transition: var(--trans); text-decoration: none; display: inline-block;
+    }
+    .index-pill:hover { border-color: var(--acc); color: var(--acc); }
+
+    /* PRACTICE CARD */
+    .practice-card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px);
+      margin-bottom: 16px; overflow: hidden;
+      scroll-margin-top: 72px; transition: border-color .2s;
+    }
+    .practice-card.open { border-color: rgba(45,212,110,0.35); }
+
+    .practice-header {
+      display: flex; align-items: center; gap: 16px;
+      padding: clamp(14px,3vw,20px); cursor: pointer;
+      transition: background .15s; user-select: none;
+    }
+    .practice-header:hover { background: var(--glass-h); }
+
+    .practice-icon {
+      font-size: clamp(2rem,5vw,2.6rem); flex-shrink: 0;
+      width: clamp(52px,10vw,68px); height: clamp(52px,10vw,68px);
+      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.2);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    }
+
+    .practice-meta { flex: 1; min-width: 0; }
+    .practice-name { font-size: clamp(1rem,2.8vw,1.25rem); font-weight: 900; margin-bottom: 3px; }
+    .practice-tagline { color: var(--muted); font-size: .8rem; margin-bottom: 8px; font-style: italic; }
+    .practice-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+    .ptag {
+      font-size: .64rem; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: .5px; white-space: nowrap;
+    }
+    .ptag-mental   { background: rgba(160,120,255,0.15); color: var(--purple); }
+    .ptag-recovery { background: rgba(62,207,255,0.12);  color: var(--blue); }
+    .ptag-sleep    { background: rgba(45,100,210,0.2);   color: #7eb8ff; }
+    .ptag-immune   { background: rgba(45,212,110,0.15);  color: var(--acc); }
+    .ptag-cardio   { background: rgba(255,107,107,0.15); color: var(--rose); }
+    .ptag-longevity{ background: rgba(245,166,35,0.15);  color: var(--amber); }
+
+    .expand-arrow { color: var(--muted); font-size: .8rem; transition: transform .25s; margin-left: 8px; flex-shrink: 0; }
+    .practice-card.open .expand-arrow { transform: rotate(180deg); }
+
+    /* CARD BODY */
+    .practice-body {
+      max-height: 0; overflow: hidden;
+      transition: max-height .45s cubic-bezier(.4,0,.2,1);
+      border-top: 1px solid transparent;
+    }
+    .practice-card.open .practice-body {
+      max-height: 1600px;
+      border-top-color: var(--glass-b);
+    }
+    .practice-inner { padding: clamp(14px,3vw,22px); display: flex; flex-direction: column; gap: 18px; }
+
+    /* MECHANISMS */
+    .mech-row { display: flex; gap: 7px; flex-wrap: wrap; }
+    .mech-badge {
+      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.25);
+      border-radius: 20px; padding: 4px 12px;
+      font-size: .72rem; font-weight: 700; color: var(--acc); letter-spacing: .3px;
+    }
+
+    /* SECTION LABEL */
+    .sec-lbl {
+      font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.3px;
+      color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+    }
+    .sec-lbl::after { content:''; flex:1; height:1px; background: var(--glass-b); }
+
+    /* BENEFITS */
+    .benefit-list { display: flex; flex-direction: column; gap: 8px; }
+    .benefit-item { display: flex; gap: 10px; align-items: flex-start; font-size: .84rem; line-height: 1.55; }
+    .benefit-dot {
+      width: 20px; height: 20px; border-radius: 50%; background: rgba(45,212,110,0.2);
+      color: var(--acc); font-size: .75rem; font-weight: 900;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+    }
+
+    /* TWO COLUMN */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media(max-width:560px) { .two-col { grid-template-columns: 1fr; } }
+
+    .info-box {
+      background: rgba(255,255,255,0.04); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); padding: 14px;
+    }
+    .info-box-text { font-size: .82rem; line-height: 1.65; color: rgba(240,255,244,0.85); }
+    .methods-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .method-pill {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
+      padding: 3px 10px; font-size: .7rem; color: var(--muted);
+    }
+
+    /* TIP BOX */
+    .tip-box {
+      background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.28);
+      border-radius: var(--r-sm); padding: 13px 15px; font-size: .8rem; line-height: 1.65;
+    }
+    .tip-box .tip-label { color: var(--amber); font-weight: 800; margin-bottom: 4px; font-size: .72rem; text-transform: uppercase; letter-spacing: .8px; }
+
+    /* STACK BOX */
+    .stack-box {
+      background: rgba(45,212,110,0.07); border: 1px solid rgba(45,212,110,0.22);
+      border-radius: var(--r-sm); padding: 11px 14px; font-size: .8rem; line-height: 1.6;
+    }
+    .stack-box .stack-label { color: var(--acc); font-weight: 800; margin-bottom: 3px; font-size: .72rem; text-transform: uppercase; letter-spacing: .8px; }
+
+    /* BACK TO TOP */
+    .back-top {
+      display: block; text-align: center; color: var(--muted); font-size: .76rem;
+      font-weight: 700; cursor: pointer; padding: 6px; transition: color .2s;
+      background: none; border: none; width: 100%; font-family: inherit;
+    }
+    .back-top:hover { color: var(--acc); }
+
+    .empty-state { text-align: center; color: var(--muted); padding: 48px 20px; font-size: .9rem; }
+  </style>
+  <script src="health-notifications.js" defer></script>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="history.back()">← Back</button>
+  <div class="top-title">🌿 Holistic Health</div>
+  <div class="top-spacer"></div>
+</div>
+
+<div class="page">
+
+  <div class="hero">
+    <span class="hero-emoji">☯️</span>
+    <div class="hero-title">Holistic Health Practices</div>
+    <div class="hero-sub">Evidence-based practices that work with your body's natural systems — no supplements, no devices required. Each one is backed by peer-reviewed research.</div>
+  </div>
+
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" onclick="filterPractices('all',this)">All Practices</button>
+    <button class="filter-btn" onclick="filterPractices('mental',this)">Mental / Stress</button>
+    <button class="filter-btn" onclick="filterPractices('recovery',this)">Recovery</button>
+    <button class="filter-btn" onclick="filterPractices('sleep',this)">Sleep</button>
+    <button class="filter-btn" onclick="filterPractices('immune',this)">Immune</button>
+    <button class="filter-btn" onclick="filterPractices('cardiovascular',this)">Cardiovascular</button>
+    <button class="filter-btn" onclick="filterPractices('longevity',this)">Longevity</button>
+  </div>
+
+  <div class="practice-index" id="practiceIndex"></div>
+  <div id="practiceList"></div>
+
+</div>
+
+<script>
+const TAG_CLASS = {
+  mental:       'ptag-mental',
+  recovery:     'ptag-recovery',
+  sleep:        'ptag-sleep',
+  immune:       'ptag-immune',
+  cardiovascular: 'ptag-cardio',
+  longevity:    'ptag-longevity',
+};
+const TAG_LABEL = {
+  mental:         'Mental / Stress',
+  recovery:       'Recovery',
+  sleep:          'Sleep',
+  immune:         'Immune',
+  cardiovascular: 'Cardiovascular',
+  longevity:      'Longevity',
+};
+
+const PRACTICES = [
+  {
+    id: 'cold-therapy',
+    emoji: '🧊',
+    name: 'Cold Therapy',
+    tagline: 'Ice baths and cold showers — dopamine, inflammation control, and mental resilience',
+    categories: ['recovery', 'mental'],
+    mechanisms: ['Norepinephrine surge', 'Dopamine pathway activation', 'Brown fat thermogenesis', 'Vagus nerve stimulation', 'Cold shock proteins (RBM3)'],
+    benefits: [
+      'Raises dopamine by 250% — a sustained spike that lasts 2–3 hours post-exposure, longer than any stimulant without a crash',
+      'Reduces post-exercise inflammation markers (IL-6, CRP) as effectively as NSAIDs, without blunting strength adaptations when timed correctly',
+      'Activates brown adipose tissue (BAT) — the metabolically active fat that generates heat, increasing baseline metabolic rate over time',
+      'Stimulates the vagus nerve, improving heart rate variability (HRV) — the primary objective marker of nervous system resilience',
+      'Triggers cold shock protein RBM3, which repairs damaged synapses and has shown neuroprotective effects in neurodegenerative disease models',
+    ],
+    howToPractice: 'Cold shower: end your shower with 1–3 minutes of cold water only. Calm your breathing — the gasp reflex passes in 30–60 seconds. Ice bath: fill to 10–15°C (50–59°F). Submerge to the neck. Focus on nasal breathing throughout.',
+    protocol: '11 minutes total per week across 2–4 sessions is the research-backed minimum effective dose (Søberg et al., 2022). Morning or early afternoon. Avoid within 4 hours of sleep — cold raises core temperature and delays sleep onset.',
+    methods: ['Cold shower (end-of-shower)', 'Ice bath', 'Cold plunge tub', 'Cold lake or river swimming', 'Cryotherapy chamber'],
+    tip: 'Don\'t immediately warm up with a hot shower after. The shivering and rewarming process is where the metabolic and dopamine benefits are concentrated — your body burning calories to heat itself is the mechanism. Dry off and let your body reheat naturally.',
+    stack: 'Sauna → Cold (contrast therapy). Alternating heat and cold amplifies cardiovascular, recovery, and mood benefits more than either practice alone. End on cold for energy, end on heat for relaxation.',
+  },
+  {
+    id: 'morning-sunlight',
+    emoji: '☀️',
+    name: 'Morning Sunlight',
+    tagline: 'Anchor your circadian clock — the single highest-leverage free daily health habit',
+    categories: ['sleep', 'mental'],
+    mechanisms: ['Melanopsin photoreception', 'Cortisol pulse timing', 'Serotonin → Melatonin cascade', 'Circadian entrainment', 'Adenosine timer reset'],
+    benefits: [
+      'Anchors the circadian clock via melanopsin neurons — precisely sets the timing of every hormone, metabolic process, and immune cycle for the next 24 hours',
+      'Triggers a healthy morning cortisol pulse — cortisol is the body\'s alertness signal, and a blunted morning cortisol peak is a core driver of chronic fatigue and depression',
+      'Stimulates serotonin synthesis in the eyes and skin, which converts to melatonin exactly 12–14 hours later — improving both daytime mood and nighttime sleep quality simultaneously',
+      'Sets the adenosine "sleep pressure" timer from a precise anchor point, making it dramatically easier to fall asleep and wake at consistent times',
+      'UV-A photons hitting the retina activate pathways that regulate mood, focus, appetite, and metabolism — independently of vitamin D production from skin exposure',
+    ],
+    howToPractice: 'Go outside within 30–60 minutes of waking. Angle your face toward the sky (never stare at the sun directly). Stay for the full duration — windows block 50–90% of the critical wavelengths needed. Overcast days still work: clouds deliver 10,000+ lux vs. 500 lux from bright indoor lighting.',
+    protocol: 'Sunny: 5–10 minutes. Overcast: 15–20 minutes. Heavy overcast or winter: 20–30 minutes. Do before or alongside coffee — caffeine taken 90 minutes after waking pairs optimally with the cortisol curve. No sunglasses during this window.',
+    methods: ['Morning walk outside', 'Outdoor breakfast or coffee', 'Balcony or garden time', 'Light therapy lamp — 10,000 lux (winter backup only)'],
+    tip: 'This is likely the single highest-leverage free health habit that exists. 10 minutes outside in the morning costs nothing, requires zero equipment, and simultaneously improves sleep quality, mood, metabolism, hormonal timing, and immune function. Even on cold or cloudy days, outside beats indoors by an enormous margin.',
+    stack: 'Morning walk (exercise + sunlight + low-stress movement all in one). Grounding (barefoot on grass while getting morning sunlight = two practices simultaneously). Delay caffeine 90 minutes after waking for maximum cortisol benefit.',
+  },
+  {
+    id: 'breathwork',
+    emoji: '💨',
+    name: 'Breathwork',
+    tagline: 'Real-time nervous system control — shift your state in under 60 seconds',
+    categories: ['mental', 'recovery'],
+    mechanisms: ['Vagal tone upregulation', 'CO₂ tolerance training', 'Parasympathetic activation', 'HRV improvement', 'Prefrontal cortex engagement'],
+    benefits: [
+      'Physiological sigh (double nasal inhale + long exhale) is the fastest known method to reduce acute stress — validated by Stanford research to work in under 60 seconds',
+      'Slow breathwork at 4–6 breaths/min significantly raises heart rate variability (HRV) — the most reliable objective marker of nervous system resilience and recovery capacity',
+      'CO₂ retention practice (breath holds) directly trains tolerance to discomfort and stress, building mental resilience through repeated controlled exposure',
+      'Extended exhales activate the parasympathetic nervous system, reducing cortisol and adrenaline within minutes — measurable in blood markers within 5 minutes of practice',
+      'Box breathing during stress activates the prefrontal cortex and prevents the amygdala hijack — the reactive shutdown of rational thought under acute stress',
+    ],
+    howToPractice: 'Choose a pattern based on your goal. For acute stress relief: Physiological Sigh (2 quick nasal inhales, long exhale). For focus: Box Breathing (4-4-4-4). For sleep onset: 4-7-8 breathing. For energy: cyclic hyperventilation. Nasal breathing throughout maximizes nitric oxide production.',
+    protocol: '5–20 minutes daily for measurable HRV improvement over time. For acute stress: even 3–5 cycles of physiological sigh or box breathing. Stimulating patterns (Wim Hof, cyclic hyperventilation) in the morning — calming patterns (4-7-8, box) before sleep.',
+    methods: ['Physiological Sigh', 'Box Breathing (4-4-4-4)', '4-7-8 Breathing', 'Wim Hof Method', 'Coherent Breathing (5.5 BPM)', 'Nadi Shodhana (alternate nostril)'],
+    tip: 'The physiological sigh is the most underrated tool here: two quick nasal inhales followed by one long slow exhale. This collapses CO₂-saturated air sacs in the lungs — it\'s the fastest way to offload CO₂ and activate the calming parasympathetic response. Your body does this involuntarily when you sigh. Now you can trigger it on demand.',
+    stack: 'Cold therapy (breathwork before cold exposure dramatically reduces the stress response and makes cold far more tolerable). Meditation (breathwork is the ideal entry point into a meditation session).',
+  },
+  {
+    id: 'sauna',
+    emoji: '🔥',
+    name: 'Sauna / Heat Therapy',
+    tagline: 'Cardiovascular training, growth hormone, and longevity — without moving a muscle',
+    categories: ['cardiovascular', 'recovery', 'longevity'],
+    mechanisms: ['Heat shock proteins (HSP70/90)', 'Growth hormone release', 'BDNF upregulation', 'Plasma volume expansion', 'Dynorphin & endorphin release'],
+    benefits: [
+      '4+ sauna sessions per week reduces cardiovascular mortality by 40% and all-cause mortality by 35% — a 20-year Finnish cohort study of 2,315 men (Laukkanen et al., 2018)',
+      'Triggers growth hormone release of 200–300% — peaking in the hours after a session, supporting muscle repair, fat metabolism, and tissue regeneration',
+      'Heat shock proteins (HSP70, HSP90) repair misfolded and damaged proteins — a core driver of cellular aging that sauna directly counteracts',
+      'Raises BDNF (brain-derived neurotrophic factor) similarly to aerobic exercise, supporting neuroplasticity, mood, and long-term cognitive function',
+      'Produces dynorphin then endorphin release post-session — causing the post-sauna "glow" of elevated mood and pain tolerance that lasts several hours',
+    ],
+    howToPractice: 'Traditional dry sauna: 80–100°C (176–212°F), 15–20 minutes per round. 2–3 rounds with 5–10 minute cool-down periods between. Infrared sauna: 55–70°C (131–158°F), 30–45 minutes — penetrates tissue more deeply at a more tolerable temperature.',
+    protocol: '4+ sessions per week for maximum cardiovascular benefit (mortality data). Minimum: 2 sessions/week. Aim for 57–114 total minutes of heat exposure per week — this is the range with the strongest research outcomes. Drink 500ml of water per 20-minute session.',
+    methods: ['Traditional Finnish dry sauna', 'Infrared sauna', 'Steam room (lower temp, higher humidity)', 'Sauna blanket', 'Hot bath (delivers ~70% of sauna benefit at lower temperature)'],
+    tip: 'Avoid eating for 1–2 hours after a sauna session — the post-sauna window is when growth hormone is working. Food (especially carbohydrates) blunts the GH pulse. This is also the ideal time to rehydrate with electrolytes: add sodium, potassium, and magnesium to your water.',
+    stack: 'Cold therapy between rounds (contrast therapy). Sauna → cold plunge → sauna amplifies cardiovascular and recovery effects beyond either alone. End on cold for energy and alertness. End on sauna for relaxation and sleep.',
+  },
+  {
+    id: 'forest-bathing',
+    emoji: '🌲',
+    name: 'Forest Bathing',
+    tagline: 'Shinrin-yoku — proven cortisol reduction, NK cell surge, and blood pressure drop from nature',
+    categories: ['mental', 'immune'],
+    mechanisms: ['Phytoncide inhalation (α-pinene, limonene)', 'NK cell activation', 'Cortisol normalization', 'Parasympathetic dominance', 'Fractal visual processing'],
+    benefits: [
+      'Inhaling forest phytoncides (α-pinene, d-limonene) increases natural killer (NK) cell activity by 50% — with the immune benefit persisting for 30+ days after a single 3-day forest visit',
+      'Reduces salivary cortisol by 12–15% after just 20 minutes in a forest compared to an equivalent urban walk — consistently replicated across dozens of Japanese and Korean studies',
+      'Lowers systolic blood pressure by 4–7 mmHg and resting heart rate by 5–6 BPM versus equivalent time in urban settings',
+      'Measurably shifts the nervous system toward parasympathetic dominance within 15 minutes of entering a natural environment — detectable by HRV analysis',
+      'Visual processing of the fractal geometry found in nature (leaves, branches, water) reduces physiological stress markers — a hard-wired human response that evolved over millions of years',
+    ],
+    howToPractice: 'Walk slowly through any natural environment — forest, park, riverside, or coast. No phone, no exercise goals, no destination. This is sensory immersion: listen to birdsong, touch bark and leaves, breathe slowly through your nose. Phytoncide concentration is highest in conifer forests (pine, cedar, cypress, fir).',
+    protocol: '20+ minutes provides measurable cortisol reduction. 2+ hours provides meaningful NK cell immune benefits. 1–2 sessions per week is sufficient for baseline benefit. Even urban parks with mature trees deliver partial phytoncide and cortisol benefits.',
+    methods: ['Forest walk (Shinrin-yoku)', 'Park immersion (urban)', 'Riverside or lakeside sitting', 'Coastal walking', 'Gardening with bare hands (partial benefit)'],
+    tip: 'Leave the phone behind or in airplane mode — research shows that even silent, face-down phone presence reduces cognitive bandwidth and measurably blunts the cortisol reduction effect. Full sensory presence is the mechanism, not scenery as a backdrop. The walk is not exercise — walk slow enough to notice small things.',
+    stack: 'Morning sunlight (combine into a single morning walk in a park or natural area). Breathwork (nasal breathing throughout maximizes phytoncide intake through the olfactory receptors). Grounding (barefoot in a park combines three practices in one session).',
+  },
+  {
+    id: 'grounding',
+    emoji: '🌍',
+    name: 'Grounding / Earthing',
+    tagline: 'Direct skin contact with the earth — reduces inflammation, stabilizes cortisol, improves sleep',
+    categories: ['sleep', 'recovery'],
+    mechanisms: ['Free electron transfer', 'Cortisol rhythm normalization', 'Inflammatory cytokine reduction', 'Zeta potential (RBC viscosity)', 'Parasympathetic shift'],
+    benefits: [
+      'Normalizes the 24-hour cortisol rhythm in grounded subjects — more defined morning peak, lower evening cortisol — improving overall sleep architecture and energy patterns',
+      'Reduces inflammatory markers (C-reactive protein, cytokines) via free electron transfer from earth neutralizing positively charged reactive oxygen species (free radicals)',
+      'Significantly improves sleep onset speed and sleep quality in double-blind crossover studies — participants slept measurably better when grounded vs. sham-grounded',
+      'Reduces blood viscosity via a zeta potential effect on red blood cells — potentially improving circulation and reducing cardiovascular risk markers',
+      'Produces measurable shift toward parasympathetic nervous system dominance within 40 minutes, detectable by heart rate variability analysis',
+    ],
+    howToPractice: 'Stand, sit, or walk barefoot on grass, soil, sand, or concrete (not asphalt, which is insulating). Lie directly on the ground. Swim or wade in the ocean, a lake, or a natural river. Garden with bare hands in soil. For indoor use, grounding mats and sheets connect to the ground pin of a standard electrical outlet.',
+    protocol: '20–40 minutes daily for measurable physiological effects. Morning barefoot time on grass naturally combines grounding with morning sunlight. Wet or moist ground is significantly more electrically conductive than dry — morning dew on grass is ideal. Ocean swimming provides strong full-body grounding via seawater conductivity.',
+    methods: ['Barefoot on grass or soil', 'Beach walking (sand)', 'Ocean or natural water swimming', 'Gardening with bare hands', 'Grounding mat or sheet (indoor)'],
+    tip: 'Ocean swimming delivers grounding, cold exposure, and magnesium absorption through the skin (seawater) simultaneously — one of the most efficient holistic health practices available. Morning barefoot on grass with sunlight in your eyes combines three practices: grounding, morning sunlight, and gentle outdoor presence, all at once.',
+    stack: 'Morning sunlight (barefoot on grass while getting morning light = grounding + circadian anchoring in one). Forest bathing (barefoot in a park combines earthing, phytoncide inhalation, and fractal visual processing simultaneously).',
+  },
+  {
+    id: 'meditation',
+    emoji: '🧘',
+    name: 'Meditation',
+    tagline: 'The only proven practice that physically reshapes brain structure — detectable on MRI in 8 weeks',
+    categories: ['mental', 'longevity'],
+    mechanisms: ['Default mode network suppression', 'Prefrontal cortex thickening', 'Amygdala volume reduction', 'Cortisol blunting', 'Telomere length preservation'],
+    benefits: [
+      'Reduces amygdala gray matter volume — the brain\'s fear and stress center physically shrinks after 8 weeks of daily practice, measurably reducing reactivity to stress and emotional triggers',
+      'Thickens the prefrontal cortex — the region governing rational decision-making, impulse control, and sustained attention — detectable by MRI after 8 weeks of 20–45 minutes daily',
+      'Lowers daily cortisol by 20–30% in regular meditators, with effects that persist throughout the day — not just during the session itself',
+      'Preserves telomere length — the biological aging clock inside every cell. Experienced meditators carry telomere lengths comparable to people 5–12 years younger',
+      'Suppresses the default mode network — the "mind-wandering" state linked to rumination, anxiety, and unhappiness. This state occupies 46.9% of waking hours in most adults',
+    ],
+    howToPractice: 'Sit comfortably or lie down. Close eyes. Bring attention to the physical sensation of breath at the nostrils or chest. When the mind wanders — which it will constantly — simply notice, and return focus without judgment or frustration. That act of returning is the core practice. Use a timer. Apps like Waking Up or Headspace help build the habit.',
+    protocol: 'Minimum effective dose: 8–13 minutes daily produces measurable anxiety reduction (meta-analysis). Structural brain changes require 8 weeks of 20–45 minutes daily. Morning sessions set the attentional tone for the rest of the day. Consistency over months beats long occasional sessions every time.',
+    methods: ['Focused attention (breath)', 'Open monitoring (body scan)', 'Loving-kindness (Metta)', 'NSDR / Yoga Nidra', 'Transcendental Meditation (TM)', 'Guided apps (Waking Up, Headspace, Calm)'],
+    tip: 'The goal is not to stop thinking. The goal is to notice when you\'ve drifted and return. Every return is a "mental rep." Beginners who cannot stop their thoughts are meditating correctly — the wandering and returning IS the practice. Expecting mental silence is the most common reason people quit after a week.',
+    stack: 'Breathwork (use 2–3 minutes of slow breathwork as the entry point into each meditation session — it drops you into the right physiological state faster). Morning sunlight (meditating outside in morning light stacks circadian benefits with the session).',
+  },
+];
+
+let activeFilter = 'all';
+
+function tagHtml(cat) {
+  return `<span class="ptag ${TAG_CLASS[cat]||''}">${TAG_LABEL[cat]||cat}</span>`;
+}
+
+function practiceCard(p) {
+  return `<div class="practice-card" id="${p.id}" data-cats="${p.categories.join(' ')}">
+    <div class="practice-header" onclick="toggleCard('${p.id}')">
+      <div class="practice-icon">${p.emoji}</div>
+      <div class="practice-meta">
+        <div class="practice-name">${p.name}</div>
+        <div class="practice-tagline">${p.tagline}</div>
+        <div class="practice-tags">
+          ${p.categories.map(tagHtml).join('')}
+        </div>
+      </div>
+      <span class="expand-arrow">▼</span>
+    </div>
+    <div class="practice-body">
+      <div class="practice-inner">
+
+        <div>
+          <div class="sec-lbl">Key Mechanisms</div>
+          <div class="mech-row">
+            ${p.mechanisms.map(m => `<span class="mech-badge">${m}</span>`).join('')}
+          </div>
+        </div>
+
+        <div>
+          <div class="sec-lbl">Evidence-Based Benefits</div>
+          <div class="benefit-list">
+            ${p.benefits.map((b,i) => `<div class="benefit-item"><div class="benefit-dot">${i+1}</div><span>${b}</span></div>`).join('')}
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="info-box">
+            <div class="sec-lbl">How to Practice</div>
+            <div class="info-box-text">${p.howToPractice}</div>
+          </div>
+          <div class="info-box">
+            <div class="sec-lbl">Protocol</div>
+            <div class="info-box-text">${p.protocol}</div>
+            <div class="methods-row">${p.methods.map(m=>`<span class="method-pill">${m}</span>`).join('')}</div>
+          </div>
+        </div>
+
+        <div class="tip-box">
+          <div class="tip-label">Pro Tip</div>
+          ${p.tip}
+        </div>
+
+        ${p.stack ? `<div class="stack-box"><div class="stack-label">Stack With</div>${p.stack}</div>` : ''}
+
+        <button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to top</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderAll() {
+  const filtered = activeFilter === 'all'
+    ? PRACTICES
+    : PRACTICES.filter(p => p.categories.includes(activeFilter));
+  document.getElementById('practiceList').innerHTML = filtered.length
+    ? filtered.map(practiceCard).join('')
+    : '<div class="empty-state">No practices match this filter.</div>';
+  buildIndex(filtered);
+}
+
+function buildIndex(list) {
+  document.getElementById('practiceIndex').innerHTML = list.map(p =>
+    `<a class="index-pill" href="#${p.id}" onclick="openAndScroll('${p.id}',event)">${p.emoji} ${p.name}</a>`
+  ).join('');
+}
+
+function toggleCard(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function openAndScroll(id, e) {
+  e.preventDefault();
+  const card = document.getElementById(id);
+  if (!card) return;
+  if (!card.classList.contains('open')) card.classList.add('open');
+  setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+
+function filterPractices(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+renderAll();
+</script>
+</body>
+</html>
