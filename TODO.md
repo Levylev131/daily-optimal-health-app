@@ -1,6 +1,10 @@
 # Daily Optimal Health — TODO
 
 ## Version History
+- **v1.8** — Holistic Health Guide (`holistic.html`) — 7 practices, mechanisms, evidence-based benefits, protocol, method pills, stacking tips
+- **v1.7** — Spice Guide (`spices.html`) — 7 spices, active compounds, key benefits, dosage, filter by category, stacking tips
+- **v1.6** — 30-day challenges: history dropdown, re-run same/different challenge, per-run stats (score, streak, grid, summary)
+- **v1.5** — Degenerate mode restored (mode toggle visible on hub), in-app notifications (Web Audio chime + banner, replaces broken browser Notification API on file://)
 - **v1.4** — 3 independent hub widgets — each configurable, S/M/L sizes, 3-column row layout (3×S or M+S fits one row), arrange/hide per widget
 - **v1.3** — Creatine Guide (`creatine.html`) + Meal Recipes (`meals.html`) — hub cards, dosage calc, recipe browser
 - **v1.2** — Breathing Timer (`breathing-timer.html`) — patterns, lung SVG shape, ripple rings, XP, history
@@ -64,10 +68,18 @@
 ## Up Next
 <!-- Add what's coming next -->
 
+## Done (recent)
+- [x] Setup Configurations page (`setups.html`) — 3 pre-built hub layouts (General Health, Muscle Gains, Weight Loss) with static mockup previews, one-click apply with full backup + undo, accessible via ⚙️ Setups button on hub toolbar
+- [x] Reminder names improved on index hub — full names for all pages, challenge reminders show challenge name, clicking navigates to the page
+- [x] Dashboard overhaul — clickable sections (all link to their pages), water tile in snapshot, auto-refresh every 60s, breathing timer section, empty states with action links
+- [x] Dashboard schedule tile — smart navigation: 0 active → index.html, 1 active → that page directly, 2+ active → slide-up picker modal showing all 6 schedules with progress
+- [x] Spice Guide (`spices.html`) — 7 spices with active compounds, benefits, dosage, category filter, stacking tips, hub card on index
+- [x] Holistic Health Guide (`holistic.html`) — 7 practices (cold therapy, morning sunlight, breathwork, sauna, forest bathing, grounding, meditation) with mechanisms, benefits, protocol, methods, stacking tips
+
 ## Backlog / Ideas
 - ~~**Stats/Dashboard page**~~ — done in v0.8 as `dashboard.html`.
-- **Degenerate mode** (back burner) — concept is solid, currently hidden in `index.html` via `false` flags in `renderHub()`. Pages intact. Restore by flipping those flags to `true`.
+- ~~**Degenerate mode**~~ — restored in v1.5.
 - ~~**Phase 3 refactor**~~ — done in v0.6.
-- Better notifications — browser notifications are unreliable on file:// URLs. Options: in-app chime/banner (easy), PWA install (medium), Electron desktop app (bigger lift).
+- ~~**Better notifications**~~ — done in v1.5 as in-app chime + banner (Web Audio API + fixed toast). PWA/Electron still possible for background notifications.
 - More profile icon alternatives — especially for Transcendent (rank 13). Currently ☀️ placeholder.
 - ~~**Old People Mode**~~ — done in v0.7 as Elder Mode.

@@ -138,11 +138,13 @@
       font-weight: 600; letter-spacing: .5px; text-transform: uppercase;
     }
     .ex-delete-btn {
-      background: none; border: none; cursor: pointer;
-      color: var(--muted); font-size: 1.1rem; padding: 4px 6px;
-      border-radius: 8px; transition: var(--trans); line-height: 1;
+      background: rgba(255,92,92,0.1); border: 1px solid rgba(255,92,92,0.3);
+      cursor: pointer; color: var(--danger); font-size: .78rem; font-weight: 700;
+      padding: 0 10px; height: 28px; border-radius: 6px;
+      transition: var(--trans); line-height: 1;
+      display: inline-flex; align-items: center;
     }
-    .ex-delete-btn:hover { background: var(--danger-glass); color: var(--danger); }
+    .ex-delete-btn:hover { background: var(--danger-glass); border-color: var(--danger); }
 
     /* Sets list */
     .sets-list { padding: 10px 16px 4px; }
@@ -182,12 +184,13 @@
     .unit-toggle button:not(.active):hover { background: var(--glass-h); color: var(--text); }
 
     .set-del-btn {
-      background: none; border: none; cursor: pointer;
-      color: var(--muted); font-size: .95rem; padding: 4px;
-      border-radius: 6px; transition: var(--trans); line-height: 1;
+      background: rgba(255,92,92,0.1); border: 1px solid rgba(255,92,92,0.3);
+      cursor: pointer; color: var(--danger); font-size: .78rem; font-weight: 700;
+      padding: 0; height: 28px; width: 28px; border-radius: 6px;
+      transition: var(--trans); line-height: 1;
       display: flex; align-items: center; justify-content: center;
     }
-    .set-del-btn:hover { background: var(--danger-glass); color: var(--danger); }
+    .set-del-btn:hover { background: var(--danger-glass); border-color: var(--danger); }
 
     /* Add set button */
     .add-set-btn {
@@ -213,12 +216,13 @@
     .set-labels {
       display: grid;
       grid-template-columns: 28px 1fr 1fr 72px 32px;
-      gap: 8px; padding: 0 16px 4px;
+      gap: 8px; padding: 12px 16px 4px;
       font-size: .72rem; font-weight: 600;
       color: var(--muted); text-transform: uppercase; letter-spacing: .5px;
     }
     .set-labels span:nth-child(1) { text-align: center; }
   </style>
+  <script src="health-notifications.js" defer></script>
 </head>
 <body>
 <div class="page">
@@ -329,6 +333,7 @@
     var input = document.getElementById('new-ex-name');
     var name = input.value.trim();
     if (!name) { input.focus(); return; }
+    name = name.charAt(0).toUpperCase() + name.slice(1);
     exercises.push({ id: newId(), name: name, sets: [] });
     saveDay(exercises);
     document.getElementById('add-ex-form').classList.remove('visible');
@@ -397,7 +402,7 @@
               ' title="Click to rename">' +
             '<div class="ex-set-count">' + setLabel + '</div>' +
           '</div>' +
-          '<button class="ex-delete-btn" onclick="deleteExercise(' + ei + ')" title="Delete exercise">🗑</button>' +
+          '<button class="ex-delete-btn" onclick="deleteExercise(' + ei + ')" title="Delete exercise">✕</button>' +
         '</div>' +
         setsHTML +
         '<button class="add-set-btn" onclick="addSet(' + ei + ')">＋ Add Set</button>' +
@@ -409,6 +414,7 @@
   window.renameExercise = function(ei, val) {
     var name = val.trim();
     if (!name) return;
+    name = name.charAt(0).toUpperCase() + name.slice(1);
     exercises[ei].name = name;
     saveDay(exercises);
     // update count label without full re-render to avoid losing focus

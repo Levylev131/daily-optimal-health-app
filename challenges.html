@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>30-Day Challenges — Daily Optimal Health</title>
+  <script src="health-notifications.js" defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -212,8 +213,17 @@
       position: relative;
     }
     .cal-sq.checked {
-      background: var(--acc);
-      box-shadow: 0 0 6px rgba(45,212,110,0.5);
+      background: rgba(5, 22, 10, 0.95);
+      border: 1px solid rgba(45,212,110,0.55);
+      box-shadow: 0 0 10px rgba(45,212,110,0.35), inset 0 0 6px rgba(45,212,110,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 900;
+      color: #2dd46e;
+      text-shadow: 0 0 8px rgba(45,212,110,0.9), 0 0 20px rgba(45,212,110,0.5);
+      letter-spacing: -1px;
     }
     .cal-sq.missed {
       background: rgba(255,80,80,0.2);
@@ -276,6 +286,69 @@
       border-color: rgba(255,80,80,0.4);
       color: #ff9999;
     }
+
+    /* Notification bell + panel */
+    .btn-notif {
+      background: var(--glass);
+      border: 1px solid var(--glass-b);
+      border-radius: 10px;
+      padding: 10px 13px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: var(--trans);
+      color: var(--muted);
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .btn-notif:hover { background: var(--glass-h); }
+    .btn-notif.notif-on {
+      border-color: rgba(45,212,110,0.5);
+      color: var(--acc);
+      background: rgba(45,212,110,0.1);
+    }
+    .ch-notif-panel {
+      display: none;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px 20px 16px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+    }
+    .ch-notif-panel.open { display: flex; }
+    .ch-notif-label { font-size: 13px; color: var(--muted); flex-shrink: 0; }
+    .ch-notif-time {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--glass-b);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 13px;
+      padding: 6px 10px;
+      width: 120px;
+    }
+    .btn-notif-set {
+      background: var(--acc);
+      color: #000;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: var(--trans);
+    }
+    .btn-notif-set:hover { background: #3de87c; }
+    .btn-notif-off {
+      background: none;
+      border: 1px solid rgba(255,80,80,0.3);
+      border-radius: 8px;
+      color: rgba(255,130,130,0.9);
+      padding: 7px 12px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: var(--trans);
+    }
+    .btn-notif-off:hover { background: rgba(255,60,60,0.1); border-color: rgba(255,80,80,0.6); }
 
     /* Available challenges grid */
     .avail-grid {
@@ -355,16 +428,20 @@
       background: var(--glass);
       border: 1px solid var(--glass-b);
       border-radius: var(--r-sm);
+      overflow: hidden;
+      transition: var(--trans);
+    }
+    .completed-item:hover { border-color: rgba(45,212,110,0.25); }
+    .completed-item-header {
       padding: 14px 16px;
       display: flex;
       align-items: center;
       gap: 14px;
+      cursor: pointer;
+      user-select: none;
     }
-    .completed-trophy {
-      font-size: 24px;
-      flex-shrink: 0;
-    }
-    .completed-info { flex: 1; }
+    .completed-trophy { font-size: 24px; flex-shrink: 0; }
+    .completed-info { flex: 1; min-width: 0; }
     .completed-name { font-size: 15px; font-weight: 700; }
     .completed-dates { font-size: 12px; color: var(--muted); margin-top: 2px; }
     .completed-badge {
@@ -376,7 +453,298 @@
       font-weight: 700;
       padding: 3px 10px;
       white-space: nowrap;
+      flex-shrink: 0;
     }
+    .completed-chevron {
+      font-size: 11px;
+      opacity: 0.5;
+      flex-shrink: 0;
+      transition: transform 0.25s ease;
+    }
+    .completed-item.open .completed-chevron { transform: rotate(180deg); }
+
+    /* Per-run history inside each completed challenge */
+    .completed-runs {
+      display: none;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .completed-item.open .completed-runs { display: block; }
+    .completed-run {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .completed-run:last-child { border-bottom: none; }
+    .completed-run-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .completed-run-label { font-size: 13px; font-weight: 700; }
+    .completed-run-score {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--acc);
+    }
+    .completed-run-dates { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+    .completed-run-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 3px;
+      margin-bottom: 8px;
+    }
+    .run-sq { aspect-ratio: 1; border-radius: 4px; }
+    .run-sq.sq-done { background: var(--acc); box-shadow: 0 0 4px rgba(45,212,110,0.4); }
+    .run-sq.sq-miss { background: rgba(255,80,80,0.2); border: 1px solid rgba(255,80,80,0.15); }
+    .completed-run-summary { font-size: 12px; color: var(--muted); font-style: italic; }
+
+    /* Popup toggle row inside bell panel */
+    .ch-popup-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      margin-top: 4px;
+    }
+    .ch-notif-sub {
+      font-size: 11px;
+      color: var(--muted);
+      flex: 1;
+      opacity: 0.7;
+    }
+    .btn-popup-toggle {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid var(--glass-b);
+      border-radius: 8px;
+      color: var(--muted);
+      padding: 6px 16px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      transition: var(--trans);
+      flex-shrink: 0;
+    }
+    .btn-popup-toggle:hover { background: rgba(255,255,255,0.12); }
+    .btn-popup-toggle.popup-on {
+      background: rgba(45,212,110,0.15);
+      border-color: rgba(45,212,110,0.45);
+      color: var(--acc);
+    }
+
+    /* Popup container header */
+    #ch-popup-header {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+      padding: 0 4px 2px;
+    }
+
+    /* Popup notification container — scrollable when > 3 */
+    #ch-popup-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 270px;
+      max-height: 522px; /* ~3 cards + gaps */
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10000;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(45,212,110,0.35) transparent;
+    }
+    #ch-popup-container::-webkit-scrollbar { width: 4px; }
+    #ch-popup-container::-webkit-scrollbar-track { background: transparent; }
+    #ch-popup-container::-webkit-scrollbar-thumb { background: rgba(45,212,110,0.35); border-radius: 2px; }
+
+    /* Floating popup notification card */
+    .ch-popup-notif {
+      flex-shrink: 0;
+      background: rgba(8, 28, 16, 0.97);
+      border: 1px solid rgba(45,212,110,0.45);
+      border-radius: 16px;
+      padding: 18px 18px 16px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.55), 0 0 0 1px rgba(45,212,110,0.08), 0 0 20px rgba(45,212,110,0.1);
+      opacity: 0;
+      transform: translateX(30px);
+      transition: opacity 0.3s ease, transform 0.3s cubic-bezier(.34,1.4,.64,1);
+    }
+    .ch-popup-notif.ch-popup-visible { opacity: 1; transform: translateX(0); }
+    .ch-popup-close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: var(--trans);
+    }
+    .ch-popup-close-btn:hover { background: rgba(255,80,80,0.2); border-color: rgba(255,80,80,0.4); color: #ff9999; }
+    .ch-popup-icon-lg { font-size: 32px; margin-bottom: 8px; line-height: 1; }
+    .ch-popup-name { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+    .ch-popup-msg { font-size: 13px; color: var(--muted); margin-bottom: 14px; line-height: 1.4; }
+    .ch-popup-action-btn {
+      background: var(--acc);
+      color: #000;
+      font-weight: 800;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 0;
+      cursor: pointer;
+      font-size: 13px;
+      transition: var(--trans);
+      width: 100%;
+    }
+    .ch-popup-action-btn:hover { background: #3de87c; }
+
+    /* Create-your-own card */
+    .create-ch-card {
+      border-style: dashed;
+      cursor: pointer;
+      align-items: center;
+      text-align: center;
+      justify-content: center;
+    }
+    .create-ch-card:hover { border-color: rgba(45,212,110,0.45); }
+    .create-ch-plus {
+      font-size: 30px;
+      color: var(--acc);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    /* Delete button on custom challenge cards */
+    .btn-custom-del {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--muted);
+      font-size: 15px;
+      cursor: pointer;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: var(--trans);
+      line-height: 1;
+    }
+    .btn-custom-del:hover { background: rgba(255,60,60,0.15); border-color: rgba(255,80,80,0.4); color: #ff9999; }
+
+    /* Create challenge modal */
+    #create-ch-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1001;
+      align-items: center;
+      justify-content: center;
+    }
+    #create-ch-overlay.show { display: flex; }
+    .create-ch-box {
+      background: #0d2a17;
+      border: 1px solid rgba(45,212,110,0.2);
+      border-radius: var(--r);
+      padding: 28px 24px;
+      max-width: 400px;
+      width: 90%;
+    }
+    .create-ch-box h3 { font-size: 18px; font-weight: 800; margin-bottom: 20px; }
+    .create-ch-field { margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px; }
+    .create-ch-field label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+    .create-ch-input {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid var(--glass-b);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      padding: 9px 12px;
+      font-family: inherit;
+      transition: border-color 0.2s ease;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .create-ch-input:focus { border-color: rgba(45,212,110,0.45); }
+    .create-ch-textarea { resize: vertical; min-height: 72px; }
+    .btn-create-save {
+      flex: 1;
+      padding: 11px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      background: var(--acc);
+      color: #000;
+      transition: var(--trans);
+    }
+    .btn-create-save:hover { background: #3de87c; }
+
+    /* Emoji picker */
+    .emoji-picker-wrap { position: relative; display: inline-block; }
+    .emoji-picker-btn {
+      font-size: 26px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid var(--glass-b);
+      border-radius: 8px;
+      padding: 7px 14px;
+      cursor: pointer;
+      transition: var(--trans);
+      line-height: 1;
+    }
+    .emoji-picker-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(45,212,110,0.35); }
+    .emoji-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      background: #0b2416;
+      border: 1px solid rgba(45,212,110,0.25);
+      border-radius: 12px;
+      padding: 10px;
+      z-index: 200;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+    }
+    .emoji-dropdown.open { display: block; }
+    .emoji-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 4px;
+    }
+    .emoji-opt {
+      font-size: 22px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 7px;
+      line-height: 1;
+      transition: background 0.15s ease;
+    }
+    .emoji-opt:hover { background: rgba(255,255,255,0.1); }
+    .emoji-opt.selected { background: rgba(45,212,110,0.22); outline: 1px solid rgba(45,212,110,0.4); }
 
     /* Sections spacing */
     .section { margin-bottom: 40px; }
@@ -497,6 +865,7 @@
     <div class="section-title">Completed 🏆 <span class="count" id="completed-count">0</span></div>
     <div class="completed-list" id="completed-list"></div>
   </div>
+
 </div>
 
 <!-- Toast -->
@@ -508,8 +877,44 @@
     <h3>Abandon Challenge?</h3>
     <p id="confirm-msg">This will remove this challenge and all your progress. This cannot be undone.</p>
     <div class="confirm-btns">
-      <button class="confirm-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="confirm-cancel" id="confirm-cancel-btn">Cancel</button>
       <button class="confirm-yes" id="confirm-yes-btn">Abandon</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Challenge Modal -->
+<div id="create-ch-overlay">
+  <div class="create-ch-box">
+    <h3>Create a Challenge</h3>
+    <div class="create-ch-field">
+      <label>Emoji Icon</label>
+      <input type="hidden" id="create-ch-icon" value="🎯">
+      <div class="emoji-picker-wrap">
+        <button type="button" id="create-ch-icon-btn" class="emoji-picker-btn">🎯</button>
+        <div id="emoji-dropdown" class="emoji-dropdown">
+          <div id="emoji-grid" class="emoji-grid"></div>
+        </div>
+      </div>
+    </div>
+    <div class="create-ch-field">
+      <label>Name</label>
+      <input type="text" id="create-ch-name" class="create-ch-input" placeholder="e.g. No caffeine" maxlength="40">
+    </div>
+    <div class="create-ch-field">
+      <label>Description</label>
+      <textarea id="create-ch-desc" class="create-ch-input create-ch-textarea" placeholder="What does this challenge involve?" maxlength="120"></textarea>
+    </div>
+    <div class="create-ch-field">
+      <label>Duration</label>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input type="number" id="create-ch-days" class="create-ch-input" value="30" min="1" max="365" style="width:90px;">
+        <span style="font-size:12px;color:var(--muted);">days &nbsp;·&nbsp; 30 recommended</span>
+      </div>
+    </div>
+    <div class="confirm-btns" style="margin-top:6px">
+      <button class="confirm-cancel" id="create-ch-cancel">Cancel</button>
+      <button class="btn-create-save" id="create-ch-save">Create Challenge</button>
     </div>
   </div>
 </div>
@@ -523,16 +928,16 @@
 
   /* ── Preset challenges ── */
   var CHALLENGES = [
-    { id:'no-sugar',    icon:'🍬', name:'No Added Sugar',          desc:'Cut out added sugar completely for 30 days.' },
-    { id:'daily-walk',  icon:'🚶', name:'Daily Walk',               desc:'Walk at least 20 minutes every single day.' },
-    { id:'cold-shower', icon:'🚿', name:'Cold Showers',             desc:'End every shower with 2 minutes of cold water.' },
-    { id:'no-alcohol',  icon:'🚫', name:'No Alcohol',               desc:'30 days completely alcohol-free.' },
-    { id:'8k-steps',    icon:'👟', name:'8,000 Steps',              desc:'Hit 8,000 steps every day for 30 days.' },
-    { id:'meditation',  icon:'🧘', name:'Daily Meditation',         desc:'10 minutes of meditation or breathwork daily.' },
-    { id:'read-daily',  icon:'📚', name:'Read Every Day',           desc:'Read at least 10 pages every day.' },
-    { id:'no-phone-am', icon:'📵', name:'No Phone in the Morning',  desc:'No phone for the first 30 minutes after waking.' },
-    { id:'journaling',  icon:'📝', name:'Daily Journaling',         desc:'Write at least 3 sentences in a journal every day.' },
-    { id:'early-sleep', icon:'😴', name:'Lights Out by 11 PM',      desc:'Be in bed with lights off by 11 PM every night.' }
+    { id:'no-sugar',    icon:'🍬', name:'No Added Sugar',          desc:'Cut out added sugar completely for {days} days.' },
+    { id:'daily-walk',  icon:'🚶', name:'Daily Walk',               desc:'Walk at least 20 minutes every single day for {days} days.' },
+    { id:'cold-shower', icon:'🚿', name:'Cold Showers',             desc:'End every shower with 2 minutes of cold water for {days} days.' },
+    { id:'no-alcohol',  icon:'🚫', name:'No Alcohol',               desc:'{days} days completely alcohol-free.' },
+    { id:'8k-steps',    icon:'👟', name:'8,000 Steps',              desc:'Hit 8,000 steps every day for {days} days.' },
+    { id:'meditation',  icon:'🧘', name:'Daily Meditation',         desc:'10 minutes of meditation or breathwork daily for {days} days.' },
+    { id:'read-daily',  icon:'📚', name:'Read Every Day',           desc:'Read at least 10 pages every day for {days} days.' },
+    { id:'no-phone-am', icon:'📵', name:'No Phone in the Morning',  desc:'No phone for the first 30 min after waking for {days} days.' },
+    { id:'journaling',  icon:'📝', name:'Daily Journaling',         desc:'Write at least 3 sentences in a journal every day for {days} days.' },
+    { id:'early-sleep', icon:'😴', name:'Lights Out by 11 PM',      desc:'Lights out by 11 PM every night for {days} days.' }
   ];
 
   /* ── Date helpers ── */
@@ -554,50 +959,94 @@
   function getActive() {
     try { return JSON.parse(store().getItem('ch:active') || '[]'); } catch(e) { return []; }
   }
-  function setActive(arr) {
-    store().setItem('ch:active', JSON.stringify(arr));
-  }
+  function setActive(arr) { store().setItem('ch:active', JSON.stringify(arr)); }
   function getCompleted() {
     try { return JSON.parse(store().getItem('ch:completed') || '[]'); } catch(e) { return []; }
   }
-  function setCompleted(arr) {
-    store().setItem('ch:completed', JSON.stringify(arr));
+  function setCompleted(arr) { store().setItem('ch:completed', JSON.stringify(arr)); }
+
+  function getCustomChallenges() {
+    try { return JSON.parse(localStorage.getItem('ch:custom') || '[]'); } catch(e) { return []; }
   }
-  function getDayChecked(challengeId, date) {
-    return store().getItem('ch:' + challengeId + ':' + date) === '1';
+  function setCustomChallenges(arr) { localStorage.setItem('ch:custom', JSON.stringify(arr)); }
+  function getAllChallenges() { return CHALLENGES.concat(getCustomChallenges()); }
+  function getChallengeDays(challengeId, startDate) {
+    if (startDate) {
+      var allEntries = getActive().concat(getCompleted());
+      var entry = allEntries.find(function(e) {
+        return e.challengeId === challengeId && e.startDate === startDate;
+      });
+      if (entry && entry.days > 0) return Math.floor(entry.days);
+    }
+    var ch = getAllChallenges().find(function(c) { return c.id === challengeId; });
+    return (ch && ch.days > 0) ? Math.floor(ch.days) : 30;
   }
-  function setDayChecked(challengeId, date) {
-    store().setItem('ch:' + challengeId + ':' + date, '1');
+
+  // Keys include startDate so re-runs don't share check-in data
+  function getDayChecked(challengeId, startDate, date) {
+    return store().getItem('ch:' + challengeId + ':' + startDate + ':' + date) === '1';
+  }
+  function setDayChecked(challengeId, startDate, date) {
+    store().setItem('ch:' + challengeId + ':' + startDate + ':' + date, '1');
+  }
+
+  // Migrate old-format keys (ch:{id}:{date}) to new (ch:{id}:{startDate}:{date})
+  function migrateCheckInKeys() {
+    var allEntries = getActive().concat(getCompleted());
+    allEntries.forEach(function(entry) {
+      for (var i = 0; i < 30; i++) {
+        var d = offsetDate(entry.startDate, i);
+        var oldKey = 'ch:' + entry.challengeId + ':' + d;
+        var newKey = 'ch:' + entry.challengeId + ':' + entry.startDate + ':' + d;
+        if (store().getItem(oldKey) === '1' && store().getItem(newKey) !== '1') {
+          store().setItem(newKey, '1');
+          store().removeItem(oldKey);
+        }
+      }
+    });
   }
 
   /* ── Core logic ── */
   function getCheckedCount(challengeId, startDate) {
+    var days = getChallengeDays(challengeId, startDate);
     var count = 0;
-    for (var i = 0; i < 30; i++) {
-      var d = offsetDate(startDate, i);
-      if (getDayChecked(challengeId, d)) count++;
+    for (var i = 0; i < days; i++) {
+      if (getDayChecked(challengeId, startDate, offsetDate(startDate, i))) count++;
     }
     return count;
   }
 
-  function getDayNumber(startDate) {
-    // Day 1 = startDate, Day 2 = startDate+1, etc.
-    var start = new Date(startDate + 'T00:00:00');
-    var today = new Date(todayKey() + 'T00:00:00');
-    var diff = Math.floor((today - start) / 86400000);
-    return Math.min(Math.max(diff + 1, 1), 30);
+  function getLongestStreak(challengeId, startDate) {
+    var days = getChallengeDays(challengeId, startDate);
+    var max = 0, cur = 0;
+    for (var i = 0; i < days; i++) {
+      if (getDayChecked(challengeId, startDate, offsetDate(startDate, i))) {
+        cur++; max = Math.max(max, cur);
+      } else { cur = 0; }
+    }
+    return max;
   }
 
-  function isCheckedToday(challengeId) {
-    return getDayChecked(challengeId, todayKey());
+  function getDayNumber(startDate, days) {
+    var maxDays = days || 30;
+    var diff = Math.floor((new Date(todayKey()+'T00:00:00') - new Date(startDate+'T00:00:00')) / 86400000);
+    return Math.min(Math.max(diff + 1, 1), maxDays);
   }
 
-  function isChallengeActive(challengeId) {
-    return getActive().some(function(a) { return a.challengeId === challengeId; });
+  function isCheckedToday(challengeId, startDate) {
+    return getDayChecked(challengeId, startDate, todayKey());
   }
 
-  function isChallengeCompleted(challengeId) {
-    return getCompleted().some(function(c) { return c.challengeId === challengeId; });
+  function summaryText(checked, total) {
+    var t = total || 30;
+    var pct = checked / t;
+    if (checked === t) return 'Perfect run — not a single miss. 🌟';
+    if (pct >= 0.93) return 'Near-perfect. Exceptional consistency.';
+    if (pct >= 0.83) return 'Strong effort — only a few slip-ups.';
+    if (pct >= 0.67) return 'Solid work. More than 2/3 of days hit.';
+    if (pct >= 0.50) return 'Good start. Each run builds the habit.';
+    if (pct >= 0.33) return 'Tough run. Keep going — habits take time.';
+    return 'Rough stretch. The fact you showed up matters.';
   }
 
   /* ── Toast ── */
@@ -607,27 +1056,27 @@
     el.textContent = msg;
     el.classList.add('show');
     if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(function() {
-      el.classList.remove('show');
-    }, duration || 3000);
+    toastTimer = setTimeout(function() { el.classList.remove('show'); }, duration || 3000);
   }
 
   /* ── Confirm dialog ── */
   var confirmCallback = null;
   function openConfirm(challengeName, cb) {
     document.getElementById('confirm-msg').textContent =
-      'This will remove "' + challengeName + '" and all your progress. This cannot be undone.';
+      'This will remove "' + challengeName + '" and all your check-in progress. This cannot be undone.';
     document.getElementById('confirm-overlay').classList.add('show');
     confirmCallback = cb;
     document.getElementById('confirm-yes-btn').onclick = function() {
+      var cb = confirmCallback;
       closeConfirm();
-      if (confirmCallback) confirmCallback();
+      if (cb) cb();
     };
   }
   function closeConfirm() {
     document.getElementById('confirm-overlay').classList.remove('show');
     confirmCallback = null;
   }
+  document.getElementById('confirm-cancel-btn').addEventListener('click', closeConfirm);
   document.getElementById('confirm-overlay').addEventListener('click', function(e) {
     if (e.target === this) closeConfirm();
   });
@@ -635,62 +1084,175 @@
   /* ── Check in ── */
   function checkIn(challengeId, startDate) {
     var today = todayKey();
-    if (getDayChecked(challengeId, today)) return;
-
-    // Make sure today is within the 30-day window
+    if (getDayChecked(challengeId, startDate, today)) return;
+    var days = getChallengeDays(challengeId, startDate);
     var dayIdx = Math.floor((new Date(today+'T00:00:00') - new Date(startDate+'T00:00:00')) / 86400000);
-    if (dayIdx < 0 || dayIdx >= 30) return;
+    if (dayIdx < 0 || dayIdx >= days) return;
 
-    setDayChecked(challengeId, today);
+    setDayChecked(challengeId, startDate, today);
 
-    // Check if this completes the challenge (day 30 checked)
-    var checkedCount = getCheckedCount(challengeId, startDate);
-    var endDate = offsetDate(startDate, 29);
-
-    if (getDayChecked(challengeId, endDate)) {
-      // Challenge complete!
+    var endDate = offsetDate(startDate, days - 1);
+    if (getDayChecked(challengeId, startDate, endDate)) {
+      var chDef = getAllChallenges().find(function(c) { return c.id === challengeId; });
       completeChallenge(challengeId, startDate);
       showToast('🏆 Challenge complete! Amazing work!', 5000);
+      if (window.dohNotifications && chDef) window.dohNotifications.celebrate(chDef.name, chDef.icon);
+      if (chDef) CompletePopup(chDef);
     } else {
       showToast('✓ Checked in! Keep going!', 2500);
       render();
     }
   }
 
+  /* ── Challenge notification helpers ── */
+  function chNotifPageKey(challengeId, startDate) {
+    return 'ch-' + challengeId + '-' + startDate;
+  }
+  function isChallengeNotifEnabled(challengeId, startDate) {
+    return localStorage.getItem('notif:' + chNotifPageKey(challengeId, startDate) + ':enabled') === '1';
+  }
+  function getChallengeNotifTimeStr(challengeId, startDate) {
+    var raw = localStorage.getItem('notif:' + chNotifPageKey(challengeId, startDate) + ':tasks');
+    var tasks = raw ? JSON.parse(raw) : null;
+    var mins = (tasks && tasks[0]) ? tasks[0].mins : 540;
+    return String(Math.floor(mins / 60)).padStart(2, '0') + ':' + String(mins % 60).padStart(2, '0');
+  }
+  function setChallengeNotif(challengeId, startDate, timeMins, challengeName) {
+    var ch = getAllChallenges().find(function(c) { return c.id ===challengeId; });
+    var pk = chNotifPageKey(challengeId, startDate);
+    localStorage.setItem('notif:' + pk + ':tasks', JSON.stringify([{ label: 'Check in: ' + challengeName, mins: timeMins, icon: ch ? ch.icon : '⏰' }]));
+    localStorage.setItem('notif:' + pk + ':enabled', '1');
+    if (window.dohNotifications) window.dohNotifications.schedule();
+  }
+  function disableChallengeNotif(challengeId, startDate) {
+    var pk = chNotifPageKey(challengeId, startDate);
+    localStorage.removeItem('notif:' + pk + ':enabled');
+    localStorage.removeItem('notif:' + pk + ':tasks');
+    if (window.dohNotifications) window.dohNotifications.schedule();
+  }
+  function formatTime12h(timeStr) {
+    var parts = timeStr.split(':');
+    var h = parseInt(parts[0]), m = parseInt(parts[1]);
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return h + ':' + String(m).padStart(2, '0') + ' ' + ampm;
+  }
+
+  /* ── Popup preference helpers ── */
+  function isChallengePopupEnabled(challengeId, startDate) {
+    return localStorage.getItem('notif:' + chNotifPageKey(challengeId, startDate) + ':popup') === '1';
+  }
+  function setChallengePopup(challengeId, startDate, enabled) {
+    var pk = chNotifPageKey(challengeId, startDate);
+    if (enabled) localStorage.setItem('notif:' + pk + ':popup', '1');
+    else localStorage.removeItem('notif:' + pk + ':popup');
+  }
+
+  /* ── Floating popup cards ── */
+  var _activePopups = [];
+  var _popupContainer = null;
+
+  function getPopupContainer() {
+    if (!_popupContainer || !document.body.contains(_popupContainer)) {
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'position:fixed;bottom:24px;right:24px;width:270px;z-index:10000;display:flex;flex-direction:column;gap:8px;';
+      var header = document.createElement('div');
+      header.id = 'ch-popup-header';
+      header.textContent = '🔔 Notifications';
+      wrap.appendChild(header);
+      _popupContainer = document.createElement('div');
+      _popupContainer.id = 'ch-popup-container';
+      _popupContainer.style.position = 'static';
+      _popupContainer.style.right = 'auto';
+      _popupContainer.style.bottom = 'auto';
+      _popupContainer.style.width = '100%';
+      wrap.appendChild(_popupContainer);
+      document.body.appendChild(wrap);
+      _popupContainer._wrap = wrap;
+    }
+    return _popupContainer;
+  }
+
+  function ReminderPopup(ch, startDate, autoDismiss) {
+    var container = getPopupContainer();
+    var card = document.createElement('div');
+    card.className = 'ch-popup-notif';
+    card.innerHTML =
+      '<button class="ch-popup-close-btn" title="Dismiss">×</button>' +
+      '<div class="ch-popup-icon-lg">' + ch.icon + '</div>' +
+      '<div class="ch-popup-name">' + escHtml(ch.name) + '</div>' +
+      '<div class="ch-popup-msg">Time to check in today!</div>' +
+      '<button class="ch-popup-action-btn">Go to Challenge</button>';
+    container.appendChild(card);
+    _activePopups.push(card);
+    setTimeout(function() {
+      card.classList.add('ch-popup-visible');
+      container.scrollTop = container.scrollHeight;
+    }, 30);
+
+    function dismiss() {
+      card.classList.remove('ch-popup-visible');
+      setTimeout(function() {
+        card.remove();
+        var idx = _activePopups.indexOf(card);
+        if (idx !== -1) _activePopups.splice(idx, 1);
+        if (_activePopups.length === 0) {
+          (_popupContainer._wrap || _popupContainer).remove();
+          _popupContainer = null;
+        }
+      }, 380);
+    }
+
+    if (autoDismiss) setTimeout(dismiss, 10000);
+
+    card.querySelector('.ch-popup-close-btn').addEventListener('click', dismiss);
+    card.querySelector('.ch-popup-action-btn').addEventListener('click', function() {
+      dismiss();
+      var target = document.getElementById('active-card-' + ch.id);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.style.boxShadow = '0 0 0 2px var(--acc), 0 0 28px rgba(45,212,110,0.45)';
+        setTimeout(function() { target.style.boxShadow = ''; }, 2000);
+      }
+    });
+  }
+
   function completeChallenge(challengeId, startDate) {
-    var active = getActive().filter(function(a) { return a.challengeId !== challengeId; });
+    var checkedCount = getCheckedCount(challengeId, startDate);
+    var days = getChallengeDays(challengeId, startDate);
+    disableChallengeNotif(challengeId, startDate);
+    var active = getActive().filter(function(a) {
+      return !(a.challengeId === challengeId && a.startDate === startDate);
+    });
     setActive(active);
     var completed = getCompleted();
-    completed.push({ challengeId: challengeId, startDate: startDate, endDate: offsetDate(startDate, 29) });
+    completed.push({ challengeId: challengeId, startDate: startDate, endDate: offsetDate(startDate, days - 1), checkedCount: checkedCount, days: days });
     setCompleted(completed);
     render();
   }
 
   /* ── Start challenge ── */
-  function startChallenge(challengeId) {
+  function startChallenge(challengeId, days) {
     var active = getActive();
     if (active.some(function(a) { return a.challengeId === challengeId; })) return;
-    active.push({ challengeId: challengeId, startDate: todayKey() });
+    var d = Math.max(1, Math.floor(days || 30));
+    active.push({ challengeId: challengeId, startDate: todayKey(), days: d });
     setActive(active);
     showToast('Challenge started! Check in every day.', 2800);
     render();
   }
 
   /* ── Abandon ── */
-  function abandonChallenge(challengeId, challengeName) {
+  function abandonChallenge(challengeId, startDate, challengeName) {
     openConfirm(challengeName, function() {
-      var active = getActive().filter(function(a) { return a.challengeId !== challengeId; });
+      var days = getChallengeDays(challengeId, startDate);
+      disableChallengeNotif(challengeId, startDate);
+      var active = getActive().filter(function(a) {
+        return !(a.challengeId === challengeId && a.startDate === startDate);
+      });
       setActive(active);
-      // Clear all check-in data for this challenge
-      for (var i = 0; i < 30; i++) {
-        // We can't know the startDate here so we'll clear for the next 60 days
-        var d = offsetDate(todayKey(), -60 + i);
-        store().removeItem('ch:' + challengeId + ':' + d);
-      }
-      // Also clear from today forward
-      for (var j = 0; j < 30; j++) {
-        var d2 = offsetDate(todayKey(), j);
-        store().removeItem('ch:' + challengeId + ':' + d2);
+      for (var i = 0; i < days; i++) {
+        store().removeItem('ch:' + challengeId + ':' + startDate + ':' + offsetDate(startDate, i));
       }
       showToast('Challenge abandoned.', 2000);
       render();
@@ -711,43 +1273,42 @@
 
     container.innerHTML = '';
     active.forEach(function(entry) {
-      var ch = CHALLENGES.find(function(c) { return c.id === entry.challengeId; });
+      var ch = getAllChallenges().find(function(c) { return c.id ===entry.challengeId; });
       if (!ch) return;
 
       var startDate = entry.startDate;
+      var days = getChallengeDays(ch.id, startDate);
       var checkedCount = getCheckedCount(ch.id, startDate);
-      var dayNum = getDayNumber(startDate);
-      var alreadyChecked = isCheckedToday(ch.id);
-      var pct = Math.round((checkedCount / 30) * 100);
+      var dayNum = getDayNumber(startDate, days);
+      var alreadyChecked = isCheckedToday(ch.id, startDate);
+      var pct = Math.round((checkedCount / days) * 100);
 
-      // Determine if today is within the window
       var todayIdx = Math.floor((new Date(today+'T00:00:00') - new Date(startDate+'T00:00:00')) / 86400000);
-      var todayInWindow = todayIdx >= 0 && todayIdx < 30;
+      var todayInWindow = todayIdx >= 0 && todayIdx < days;
 
-      // Build calendar squares
       var squares = '';
-      for (var i = 0; i < 30; i++) {
+      var checkInNum = 0;
+      for (var i = 0; i < days; i++) {
         var sqDate = offsetDate(startDate, i);
-        var isChecked = getDayChecked(ch.id, sqDate);
+        var isChecked = getDayChecked(ch.id, startDate, sqDate);
+        if (isChecked) checkInNum++;
         var isToday = sqDate === today;
         var isPast = sqDate < today;
-        var isFuture = sqDate > today;
-
         var cls = 'cal-sq';
-        if (isChecked) cls += ' checked';
-        else if (isToday) cls += ' today future'; // today not yet checked treated as special
-        else if (isPast) cls += ' missed';
-        else cls += ' future';
-
-        if (isToday && !isChecked) cls = 'cal-sq today future'; // highlight today even unchecked
-        if (isToday && isChecked) cls = 'cal-sq checked today';
-
-        var label = 'Day ' + (i+1) + ' (' + sqDate + ')';
-        squares += '<div class="' + cls + '" title="' + label + '"></div>';
+        if (isChecked) cls = isToday ? 'cal-sq checked today' : 'cal-sq checked';
+        else if (isToday) cls = 'cal-sq today future';
+        else if (isPast) cls = 'cal-sq missed';
+        else cls = 'cal-sq future';
+        squares += '<div class="' + cls + '" title="Day ' + (i+1) + ' (' + sqDate + ')">' + (isChecked ? checkInNum : '') + '</div>';
       }
+
+      var notifOn = isChallengeNotifEnabled(ch.id, startDate);
+      var notifTimeStr = getChallengeNotifTimeStr(ch.id, startDate);
+      var popupOn = isChallengePopupEnabled(ch.id, startDate);
 
       var cardEl = document.createElement('div');
       cardEl.className = 'active-card';
+      cardEl.id = 'active-card-' + ch.id;
       cardEl.innerHTML =
         '<div class="ch-header">' +
           '<div class="ch-icon">' + ch.icon + '</div>' +
@@ -755,37 +1316,92 @@
             '<div class="ch-name">' + escHtml(ch.name) + '</div>' +
             '<div class="ch-desc">' + escHtml(ch.desc) + '</div>' +
           '</div>' +
-          '<div class="ch-day-label">Day ' + dayNum + ' of 30</div>' +
+          '<div class="ch-day-label">Day ' + dayNum + ' of ' + days + '</div>' +
         '</div>' +
         '<div class="progress-wrap">' +
           '<div class="progress-label">' +
-            '<span><strong>' + checkedCount + '</strong> / 30 days checked</span>' +
+            '<span><strong>' + checkedCount + '</strong> / ' + days + ' days checked</span>' +
             '<span><strong>' + pct + '%</strong></span>' +
           '</div>' +
           '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
         '</div>' +
         '<div class="cal-grid" style="margin-bottom:16px;">' + squares + '</div>' +
         '<div class="action-row">' +
-          '<button class="btn-primary" id="checkin-' + ch.id + '" ' +
-            (!todayInWindow || alreadyChecked ? 'disabled' : '') + '>' +
+          '<button class="btn-primary" id="checkin-' + ch.id + '" ' + (!todayInWindow || alreadyChecked ? 'disabled' : '') + '>' +
             (alreadyChecked ? '✓ Checked in today' : 'Check in today') +
           '</button>' +
+          '<button class="btn-notif' + (notifOn ? ' notif-on' : '') + '" id="notif-btn-' + ch.id + '" title="' + (notifOn ? 'Reminder on — click to edit' : 'Set daily reminder') + '">🔔</button>' +
           '<button class="btn-secondary" id="abandon-' + ch.id + '">Abandon</button>' +
+        '</div>' +
+        '<div class="ch-notif-panel" id="notif-panel-' + ch.id + '">' +
+          '<span class="ch-notif-label">⏰ Remind me daily at</span>' +
+          '<input type="time" class="ch-notif-time" id="notif-time-' + ch.id + '" value="' + notifTimeStr + '">' +
+          '<button class="btn-notif-set" id="notif-set-' + ch.id + '">Set Reminder</button>' +
+          (notifOn ? '<button class="btn-notif-off" id="notif-off-' + ch.id + '">Turn Off</button>' : '') +
+          '<div class="ch-popup-row">' +
+            '<span class="ch-notif-label">🔔 Popup</span>' +
+            '<button class="btn-popup-toggle' + (popupOn ? ' popup-on' : '') + '" id="popup-toggle-' + ch.id + '">' + (popupOn ? 'On' : 'Off') + '</button>' +
+            '<span class="ch-notif-sub">stays until dismissed</span>' +
+          '</div>' +
         '</div>';
 
       container.appendChild(cardEl);
 
-      // Bind check-in
       if (todayInWindow && !alreadyChecked) {
         document.getElementById('checkin-' + ch.id).addEventListener('click', (function(cid, sd) {
           return function() { checkIn(cid, sd); };
         })(ch.id, startDate));
       }
 
-      // Bind abandon
-      document.getElementById('abandon-' + ch.id).addEventListener('click', (function(cid, cname) {
-        return function() { abandonChallenge(cid, cname); };
-      })(ch.id, ch.name));
+      // Bell toggle
+      document.getElementById('notif-btn-' + ch.id).addEventListener('click', (function(cid) {
+        return function() {
+          document.getElementById('notif-panel-' + cid).classList.toggle('open');
+        };
+      })(ch.id));
+
+      // Set reminder
+      document.getElementById('notif-set-' + ch.id).addEventListener('click', (function(cid, sd, cname) {
+        return function() {
+          var timeStr = document.getElementById('notif-time-' + cid).value || '09:00';
+          var parts = timeStr.split(':');
+          var mins = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+          setChallengeNotif(cid, sd, mins, cname);
+          document.getElementById('notif-panel-' + cid).classList.remove('open');
+          var btn = document.getElementById('notif-btn-' + cid);
+          btn.classList.add('notif-on');
+          btn.title = 'Reminder on — click to edit';
+          showToast('🔔 Daily reminder set for ' + formatTime12h(timeStr), 2800);
+        };
+      })(ch.id, startDate, ch.name));
+
+      // Turn off
+      if (notifOn) {
+        document.getElementById('notif-off-' + ch.id).addEventListener('click', (function(cid, sd) {
+          return function() {
+            disableChallengeNotif(cid, sd);
+            document.getElementById('notif-panel-' + cid).classList.remove('open');
+            var btn = document.getElementById('notif-btn-' + cid);
+            btn.classList.remove('notif-on');
+            btn.title = 'Set daily reminder';
+            showToast('Reminder off.', 2000);
+          };
+        })(ch.id, startDate));
+      }
+
+      document.getElementById('abandon-' + ch.id).addEventListener('click', (function(cid, sd, cname) {
+        return function() { abandonChallenge(cid, sd, cname); };
+      })(ch.id, startDate, ch.name));
+
+      document.getElementById('popup-toggle-' + ch.id).addEventListener('click', (function(cid, sd) {
+        return function() {
+          var on = isChallengePopupEnabled(cid, sd);
+          setChallengePopup(cid, sd, !on);
+          var btn = document.getElementById('popup-toggle-' + cid);
+          btn.textContent = on ? 'Off' : 'On';
+          if (on) btn.classList.remove('popup-on'); else btn.classList.add('popup-on');
+        };
+      })(ch.id, startDate));
     });
   }
 
@@ -796,63 +1412,157 @@
     var grid = document.getElementById('avail-grid');
     grid.innerHTML = '';
 
-    CHALLENGES.forEach(function(ch) {
+    getAllChallenges().forEach(function(ch) {
       var isActive = active.some(function(a) { return a.challengeId === ch.id; });
-      var wasCompleted = completed.some(function(c) { return c.challengeId === ch.id; });
+      var completedRuns = completed.filter(function(c) { return c.challengeId === ch.id; }).length;
+      var isCustom = ch.id.indexOf('custom-') === 0;
 
       var card = document.createElement('div');
       card.className = 'avail-card';
 
-      var completedBadge = wasCompleted ? '<div class="badge-completed">✓ Completed</div>' : '';
+      var badge = completedRuns > 0
+        ? '<div class="badge-completed">✓ ' + (completedRuns > 1 ? completedRuns + '× done' : 'Completed') + '</div>'
+        : '';
+      var chDays = ch.days || 30;
       var btnLabel = isActive ? 'In Progress' : 'Start Challenge';
       var btnDisabled = isActive ? 'disabled' : '';
 
+      var daysRow = isActive
+        ? ''
+        : '<div style="display:flex;align-items:center;gap:7px;margin:4px 0 2px;">' +
+            '<input type="number" id="days-input-' + ch.id + '" value="' + chDays + '" min="1" max="365" ' +
+            'style="width:64px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.13);border-radius:7px;color:#f0fff4;font-size:12px;padding:5px 8px;text-align:center;outline:none;font-family:inherit;">' +
+            '<span style="font-size:11px;color:var(--muted);">days</span>' +
+          '</div>';
+
       card.innerHTML =
+        (isCustom ? '<button class="btn-custom-del" id="del-' + ch.id + '" title="Delete">×</button>' : '') +
         '<div class="avail-icon">' + ch.icon + '</div>' +
         '<div class="avail-name">' + escHtml(ch.name) + '</div>' +
-        completedBadge +
-        '<div class="avail-desc">' + escHtml(ch.desc) + '</div>' +
+        badge +
+        '<div class="avail-desc" id="avail-desc-' + ch.id + '">' + escHtml(resolveDesc(ch.desc, chDays)) + '</div>' +
+        daysRow +
         '<button class="btn-start" ' + btnDisabled + ' id="start-' + ch.id + '">' + btnLabel + '</button>';
 
       grid.appendChild(card);
 
       if (!isActive) {
         document.getElementById('start-' + ch.id).addEventListener('click', (function(cid) {
-          return function() { startChallenge(cid); };
+          return function() {
+            var daysEl = document.getElementById('days-input-' + cid);
+            var days = daysEl ? Math.max(1, parseInt(daysEl.value) || 30) : 30;
+            startChallenge(cid, days);
+          };
         })(ch.id));
+
+        document.getElementById('days-input-' + ch.id).addEventListener('input', (function(cid, chDesc) {
+          return function() {
+            var d = Math.max(1, parseInt(document.getElementById('days-input-' + cid).value) || 30);
+            var descEl = document.getElementById('avail-desc-' + cid);
+            if (descEl && chDesc.indexOf('{days}') !== -1) {
+              descEl.textContent = resolveDesc(chDesc, d);
+            }
+          };
+        })(ch.id, ch.desc));
+      }
+
+      if (isCustom) {
+        document.getElementById('del-' + ch.id).addEventListener('click', (function(cid, cname) {
+          return function(e) { e.stopPropagation(); deleteCustomChallenge(cid, cname); };
+        })(ch.id, ch.name));
       }
     });
+
+    // Create your own card
+    var createCard = document.createElement('div');
+    createCard.className = 'avail-card create-ch-card';
+    createCard.innerHTML =
+      '<div class="create-ch-plus">＋</div>' +
+      '<div class="avail-name">Create Your Own</div>' +
+      '<div class="avail-desc">Set your own name, icon, and duration.</div>';
+    createCard.addEventListener('click', openCreateModal);
+    grid.appendChild(createCard);
   }
 
-  /* ── Render completed ── */
+  /* ── Render completed (grouped by challenge, each expandable) ── */
   function renderCompleted() {
     var completed = getCompleted();
     var section = document.getElementById('section-completed');
     var list = document.getElementById('completed-list');
-    document.getElementById('completed-count').textContent = completed.length;
 
-    if (completed.length === 0) {
-      section.style.display = 'none';
-      return;
-    }
-
+    if (completed.length === 0) { section.style.display = 'none'; return; }
     section.style.display = '';
     list.innerHTML = '';
 
+    // Group runs by challengeId, sort each group newest-first
+    var groups = {};
     completed.forEach(function(entry) {
-      var ch = CHALLENGES.find(function(c) { return c.id === entry.challengeId; });
-      var name = ch ? ch.name : entry.challengeId;
+      if (!groups[entry.challengeId]) groups[entry.challengeId] = [];
+      groups[entry.challengeId].push(entry);
+    });
+    var challengeIds = Object.keys(groups).sort(function(a, b) {
+      return groups[b][0].startDate > groups[a][0].startDate ? 1 : -1;
+    });
+    challengeIds.forEach(function(cid) {
+      groups[cid].sort(function(a, b) { return b.startDate > a.startDate ? 1 : -1; });
+    });
+
+    document.getElementById('completed-count').textContent = challengeIds.length;
+
+    challengeIds.forEach(function(cid) {
+      var runs = groups[cid];
+      var ch = getAllChallenges().find(function(c) { return c.id ===cid; });
+      var name = ch ? ch.name : cid;
       var icon = ch ? ch.icon : '🏆';
+      var latest = runs[0];
+      var latestChecked = typeof latest.checkedCount === 'number'
+        ? latest.checkedCount : getCheckedCount(cid, latest.startDate);
+      var runLabel = runs.length > 1 ? runs.length + ' runs' : '1 run';
+
+      var latestDays = getChallengeDays(cid, latest.startDate);
+      // Build per-run detail blocks
+      var runsHtml = runs.map(function(entry, idx) {
+        var runDays = getChallengeDays(cid, entry.startDate);
+        var checked = typeof entry.checkedCount === 'number'
+          ? entry.checkedCount : getCheckedCount(cid, entry.startDate);
+        var pct = Math.round((checked / runDays) * 100);
+        var longest = getLongestStreak(cid, entry.startDate);
+        var streakNote = longest > 0 ? ' · ' + longest + '-day streak' : '';
+        var squares = '';
+        for (var i = 0; i < runDays; i++) {
+          var d = offsetDate(entry.startDate, i);
+          var done = getDayChecked(cid, entry.startDate, d);
+          squares += '<div class="run-sq ' + (done ? 'sq-done' : 'sq-miss') + '" title="Day ' + (i+1) + (done ? ' ✓' : ' ✗') + '"></div>';
+        }
+        return '<div class="completed-run">' +
+          '<div class="completed-run-header">' +
+            '<span class="completed-run-label">Run ' + (runs.length - idx) + '</span>' +
+            '<span class="completed-run-score">' + checked + '/' + runDays + ' (' + pct + '%)</span>' +
+          '</div>' +
+          '<div class="completed-run-dates">' + formatDateDisplay(entry.startDate) + ' → ' + formatDateDisplay(entry.endDate) + streakNote + '</div>' +
+          '<div class="completed-run-grid">' + squares + '</div>' +
+          '<div class="completed-run-summary">' + summaryText(checked, runDays) + '</div>' +
+        '</div>';
+      }).join('');
 
       var item = document.createElement('div');
       item.className = 'completed-item';
+      item.dataset.cid = cid;
       item.innerHTML =
-        '<div class="completed-trophy">' + icon + '</div>' +
-        '<div class="completed-info">' +
-          '<div class="completed-name">' + escHtml(name) + '</div>' +
-          '<div class="completed-dates">' + formatDateDisplay(entry.startDate) + ' → ' + formatDateDisplay(entry.endDate) + '</div>' +
+        '<div class="completed-item-header">' +
+          '<div class="completed-trophy">' + icon + '</div>' +
+          '<div class="completed-info">' +
+            '<div class="completed-name">' + escHtml(name) + '</div>' +
+            '<div class="completed-dates">Last: ' + formatDateDisplay(latest.startDate) + ' → ' + formatDateDisplay(latest.endDate) + '</div>' +
+          '</div>' +
+          '<div class="completed-badge">🏆 ' + latestChecked + '/' + latestDays + '</div>' +
+          '<span class="completed-chevron" title="' + runLabel + '">▼</span>' +
         '</div>' +
-        '<div class="completed-badge">🏆 Complete</div>';
+        '<div class="completed-runs">' + runsHtml + '</div>';
+
+      item.querySelector('.completed-item-header').addEventListener('click', function() {
+        item.classList.toggle('open');
+      });
 
       list.appendChild(item);
     });
@@ -863,6 +1573,10 @@
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  function resolveDesc(desc, days) {
+    return String(desc).replace(/\{days\}/g, days);
+  }
+
   /* ── Full render ── */
   function render() {
     renderActive();
@@ -870,10 +1584,238 @@
     renderCompleted();
   }
 
+  /* ── Auto-complete expired challenges ── */
+  function cleanupExpiredChallenges() {
+    var active = getActive();
+    var today = todayKey();
+    var remaining = [];
+    var completed = getCompleted();
+    var changed = false;
+
+    active.forEach(function(entry) {
+      var days = getChallengeDays(entry.challengeId, entry.startDate);
+      var endDate = offsetDate(entry.startDate, days - 1);
+      if (endDate < today) {
+        var checkedCount = getCheckedCount(entry.challengeId, entry.startDate);
+        completed.push({ challengeId: entry.challengeId, startDate: entry.startDate, endDate: endDate, checkedCount: checkedCount, days: days });
+        changed = true;
+      } else {
+        remaining.push(entry);
+      }
+    });
+
+    if (changed) {
+      setActive(remaining);
+      setCompleted(completed);
+    }
+  }
+
   /* ── Init ── */
+  migrateCheckInKeys();
+  cleanupExpiredChallenges();
   render();
+
+  /* ── Emoji picker ── */
+  var EMOJI_OPTIONS = [
+    '🎯','🏃','💪','🧘','🚶','🚴','🏊','🥗','💧','😴',
+    '📚','✍️','🧠','❤️','🌿','🔥','⚡','🌅','🎵','🍎',
+    '🥦','🚫','📵','☀️','🌙','🏋️','🤸','🧗','🎭','🏆'
+  ];
+  var _selectedEmoji = '🎯';
+
+  (function buildEmojiPicker() {
+    var grid = document.getElementById('emoji-grid');
+    EMOJI_OPTIONS.forEach(function(em) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'emoji-opt' + (em === _selectedEmoji ? ' selected' : '');
+      btn.textContent = em;
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        _selectedEmoji = em;
+        document.getElementById('create-ch-icon').value = em;
+        document.getElementById('create-ch-icon-btn').textContent = em;
+        document.getElementById('emoji-dropdown').classList.remove('open');
+        grid.querySelectorAll('.emoji-opt').forEach(function(b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+      });
+      grid.appendChild(btn);
+    });
+  })();
+
+  document.getElementById('create-ch-icon-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('emoji-dropdown').classList.toggle('open');
+  });
+  document.addEventListener('click', function() {
+    document.getElementById('emoji-dropdown').classList.remove('open');
+  });
+
+  /* ── Create custom challenge ── */
+  function openCreateModal() {
+    _selectedEmoji = '🎯';
+    document.getElementById('create-ch-icon').value = '🎯';
+    document.getElementById('create-ch-icon-btn').textContent = '🎯';
+    document.getElementById('create-ch-name').value = '';
+    document.getElementById('create-ch-desc').value = '';
+    document.getElementById('create-ch-days').value = '30';
+    document.getElementById('emoji-dropdown').classList.remove('open');
+    document.getElementById('emoji-grid').querySelectorAll('.emoji-opt').forEach(function(b) {
+      b.classList.toggle('selected', b.textContent === '🎯');
+    });
+    document.getElementById('create-ch-overlay').classList.add('show');
+    setTimeout(function() { document.getElementById('create-ch-name').focus(); }, 80);
+  }
+  function closeCreateModal() {
+    document.getElementById('create-ch-overlay').classList.remove('show');
+  }
+  function saveCustomChallenge() {
+    var icon = document.getElementById('create-ch-icon').value.trim() || '🎯';
+    var name = document.getElementById('create-ch-name').value.trim();
+    var desc = document.getElementById('create-ch-desc').value.trim();
+    if (!name) { document.getElementById('create-ch-name').focus(); showToast('Give your challenge a name.', 2000); return; }
+    var days = Math.max(1, parseInt(document.getElementById('create-ch-days').value) || 30);
+    var customs = getCustomChallenges();
+    customs.push({ id: 'custom-' + Date.now(), icon: icon, name: name, desc: desc || 'Complete this challenge every day for ' + days + ' days.', days: days });
+    setCustomChallenges(customs);
+    closeCreateModal();
+    showToast('✓ Challenge created!', 2500);
+    render();
+  }
+  function deleteCustomChallenge(id, name) {
+    if (getActive().some(function(a) { return a.challengeId === id; })) {
+      showToast('Abandon the active run first before deleting.', 3000); return;
+    }
+    openConfirm(name, function() {
+      setCustomChallenges(getCustomChallenges().filter(function(c) { return c.id !== id; }));
+      showToast('Challenge deleted.', 2000);
+      render();
+    });
+  }
+  document.getElementById('create-ch-cancel').addEventListener('click', closeCreateModal);
+  document.getElementById('create-ch-save').addEventListener('click', saveCustomChallenge);
+  document.getElementById('create-ch-name').addEventListener('keydown', function(e) { if (e.key === 'Enter') saveCustomChallenge(); });
+  document.getElementById('create-ch-overlay').addEventListener('click', function(e) { if (e.target === this) closeCreateModal(); });
+
+  /* ── Wire up popup to notification system ── */
+  function waitForNotifSystem(tries) {
+    if (window.dohNotifications) {
+      window.dohNotifications.onNotify = function(pageKey, label, timeMins, icon) {
+        if (pageKey.indexOf('ch-') !== 0) return;
+        var startDate = pageKey.slice(-10);
+        var challengeId = pageKey.slice(3, pageKey.length - 11);
+        var ch = getAllChallenges().find(function(c) { return c.id ===challengeId; });
+        if (ch) ReminderPopup(ch, startDate, !isChallengePopupEnabled(challengeId, startDate));
+      };
+    } else if (tries > 0) {
+      setTimeout(function() { waitForNotifSystem(tries - 1); }, 100);
+    }
+  }
+  waitForNotifSystem(20);
+
+  window._testChallengePopup = function() {
+    var active = getActive();
+    if (!active.length) { showToast('Start a challenge to test the popup', 2200); return; }
+    var entry = active[0];
+    var ch = getAllChallenges().find(function(c) { return c.id ===entry.challengeId; });
+    if (ch) ReminderPopup(ch, entry.startDate, !isChallengePopupEnabled(entry.challengeId, entry.startDate));
+  };
+
+  function CompletePopup(ch) {
+    var existing = document.getElementById('ch-complete-toast');
+    if (existing) existing.remove();
+
+    var el = document.createElement('div');
+    el.id = 'ch-complete-toast';
+    el.style.cssText = [
+      'position:fixed;bottom:26px;left:50%',
+      'transform:translateX(-50%) translateY(200px)',
+      'background:rgba(8,28,16,0.97)',
+      'border:1px solid rgba(250,204,21,0.5)',
+      'border-radius:20px',
+      'padding:12px 20px 12px 12px',
+      'display:flex;align-items:center;gap:12px',
+      'z-index:10001',
+      'box-shadow:0 8px 32px rgba(0,0,0,0.55),0 0 20px rgba(250,204,21,0.15)',
+      'transition:transform 0.4s cubic-bezier(.34,1.56,.64,1)',
+      'white-space:nowrap;pointer-events:none;cursor:default'
+    ].join(';');
+
+    el.innerHTML =
+      '<span style="background:rgba(250,204,21,0.15);border:1px solid rgba(250,204,21,0.4);border-radius:50%;width:42px;height:42px;display:inline-grid;place-items:center;flex-shrink:0;">' +
+        '<span style="font-size:1.4rem;line-height:1;">🏆</span>' +
+      '</span>' +
+      '<span style="color:#f0fff4;font-size:.88rem;font-weight:700;flex:1;">' +
+        escHtml(ch.name) + ' — Complete! Congratulations 🎉' +
+      '</span>' +
+      '<button id="ch-complete-dismiss" style="background:rgba(250,204,21,0.2);border:1px solid rgba(250,204,21,0.35);color:#facc15;font-size:.8rem;font-weight:800;padding:6px 14px;border-radius:12px;cursor:pointer;flex-shrink:0;">Got it!</button>';
+
+    document.body.appendChild(el);
+
+    setTimeout(function() {
+      el.style.transform = 'translateX(-50%) translateY(0)';
+      el.style.pointerEvents = 'auto';
+    }, 30);
+
+    function dismiss() {
+      el.style.transform = 'translateX(-50%) translateY(calc(100% + 40px))';
+      setTimeout(function() { el.remove(); }, 500);
+    }
+
+    var autoTimer = setTimeout(dismiss, 14000);
+
+    document.getElementById('ch-complete-dismiss').addEventListener('click', function() {
+      clearTimeout(autoTimer);
+      dismiss();
+    });
+  }
+
+  window._testCompletePopup = function() {
+    var active = getActive();
+    if (!active.length) { showToast('Start a challenge to test the popup', 2200); return; }
+    var entry = active[0];
+    var ch = getAllChallenges().find(function(c) { return c.id === entry.challengeId; });
+    if (ch) CompletePopup(ch);
+  };
 
 })();
 </script>
+
+<!-- TEST BUTTONS — remove when done -->
+<script>
+var _testIcons = ['🚶','🚿','🧘','📚','🍬','🚫','👟','📵','📝','😴'];
+var _testIdx = 0;
+function _testNextClock() {
+  var icon = _testIcons[_testIdx % _testIcons.length];
+  _testIdx++;
+  document.getElementById('test-clock-btn').textContent = icon + ' Test (' + icon + ')';
+  dohNotifications.testClocks(icon);
+  if (window._testChallengePopup) window._testChallengePopup();
+}
+
+var _testChallenges = [
+  { name: 'Daily Walk',              icon: '🚶' },
+  { name: 'Cold Showers',            icon: '🚿' },
+  { name: 'Daily Meditation',        icon: '🧘' },
+  { name: 'Read Every Day',          icon: '📚' },
+  { name: 'No Added Sugar',          icon: '🍬' },
+  { name: 'No Alcohol',              icon: '🚫' },
+  { name: '8,000 Steps',             icon: '👟' },
+  { name: 'No Phone in the Morning', icon: '📵' },
+  { name: 'Daily Journaling',        icon: '📝' },
+  { name: 'Lights Out by 11 PM',     icon: '😴' }
+];
+var _testCompleteIdx = 0;
+function _testNextComplete() {
+  var ch = _testChallenges[_testCompleteIdx % _testChallenges.length];
+  _testCompleteIdx++;
+  document.getElementById('test-complete-btn').textContent = ch.icon + ' Complete (' + ch.name + ')';
+  dohNotifications.celebrate(ch.name, ch.icon);
+  if (window._testCompletePopup) window._testCompletePopup();
+}
+</script>
+<button id="test-clock-btn" onclick="_testNextClock()" style="display:none;position:fixed;bottom:24px;left:24px;background:#e11d48;color:#fff;border:none;border-radius:12px;padding:12px 18px;font-size:14px;font-weight:700;cursor:pointer;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.4)">⏰ Test Clocks</button>
+<button id="test-complete-btn" onclick="_testNextComplete()" style="display:none;position:fixed;bottom:24px;left:190px;background:#7c3aed;color:#fff;border:none;border-radius:12px;padding:12px 18px;font-size:14px;font-weight:700;cursor:pointer;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.4)">🏆 Test Complete</button>
+
 </body>
 </html>

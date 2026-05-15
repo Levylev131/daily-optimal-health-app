@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spice Guide — Daily Optimal Health</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --r: 14px; --r-sm: 10px;
+      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
+      --amber: #f5a623; --blue: #3ecfff; --rose: #ff6b6b;
+    }
+    html { min-height: 100%; scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+      color: var(--text); min-height: 100vh; overflow-x: hidden;
+    }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+    .top-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 24px; max-width: 900px; margin: 0 auto;
+      border-bottom: 1px solid var(--glass-b);
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(6,26,12,0.85); backdrop-filter: blur(16px);
+    }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: .88rem; font-weight: 600; transition: color .2s; background: none; border: none; cursor: pointer; white-space: nowrap; }
+    .back-btn:hover { color: var(--acc); }
+    .top-title { flex: 1; text-align: center; font-size: 1rem; font-weight: 800; text-shadow: 0 0 20px var(--glow); }
+    .top-spacer { width: 60px; }
+
+    .page { max-width: 900px; margin: 0 auto; padding: clamp(16px,4vw,28px) clamp(12px,3vw,20px) 100px; }
+
+    .hero { text-align: center; padding: clamp(20px,4vw,32px) 0 clamp(14px,3vw,24px); }
+    .hero-emoji { font-size: clamp(2.5rem,7vw,4rem); display: block; margin-bottom: 10px; filter: drop-shadow(0 0 16px var(--glow)); }
+    .hero-title {
+      font-size: clamp(1.6rem,5vw,2.6rem); font-weight: 900; letter-spacing: -1px; line-height: 1.1;
+      background: linear-gradient(135deg, #fff 30%, var(--acc));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px;
+    }
+    .hero-sub { color: var(--muted); font-size: clamp(.84rem,2vw,.98rem); max-width: 520px; margin: 0 auto; line-height: 1.6; }
+
+    /* FILTER BAR */
+    .filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; padding-top: 4px; }
+    .filter-btn {
+      padding: 7px 14px; border-radius: 20px; border: 1px solid var(--glass-b);
+      background: var(--glass); color: var(--muted); font-size: .78rem; font-weight: 700;
+      cursor: pointer; transition: var(--trans); font-family: inherit; white-space: nowrap;
+    }
+    .filter-btn:hover { border-color: var(--acc); color: var(--text); }
+    .filter-btn.active { background: var(--acc); color: #000; border-color: var(--acc); box-shadow: 0 0 10px var(--glow); }
+
+    /* SPICE INDEX */
+    .spice-index { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+    .index-pill {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
+      padding: 5px 12px; font-size: .75rem; color: var(--muted); cursor: pointer;
+      transition: var(--trans); text-decoration: none; display: inline-block;
+    }
+    .index-pill:hover { border-color: var(--acc); color: var(--acc); }
+
+    /* SPICE CARD */
+    .spice-card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px);
+      margin-bottom: 16px; overflow: hidden;
+      scroll-margin-top: 72px; transition: border-color .2s;
+    }
+    .spice-card.open { border-color: rgba(45,212,110,0.35); }
+
+    .spice-header {
+      display: flex; align-items: center; gap: 16px;
+      padding: clamp(14px,3vw,20px); cursor: pointer;
+      transition: background .15s; user-select: none;
+    }
+    .spice-header:hover { background: var(--glass-h); }
+
+    .spice-emoji {
+      font-size: clamp(2.2rem,5vw,3rem); flex-shrink: 0;
+      width: clamp(52px,10vw,68px); height: clamp(52px,10vw,68px);
+      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.2);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    }
+
+    .spice-meta { flex: 1; min-width: 0; }
+    .spice-name { font-size: clamp(1rem,2.8vw,1.25rem); font-weight: 900; margin-bottom: 3px; }
+    .spice-tagline { color: var(--muted); font-size: .8rem; margin-bottom: 8px; font-style: italic; }
+    .spice-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+    .stag {
+      font-size: .64rem; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: .5px; white-space: nowrap;
+    }
+    .stag-anti   { background: rgba(255,107,107,0.15); color: var(--rose); }
+    .stag-digest { background: rgba(62,207,255,0.12);  color: var(--blue); }
+    .stag-immune { background: rgba(45,212,110,0.15);  color: var(--acc); }
+    .stag-metab  { background: rgba(245,166,35,0.15);  color: var(--amber); }
+    .stag-cardio { background: rgba(255,107,107,0.12); color: #ff9999; }
+    .stag-brain  { background: rgba(160,120,255,0.15); color: #b89eff; }
+    .stag-bio    { background: rgba(255,255,255,0.1);  color: rgba(240,255,244,0.8); }
+
+    .expand-arrow { color: var(--muted); font-size: .8rem; transition: transform .25s; margin-left: 8px; flex-shrink: 0; }
+    .spice-card.open .expand-arrow { transform: rotate(180deg); }
+
+    /* CARD BODY */
+    .spice-body {
+      max-height: 0; overflow: hidden;
+      transition: max-height .45s cubic-bezier(.4,0,.2,1);
+      border-top: 1px solid transparent;
+    }
+    .spice-card.open .spice-body {
+      max-height: 1400px;
+      border-top-color: var(--glass-b);
+    }
+    .spice-inner { padding: clamp(14px,3vw,22px); display: flex; flex-direction: column; gap: 18px; }
+
+    /* COMPOUNDS */
+    .compounds-row { display: flex; gap: 7px; flex-wrap: wrap; }
+    .compound-badge {
+      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.25);
+      border-radius: 20px; padding: 4px 12px;
+      font-size: .72rem; font-weight: 700; color: var(--acc); letter-spacing: .3px;
+    }
+
+    /* SECTION LABEL */
+    .sec-lbl {
+      font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.3px;
+      color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+    }
+    .sec-lbl::after { content:''; flex:1; height:1px; background: var(--glass-b); }
+
+    /* BENEFITS */
+    .benefit-list { display: flex; flex-direction: column; gap: 8px; }
+    .benefit-item { display: flex; gap: 10px; align-items: flex-start; font-size: .84rem; line-height: 1.55; }
+    .benefit-dot {
+      width: 20px; height: 20px; border-radius: 50%; background: rgba(45,212,110,0.2);
+      color: var(--acc); font-size: .75rem; font-weight: 900;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+    }
+
+    /* TWO COLUMN */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media(max-width:560px) { .two-col { grid-template-columns: 1fr; } }
+
+    .info-box {
+      background: rgba(255,255,255,0.04); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); padding: 14px;
+    }
+    .info-box-text { font-size: .82rem; line-height: 1.65; color: rgba(240,255,244,0.85); }
+    .forms-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .form-pill {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
+      padding: 3px 10px; font-size: .7rem; color: var(--muted);
+    }
+
+    /* TIP BOX */
+    .tip-box {
+      background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.28);
+      border-radius: var(--r-sm); padding: 13px 15px; font-size: .8rem; line-height: 1.65;
+    }
+    .tip-box .tip-label { color: var(--amber); font-weight: 800; margin-bottom: 4px; font-size: .72rem; text-transform: uppercase; letter-spacing: .8px; }
+
+    /* STACK BOX */
+    .stack-box {
+      background: rgba(45,212,110,0.07); border: 1px solid rgba(45,212,110,0.22);
+      border-radius: var(--r-sm); padding: 11px 14px; font-size: .8rem; line-height: 1.6;
+    }
+    .stack-box .stack-label { color: var(--acc); font-weight: 800; margin-bottom: 3px; font-size: .72rem; text-transform: uppercase; letter-spacing: .8px; }
+
+    /* BACK TO TOP */
+    .back-top {
+      display: block; text-align: center; color: var(--muted); font-size: .76rem;
+      font-weight: 700; cursor: pointer; padding: 6px; transition: color .2s;
+      background: none; border: none; width: 100%; font-family: inherit;
+    }
+    .back-top:hover { color: var(--acc); }
+
+    .empty-state { text-align: center; color: var(--muted); padding: 48px 20px; font-size: .9rem; }
+  </style>
+  <script src="health-notifications.js" defer></script>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="history.back()">← Back</button>
+  <div class="top-title">🌿 Spice Guide</div>
+  <div class="top-spacer"></div>
+</div>
+
+<div class="page">
+
+  <div class="hero">
+    <span class="hero-emoji">🫙</span>
+    <div class="hero-title">Spices & Health Benefits</div>
+    <div class="hero-sub">Nature's most powerful medicinal compounds — hiding in plain sight in your kitchen. Learn the science behind each spice and how to use them for maximum effect.</div>
+  </div>
+
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" onclick="filterSpices('all',this)">All Spices</button>
+    <button class="filter-btn" onclick="filterSpices('anti-inflammatory',this)">Anti-Inflammatory</button>
+    <button class="filter-btn" onclick="filterSpices('digestive',this)">Digestive</button>
+    <button class="filter-btn" onclick="filterSpices('immune',this)">Immune</button>
+    <button class="filter-btn" onclick="filterSpices('metabolism',this)">Metabolism</button>
+    <button class="filter-btn" onclick="filterSpices('cardiovascular',this)">Cardiovascular</button>
+    <button class="filter-btn" onclick="filterSpices('brain',this)">Brain</button>
+  </div>
+
+  <div class="spice-index" id="spiceIndex"></div>
+  <div id="spiceList"></div>
+
+</div>
+
+<script>
+const TAG_CLASS = {
+  'anti-inflammatory': 'stag-anti',
+  'digestive':         'stag-digest',
+  'immune':            'stag-immune',
+  'metabolism':        'stag-metab',
+  'cardiovascular':    'stag-cardio',
+  'brain':             'stag-brain',
+  'bioavailability':   'stag-bio',
+};
+const TAG_LABEL = {
+  'anti-inflammatory': 'Anti-Inflammatory',
+  'digestive':         'Digestive',
+  'immune':            'Immune',
+  'metabolism':        'Metabolism',
+  'cardiovascular':    'Cardiovascular',
+  'brain':             'Brain',
+  'bioavailability':   'Bioavailability',
+};
+
+const SPICES = [
+  {
+    id: 'turmeric',
+    emoji: '🌿',
+    name: 'Turmeric',
+    tagline: 'The Golden Spice — nature\'s most studied anti-inflammatory',
+    categories: ['anti-inflammatory', 'brain'],
+    compounds: ['Curcumin', 'β-Turmerone', 'Bisdemethoxycurcumin', 'Ar-Turmerone'],
+    benefits: [
+      'Reduces chronic inflammation as effectively as some NSAIDs — without gastrointestinal side effects',
+      'Boosts BDNF (brain-derived neurotrophic factor), the brain\'s growth hormone — supports memory and slows cognitive decline',
+      'Powerful antioxidant: neutralizes free radicals directly and activates the body\'s own antioxidant enzymes',
+      'Improves endothelial function (the lining of blood vessels), reducing heart disease risk',
+      'Clinically shown to reduce arthritis pain and morning stiffness in rheumatoid and osteoarthritis patients',
+    ],
+    howToUse: 'Golden milk, curries, soups, scrambled eggs, smoothies, rice, roasted vegetables. Heating turmeric in oil releases more active compounds.',
+    dose: '500mg–2g curcumin daily via supplement; 1–3g turmeric powder (about ½–1 tsp) culinarily per day.',
+    forms: ['Ground powder', 'Fresh root', 'Capsule', 'Golden milk', 'Tincture'],
+    tip: 'Combine with black pepper every time — piperine boosts curcumin absorption by up to 2000%. Fat also increases bioavailability significantly, so always cook it in oil or eat it with a fat source.',
+    stack: 'Black Pepper (essential) + Fat source (coconut oil, olive oil). This combination transforms turmeric from barely absorbed to highly bioavailable.',
+  },
+  {
+    id: 'ginger',
+    emoji: '🫚',
+    name: 'Ginger',
+    tagline: 'The Universal Remedy — effective against nausea, pain, and inflammation',
+    categories: ['anti-inflammatory', 'digestive', 'immune'],
+    compounds: ['6-Gingerol', 'Shogaol', 'Paradol', 'Zingerone', '6-Dehydrogingerdione'],
+    benefits: [
+      'Clinically proven against nausea: morning sickness, motion sickness, chemotherapy-induced nausea, and postoperative nausea',
+      'Reduces muscle soreness by 25% in exercise studies — comparable to ibuprofen for delayed onset muscle soreness',
+      'Accelerates gastric emptying, reducing bloating, gas, and indigestion',
+      'Lowers fasting blood glucose and HbA1c markers in type 2 diabetes patients in multiple RCTs',
+      'Strong antimicrobial activity against respiratory pathogens, including Rhinovirus (common cold)',
+    ],
+    howToUse: 'Fresh in teas, stir-fries, marinades, and juices. Dried powder in spice blends, curries, and baking. Shots of fresh ginger juice for acute effects.',
+    dose: '1–4g fresh ginger (1–2 inch piece) daily; 250–1000mg dried extract per day.',
+    forms: ['Fresh root', 'Ground powder', 'Capsule', 'Tea', 'Juice shot', 'Crystallized'],
+    tip: 'For nausea: 1g ginger 1 hour before a trip prevents motion sickness as effectively as dimenhydrinate (Dramamine) in clinical trials — with zero drowsiness. Ginger chews or tea work within 20–30 minutes.',
+  },
+  {
+    id: 'cinnamon',
+    emoji: '🌰',
+    name: 'Cinnamon',
+    tagline: 'The Blood Sugar Regulator — highest antioxidant density of any spice',
+    categories: ['cardiovascular', 'anti-inflammatory'],
+    compounds: ['Cinnamaldehyde', 'Cinnamic acid', 'Procyanidins', 'Eugenol', 'Linalool'],
+    benefits: [
+      'Lowers fasting blood glucose by 10–29% and improves insulin sensitivity in diabetics — clinically proven',
+      'Ranked among the highest antioxidant-density foods ever measured — outperforms garlic, oregano, and most fruits',
+      'Reduces LDL cholesterol and total triglycerides while preserving HDL (good cholesterol)',
+      'Inhibits arachidonic acid release, reducing production of inflammatory prostaglandins',
+      'Antimicrobial against Candida, E. coli, Salmonella, and several foodborne bacteria',
+    ],
+    howToUse: 'Oatmeal, coffee, yogurt, smoothies, baking, savory spice rubs for meat. Even a small sprinkle provides measurable antioxidant benefit.',
+    dose: '1–6g daily (roughly ½–2 tsp). Ceylon cinnamon preferred for daily use due to lower coumarin content.',
+    forms: ['Ground powder', 'Sticks', 'Capsule', 'Extract', 'Essential oil (topical)'],
+    tip: 'Use Ceylon ("true") cinnamon for daily supplementation — not Cassia (the common grocery store type). Cassia contains high coumarin levels that can stress the liver at doses above 1 tsp/day. Ceylon is safe at 2–3 tsp/day and still provides all the benefits.',
+  },
+  {
+    id: 'garlic',
+    emoji: '🧄',
+    name: 'Garlic',
+    tagline: 'The Immune Fortress — antimicrobial, cardiovascular, and longevity powerhouse',
+    categories: ['immune', 'cardiovascular'],
+    compounds: ['Allicin', 'Alliin', 'Ajoene', 'S-Allyl cysteine', 'Quercetin', 'Diallyl disulfide'],
+    benefits: [
+      'Reduces cold and flu frequency by up to 63% and duration by 70% — largest placebo-controlled trial on immune function',
+      'Lowers systolic blood pressure by 8–10mmHg in hypertensive patients, comparable to some prescription medications',
+      'Reduces total and LDL cholesterol by 10–15% while raising HDL cholesterol',
+      'Active against over 20 bacteria species including antibiotic-resistant strains (MRSA)',
+      'Associated with 30–35% reduced risk of colorectal cancer and significant reduction in gastric cancer risk in epidemiological studies',
+    ],
+    howToUse: 'Crush or chop and let sit 10 minutes before cooking — this maximizes allicin formation. Add to almost any savory dish: soups, sauces, stir-fries, dressings, marinades.',
+    dose: '1–2 raw cloves daily; 600–1200mg aged garlic extract in supplement form.',
+    forms: ['Fresh cloves', 'Aged garlic extract', 'Capsule', 'Powder', 'Black garlic', 'Oil'],
+    tip: 'The 10-minute rule is critical: crushing or chopping garlic triggers the enzyme alliinase to convert alliin into allicin, but the reaction needs time. Heat destroys allicin in seconds — adding pre-crushed garlic late in cooking gives the best of both worlds (flavor + benefit).',
+  },
+  {
+    id: 'black-pepper',
+    emoji: '⚫',
+    name: 'Black Pepper',
+    tagline: 'The Bioavailability Multiplier — unlocks the power of every other spice',
+    categories: ['digestive', 'bioavailability'],
+    compounds: ['Piperine', 'Limonene', 'α-Pinene', 'β-Caryophyllene', 'Myrcene'],
+    benefits: [
+      'Piperine increases curcumin (turmeric) absorption by up to 2000% — transforms it from barely absorbed to highly bioavailable',
+      'Enhances absorption of CoQ10, resveratrol, beta-carotene, selenium, and B vitamins',
+      'Stimulates pancreatic digestive enzymes, improving the breakdown of proteins, fats, and carbohydrates',
+      'Inhibits NF-κB, a master inflammatory signaling pathway — independently anti-inflammatory',
+      'Stimulates serotonin receptors in the gut, reducing transit time and improving gut motility',
+    ],
+    howToUse: 'Freshly ground over any dish — savory or sweet. Critical to combine with turmeric. Use in spice blends, marinades, dressings, and cooking.',
+    dose: '5–20mg piperine daily. A pinch of freshly ground black pepper (~¼ tsp) contains 5–8mg piperine.',
+    forms: ['Whole peppercorns', 'Ground powder', 'Piperine supplement', 'White pepper (milder)'],
+    tip: 'Freshly ground pepper has 3–5× more active piperine than pre-ground. Piperine oxidizes within hours of grinding. Buy whole peppercorns and grind them yourself — the difference in potency is significant.',
+    stack: 'Turmeric (pairs perfectly — dramatically boosts curcumin absorption). Also pairs with CoQ10, resveratrol, and fat-soluble vitamins.',
+  },
+  {
+    id: 'cayenne',
+    emoji: '🌶️',
+    name: 'Cayenne Pepper',
+    tagline: 'The Metabolic Fire Starter — burns fat, kills pain, ignites circulation',
+    categories: ['metabolism', 'cardiovascular'],
+    compounds: ['Capsaicin', 'Dihydrocapsaicin', 'Nordihydrocapsaicin', 'Vitamin C', 'Beta-carotene'],
+    benefits: [
+      'Boosts resting metabolic rate by 4–5% and increases fat oxidation — clinically shown to increase calorie burn over 24 hours',
+      'Reduces appetite and cravings for fatty, salty, and sweet foods in the hours following consumption',
+      'Capsaicin desensitizes TRPV1 pain receptors — effective topically for chronic pain, arthritis, and neuropathy',
+      'Improves circulation and blood flow, and may reduce platelet aggregation (blood clot formation risk)',
+      'Antibacterial against H. pylori, the bacterium responsible for most peptic ulcers',
+    ],
+    howToUse: 'Add to sauces, soups, eggs, meat rubs, stir-fries, and grain bowls. Morning shot: ¼ tsp in warm water with lemon juice. Start small — tolerance builds.',
+    dose: '30–120mg capsaicin daily. In food: ¼–½ tsp cayenne powder per serving.',
+    forms: ['Powder', 'Fresh peppers', 'Hot sauce', 'Capsule', 'Tincture', 'Topical cream (0.025–0.075%)'],
+    tip: 'Capsaicin tolerance builds quickly — start with ¼ tsp in a dish and increase over 1–2 weeks. The metabolic boost peaks around 30 minutes post-consumption and lasts 2–3 hours. Pairing with caffeine amplifies the thermogenic effect.',
+  },
+  {
+    id: 'cumin',
+    emoji: '🌾',
+    name: 'Cumin',
+    tagline: 'The Digestive Architect — iron-dense, antimicrobial, and blood sugar regulating',
+    categories: ['digestive', 'immune', 'anti-inflammatory'],
+    compounds: ['Cuminaldehyde', 'Thymol', 'Cymene', 'Luteolin', 'Apigenin', 'Iron'],
+    benefits: [
+      'One of the richest plant-based iron sources — 1 tsp provides ~20% of daily iron RDA, critical for energy and oxygen transport',
+      'Stimulates bile secretion from the gallbladder, improving fat digestion and preventing bloating and gas',
+      'Clinically shown to lower blood glucose comparably to the diabetes drug glibenclamide in a 2-month RCT',
+      'Potent antimicrobial against Salmonella, E. coli, Listeria, and Candida albicans — preserves food and gut integrity',
+      'Rich in flavonoids (luteolin, apigenin) that suppress inflammatory cytokines and reduce oxidative stress',
+    ],
+    howToUse: 'Toast whole seeds in a dry pan for 60–90 seconds before grinding. Use in curries, chili, tacos, soups, hummus, rice, and roasted vegetables.',
+    dose: '300–600mg cumin extract daily; 1–2 tsp ground cumin culinarily per day.',
+    forms: ['Whole seeds', 'Ground powder', 'Capsule extract', 'Black cumin seed oil (different species, also potent)'],
+    tip: 'Always toast whole cumin seeds in a dry pan before grinding — the heat ruptures the oil glands and releases the volatile compounds responsible for both flavor and health benefits. You\'ll know it\'s ready when the aroma hits you, about 60–90 seconds. Pre-ground cumin loses its potency fast; grind fresh when possible.',
+  },
+];
+
+let activeFilter = 'all';
+
+function tagHtml(cat) {
+  return `<span class="stag ${TAG_CLASS[cat]||'stag-bio'}">${TAG_LABEL[cat]||cat}</span>`;
+}
+
+function spiceCard(s) {
+  return `<div class="spice-card" id="${s.id}" data-cats="${s.categories.join(' ')}">
+    <div class="spice-header" onclick="toggleSpice('${s.id}')">
+      <div class="spice-emoji">${s.emoji}</div>
+      <div class="spice-meta">
+        <div class="spice-name">${s.name}</div>
+        <div class="spice-tagline">${s.tagline}</div>
+        <div class="spice-tags">
+          ${s.categories.map(tagHtml).join('')}
+        </div>
+      </div>
+      <span class="expand-arrow">▼</span>
+    </div>
+    <div class="spice-body">
+      <div class="spice-inner">
+
+        <div>
+          <div class="sec-lbl">Active Compounds</div>
+          <div class="compounds-row">
+            ${s.compounds.map(c => `<span class="compound-badge">${c}</span>`).join('')}
+          </div>
+        </div>
+
+        <div>
+          <div class="sec-lbl">Key Benefits</div>
+          <div class="benefit-list">
+            ${s.benefits.map((b,i) => `<div class="benefit-item"><div class="benefit-dot">${i+1}</div><span>${b}</span></div>`).join('')}
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="info-box">
+            <div class="sec-lbl">How to Use</div>
+            <div class="info-box-text">${s.howToUse}</div>
+          </div>
+          <div class="info-box">
+            <div class="sec-lbl">Dosage &amp; Forms</div>
+            <div class="info-box-text">${s.dose}</div>
+            <div class="forms-row">${s.forms.map(f=>`<span class="form-pill">${f}</span>`).join('')}</div>
+          </div>
+        </div>
+
+        <div class="tip-box">
+          <div class="tip-label">Pro Tip</div>
+          ${s.tip}
+        </div>
+
+        ${s.stack ? `<div class="stack-box"><div class="stack-label">Stack With</div>${s.stack}</div>` : ''}
+
+        <button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to top</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderAll() {
+  const filtered = activeFilter === 'all'
+    ? SPICES
+    : SPICES.filter(s => s.categories.includes(activeFilter));
+  document.getElementById('spiceList').innerHTML = filtered.length
+    ? filtered.map(spiceCard).join('')
+    : '<div class="empty-state">No spices match this filter.</div>';
+  buildIndex(filtered);
+}
+
+function buildIndex(list) {
+  document.getElementById('spiceIndex').innerHTML = list.map(s =>
+    `<a class="index-pill" href="#${s.id}" onclick="openAndScroll('${s.id}',event)">${s.emoji} ${s.name}</a>`
+  ).join('');
+}
+
+function toggleSpice(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function openAndScroll(id, e) {
+  e.preventDefault();
+  const card = document.getElementById(id);
+  if (!card) return;
+  if (!card.classList.contains('open')) card.classList.add('open');
+  setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+
+function filterSpices(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+renderAll();
+</script>
+</body>
+</html>

@@ -425,6 +425,7 @@
     /* ── SCROLLBAR ─────────────────────────────────────────────────────── */
     * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
   </style>
+  <script src="health-notifications.js" defer></script>
 </head>
 <body>
 
@@ -966,7 +967,8 @@ function buildHTML(post) {
 '      .footer{border-color:#222;color:#555}\n' +
 '    }\n' +
 '  </style>\n' +
-'</head>\n<body>\n' +
+'  <script src="health-notifications.js" defer></script>
+</head>\n<body>\n' +
 '  <article>\n' +
 '    <h1 class="post-title">' + (post.title || 'Untitled') + '</h1>\n' +
 '    <div class="meta">\n' +

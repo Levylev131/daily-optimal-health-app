@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup Configurations — Daily Optimal Health</title>
+  <link rel="stylesheet" href="index.css">
+  <style>
+    #setups-wrap {
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 28px 16px 100px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .setups-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: none; border: 1px solid var(--glass-b);
+      color: var(--muted); border-radius: 20px; padding: 6px 16px;
+      font-size: .82rem; cursor: pointer; transition: var(--trans); margin-bottom: 32px;
+    }
+    .setups-back:hover { border-color: var(--acc); color: var(--text); }
+
+    .setups-head { text-align: center; margin-bottom: 36px; }
+    .setups-head h1 {
+      font-size: clamp(1.7rem, 4vw, 2.6rem); font-weight: 800;
+      letter-spacing: -.02em; color: var(--text); margin-bottom: 10px;
+    }
+    .setups-head p { color: var(--muted); font-size: .9rem; line-height: 1.6; max-width: 480px; margin: 0 auto; }
+
+    .undo-banner {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: var(--r);
+      padding: 13px 18px; margin-bottom: 28px; font-size: .86rem; color: var(--muted);
+    }
+    .undo-btn {
+      background: none; border: 1px solid var(--acc); color: var(--acc);
+      border-radius: 20px; padding: 5px 15px; font-size: .8rem; font-weight: 700;
+      cursor: pointer; transition: var(--trans); white-space: nowrap; flex-shrink: 0;
+    }
+    .undo-btn:hover { background: rgba(45,212,110,0.12); }
+
+    /* ── setup cards ── */
+    .setups-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 22px; }
+    .setup-card {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: var(--r);
+      overflow: hidden; transition: var(--trans); display: flex; flex-direction: column; cursor: pointer;
+    }
+    .setup-card:hover { border-color: var(--acc); box-shadow: 0 0 28px var(--glow); transform: translateY(-3px); }
+
+    .setup-card-head { padding: 22px 20px 16px; border-bottom: 1px solid var(--glass-b); }
+    .setup-card-icon { font-size: 2.2rem; margin-bottom: 10px; display: block; line-height: 1; }
+    .setup-card-title { font-size: 1.18rem; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+    .setup-card-tag { font-size: .72rem; color: var(--acc); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 9px; }
+    .setup-card-desc { font-size: .82rem; color: var(--muted); line-height: 1.55; }
+
+    /* ── thumbnail mockup ── */
+    .setup-mockup { padding: 14px 20px 16px; border-bottom: 1px solid var(--glass-b); background: rgba(0,0,0,0.18); flex: 1; }
+    .mockup-label { font-size: .66rem; color: var(--muted); text-transform: uppercase; letter-spacing: .09em; margin-bottom: 10px; opacity: .75; }
+    .mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+    /* regular card tile */
+    .mini-card { background: var(--glass); border: 1px solid var(--glass-b); border-radius: 8px; padding: 8px 5px 6px; text-align: center; }
+    .mini-card.featured { border-color: rgba(45,212,110,0.35); background: rgba(45,212,110,0.08); }
+    .mini-card.dimmed { opacity: .5; }
+    .mini-icon { font-size: 1rem; display: block; margin-bottom: 3px; line-height: 1; }
+    .mini-name { font-size: .58rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+
+    /* widget tile in thumbnail — same shape as mini-card but with accent color */
+    .mini-widget {
+      border-radius: 8px; padding: 8px 5px 6px; text-align: center;
+      border-left: 3px solid; border-top: 1px solid; border-right: 1px solid; border-bottom: 1px solid;
+    }
+    .mini-widget[data-wtype="water"]       { background:rgba(62,207,255,.07);  border-color:rgba(62,207,255,.35);  border-left-color:#3ecfff; }
+    .mini-widget[data-wtype="habits"]      { background:rgba(45,212,110,.07);  border-color:rgba(45,212,110,.35);  border-left-color:var(--acc); }
+    .mini-widget[data-wtype="sleep"]       { background:rgba(129,140,248,.07); border-color:rgba(129,140,248,.35); border-left-color:#818cf8; }
+    .mini-widget[data-wtype="supplements"] { background:rgba(251,146,60,.07);  border-color:rgba(251,146,60,.35);  border-left-color:#fb923c; }
+
+    .mini-more { grid-column:1/-1; text-align:center; font-size:.66rem; color:var(--muted); padding:6px 0 2px; opacity:.6; }
+
+    .setup-card-foot { padding: 14px 20px; }
+    .preview-btn {
+      width: 100%; background: none; border: 1px solid var(--acc); color: var(--acc);
+      border-radius: 10px; font-size: .88rem; font-weight: 800; padding: 12px;
+      cursor: pointer; transition: var(--trans);
+    }
+    .preview-btn:hover { background: rgba(45,212,110,0.12); box-shadow: 0 0 14px var(--glow); }
+
+    /* ════════════════════════════════════════════════════
+       FULL-SCREEN PREVIEW SHEET
+    ════════════════════════════════════════════════════ */
+    .prev-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      display: flex; align-items: flex-end;
+      opacity: 0; transition: opacity .3s ease;
+      pointer-events: none;
+    }
+    .prev-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .prev-sheet {
+      width: 100%; max-height: 94vh;
+      background: var(--bg1);
+      border: 1px solid var(--glass-b); border-bottom: none;
+      border-radius: 20px 20px 0 0;
+      transform: translateY(110%);
+      transition: transform .38s cubic-bezier(.4,0,.2,1);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .prev-overlay.open .prev-sheet { transform: translateY(0); }
+
+    .prev-handle { width: 40px; height: 4px; border-radius: 2px; background: var(--glass-b); margin: 12px auto 0; flex-shrink: 0; }
+
+    .prev-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 20px 14px;
+      border-bottom: 1px solid var(--glass-b);
+      background: var(--bg1); flex-shrink: 0;
+    }
+    .prev-bar-back {
+      background: none; border: 1px solid var(--glass-b); color: var(--muted);
+      border-radius: 16px; padding: 5px 13px; font-size: .78rem; cursor: pointer;
+      transition: var(--trans); white-space: nowrap; flex-shrink: 0;
+    }
+    .prev-bar-back:hover { border-color: var(--acc); color: var(--text); }
+    .prev-bar-info { flex: 1; display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .prev-bar-icon { font-size: 1.6rem; line-height: 1; flex-shrink: 0; }
+    .prev-bar-text { min-width: 0; }
+    .prev-bar-title { font-size: .96rem; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .prev-bar-tag { font-size: .65rem; color: var(--acc); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+    .prev-bar-apply {
+      background: var(--acc); border: none; border-radius: 8px;
+      color: #000; font-size: .82rem; font-weight: 800;
+      padding: 8px 16px; cursor: pointer; transition: var(--trans);
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .prev-bar-apply:hover { background: var(--acc2); color: #fff; box-shadow: 0 0 14px var(--glow); }
+
+    .prev-scroll { flex: 1; overflow-y: auto; }
+    .prev-hub { max-width: 940px; margin: 0 auto; padding: 16px 20px 32px; }
+
+    .prev-info-strip {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(45,212,110,0.07); border: 1px solid rgba(45,212,110,0.18);
+      border-radius: var(--r-sm); padding: 9px 14px; margin-bottom: 18px;
+      font-size: .78rem; color: var(--muted); flex-wrap: wrap;
+    }
+    .prev-info-strip span { color: var(--acc); font-weight: 700; }
+
+    .prev-fake-bar {
+      display: flex; justify-content: flex-end; align-items: center;
+      gap: 8px; margin-bottom: 12px;
+    }
+    .prev-fake-btn {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      color: var(--muted); border-radius: 8px; padding: 5px 13px;
+      font-size: .78rem; opacity: .45; cursor: default; pointer-events: none;
+    }
+
+    /* disable interaction on all previewed hub items */
+    .prev-hub .goal-card,
+    .prev-hub .hub-widget-card { cursor: default !important; pointer-events: none; }
+    .prev-hub .goal-card:hover {
+      transform: none !important; box-shadow: none !important;
+      background: var(--glass) !important; border-color: var(--glass-b) !important;
+    }
+    .prev-hub .goal-grid { margin-bottom: 0; }
+
+    /* widget card rendered inline in the goal-grid — strip fixed height */
+    .prev-hub .hub-widget-card {
+      min-height: auto !important;
+      grid-column: span 1 !important;
+    }
+
+    /* placeholder inside preview widget */
+    .prev-widget-placeholder {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      font-size: .72rem; color: var(--muted); opacity: .5;
+      border: 1px dashed var(--glass-b); border-radius: var(--r-sm);
+      margin-top: 8px; padding: 10px 0;
+    }
+
+    .prev-footer {
+      display: flex; gap: 10px;
+      padding: 12px 20px 22px;
+      border-top: 1px solid var(--glass-b);
+      background: var(--bg1); flex-shrink: 0;
+    }
+    .prev-footer-cancel {
+      flex: 1; background: none; border: 1px solid var(--glass-b);
+      color: var(--muted); border-radius: 10px; padding: 12px;
+      font-size: .86rem; font-weight: 700; cursor: pointer; transition: var(--trans);
+    }
+    .prev-footer-cancel:hover { border-color: var(--text); color: var(--text); }
+    .prev-footer-apply {
+      flex: 2; background: var(--acc); border: none; border-radius: 10px;
+      color: #000; font-size: .9rem; font-weight: 800; padding: 12px;
+      cursor: pointer; transition: var(--trans);
+    }
+    .prev-footer-apply:hover { background: var(--acc2); color: #fff; box-shadow: 0 0 18px var(--glow); }
+  </style>
+</head>
+<body>
+<div id="particles"></div>
+<div id="toast"></div>
+
+<!-- ── FULL-SCREEN PREVIEW SHEET ── -->
+<div class="prev-overlay" id="prev-overlay" onclick="handleOverlayClick(event)">
+  <div class="prev-sheet" id="prev-sheet">
+    <div class="prev-handle"></div>
+    <div class="prev-bar">
+      <button class="prev-bar-back" onclick="closePreview()">← Back</button>
+      <div class="prev-bar-info">
+        <span class="prev-bar-icon" id="prev-bar-icon"></span>
+        <div class="prev-bar-text">
+          <div class="prev-bar-title" id="prev-bar-title"></div>
+          <div class="prev-bar-tag"   id="prev-bar-tag"></div>
+        </div>
+      </div>
+      <button class="prev-bar-apply" id="prev-bar-apply">Apply →</button>
+    </div>
+    <div class="prev-scroll">
+      <div class="prev-hub" id="prev-hub"></div>
+    </div>
+    <div class="prev-footer">
+      <button class="prev-footer-cancel" onclick="closePreview()">✕ Cancel</button>
+      <button class="prev-footer-apply" id="prev-footer-apply">✓ Apply This Setup</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN PAGE ── -->
+<div id="setups-wrap">
+  <button class="setups-back" onclick="window.location.href='index.html'">← Back to Hub</button>
+
+  <div class="setups-head">
+    <h1>⚙️ Setup Configurations</h1>
+    <p>Pick a pre-built hub layout tuned for your goal. Preview exactly how your homepage will look — cards and widgets mixed together — before applying.</p>
+  </div>
+
+  <div id="undo-banner" class="undo-banner" style="display:none">
+    <span>↺ A setup was recently applied to your hub.</span>
+    <button class="undo-btn" onclick="undoSetup()">Undo Last Setup</button>
+  </div>
+
+  <div class="setups-grid" id="setups-grid"></div>
+</div>
+
+<script>
+// ─── WIDGET METADATA ──────────────────────────────────────────────────────────
+const WIDGET_META = {
+  water:       { icon:'💧', title:'Water Tracker',    sub:'Daily hydration goal'  },
+  habits:      { icon:'✅', title:"Today's Habits",   sub:'Your habits for today'  },
+  sleep:       { icon:'😴', title:'Sleep Log',         sub:"Last night's rest"      },
+  supplements: { icon:'💊', title:'Supplement Check',  sub:"Today's supplements"    },
+};
+
+// ─── CARD METADATA ────────────────────────────────────────────────────────────
+const CARD_META = {
+  'longevity':        { icon:'🌿', title:'Longevity',             desc:'A full-day schedule for longevity, energy, and well-being',                                                            section:'health' },
+  'muscle':           { icon:'💪', title:'Muscle Building',        desc:'A full-day schedule optimized for maximum muscle growth and recovery',                                                  section:'health' },
+  'cardio':           { icon:'❤️', title:'Cardiovascular Health',  desc:'A full-day schedule to strengthen your heart, improve circulation, and boost endurance',                                section:'health' },
+  'bone':             { icon:'🦴', title:'Bone Health',            desc:'A full-day schedule to build dense, strong bones and prevent osteoporosis',                                             section:'health' },
+  'brain':            { icon:'🧠', title:'Brain Health',           desc:'A full-day schedule to sharpen cognition, protect memory, and reduce dementia risk',                                    section:'health' },
+  'digestive':        { icon:'🥦', title:'Digestive Health',       desc:'A full-day schedule to optimize your gut microbiome, digestion, and nutrient absorption',                               section:'health' },
+  'tools':            { icon:'🛠️', title:'Tools &amp; Trackers',   desc:'Journal, water, mood, supplements, sleep log, and your personal checklist',                                            section:'tools'  },
+  'workout-log':      { icon:'📋', title:'Workout Logger',         desc:'Log exercises, sets, reps, and weight. Track progressive overload day by day.',                                         section:'tools'  },
+  'nutrition-log':    { icon:'🥗', title:'Nutrition Log',          desc:'Track meals and macros — protein, carbs, fat, and calories across the day.',                                            section:'tools'  },
+  'fasting-tracker':  { icon:'⏱️', title:'Fasting Tracker',        desc:'Start and track intermittent fasts. Set goals, monitor progress, log history.',                                        section:'tools'  },
+  'habit-tracker':    { icon:'✅', title:'Habit Tracker',          desc:'Build custom daily habits. Track streaks and stay consistent over time.',                                               section:'tools'  },
+  'challenges':       { icon:'🏆', title:'30-Day Challenges',      desc:'Pick a challenge, check in daily, and build a new habit in 30 days.',                                                  section:'tools'  },
+  'breathing-timer':  { icon:'🫁', title:'Breathing Timer',        desc:'Box breathing, 4-7-8, coherent breathing and more. Guided sessions with XP rewards.',                                  section:'tools'  },
+  'creatine':         { icon:'⚡', title:'Creatine Guide',         desc:'Everything about creatine monohydrate — protocols, dosage calculator, myths, safety, and daily logging.',               section:'tools'  },
+  'spices':           { icon:'🌿', title:'Spice Guide',            desc:'Health benefits of the 7 most powerful spices — compounds, dosage, how to use, and pro stacking tips.',                section:'tools'  },
+  'holistic':         { icon:'☯️', title:'Holistic Health',        desc:'Evidence-based practices — cold therapy, sauna, forest bathing, grounding, meditation, and more.',                     section:'tools'  },
+  'body-map':         { icon:'🫀', title:'Body Map',               desc:'Explore your body by region. Tap any area to see health info and tips.',                                               section:'tools'  },
+  'blog-reader':      { icon:'✍️', title:'Blogs',                  desc:'Write, publish, and browse your posts. Export as clean HTML to share anywhere.',                                       section:'tools'  },
+  'dashboard':        { icon:'📊', title:'Dashboard',              desc:'All your data at a glance — XP, streaks, habits, fasting, workouts, and nutrition.',                                   section:'tools'  },
+};
+
+// ─── SETUP DEFINITIONS ────────────────────────────────────────────────────────
+// Widgets are size 1 (small) and placed inline within the card order
+const SETUPS = [
+  {
+    id: 'general-health',
+    icon: '🌿',
+    title: 'General Health',
+    tag: 'Balanced Daily Wellness',
+    desc: 'A well-rounded foundation covering all six health goals, with quick-access widgets mixed in and essential tools behind them.',
+    widgets: [
+      { slot:1, type:'habits',  size:1, pos:'left'  },
+      { slot:2, type:'water',   size:1, pos:'mid'   },
+      { slot:3, type:'sleep',   size:1, pos:'right' },
+    ],
+    order: [
+      '__widget1','longevity','cardio','bone','brain','digestive','muscle',
+      '__widget2','habit-tracker','nutrition-log','workout-log','breathing-timer','challenges','fasting-tracker',
+      '__widget3','tools','creatine','holistic','spices','body-map','dashboard',
+      'blog-reader',
+    ],
+  },
+  {
+    id: 'muscle-gains',
+    icon: '💪',
+    title: 'Muscle Gains',
+    tag: 'Strength & Hypertrophy',
+    desc: 'Muscle, workouts, nutrition, and creatine up top. Supplement and habit widgets sit right in the flow for daily consistency.',
+    widgets: [
+      { slot:1, type:'habits',      size:1, pos:'right' },
+      { slot:2, type:'supplements', size:1, pos:'left'  },
+      { slot:3, type:'water',       size:1, pos:'mid'   },
+    ],
+    order: [
+      '__widget1','muscle','workout-log','nutrition-log','creatine','bone','cardio',
+      '__widget2','longevity','habit-tracker','challenges','fasting-tracker','breathing-timer','digestive',
+      '__widget3','brain','holistic','spices','body-map','tools','dashboard',
+      'blog-reader',
+    ],
+  },
+  {
+    id: 'weight-loss',
+    icon: '🔥',
+    title: 'Weight Loss',
+    tag: 'Fat Loss & Metabolic Health',
+    desc: 'Cardio, fasting, and nutrition lead the way. Water, habit, and sleep widgets are spread through the flow to keep you consistent.',
+    widgets: [
+      { slot:1, type:'water',  size:1, pos:'mid'   },
+      { slot:2, type:'habits', size:1, pos:'right' },
+      { slot:3, type:'sleep',  size:1, pos:'left'  },
+    ],
+    order: [
+      '__widget1','cardio','fasting-tracker','nutrition-log','digestive','muscle','longevity',
+      '__widget2','habit-tracker','challenges','breathing-timer','bone','brain','creatine',
+      '__widget3','holistic','spices','body-map','tools','workout-log','dashboard',
+      'blog-reader',
+    ],
+  },
+];
+
+const FEATURED_COUNT = 6;
+const RING_R    = 22;
+const RING_CIRC = (2 * Math.PI * RING_R).toFixed(2);
+
+// ─── THUMBNAIL MOCKUP ────────────────────────────────────────────────────────
+// Shows the first 9 items from the order (cards and widgets mixed as mini tiles)
+function renderMockup(setup) {
+  const widgetMap = {};
+  setup.widgets.forEach(w => { widgetMap[`__widget${w.slot}`] = w; });
+
+  const showCount = 9;
+  const tiles = setup.order.slice(0, showCount).map((id, i) => {
+    if (id.startsWith('__widget')) {
+      const w = widgetMap[id];
+      if (!w) return '';
+      const m = WIDGET_META[w.type] || WIDGET_META.water;
+      return `<div class="mini-widget" data-wtype="${w.type}" title="${m.title}">
+        <span class="mini-icon">${m.icon}</span>
+        <span class="mini-name">${m.title}</span>
+      </div>`;
+    }
+    const meta = CARD_META[id] || { icon:'●', title: id };
+    const cls  = i < FEATURED_COUNT ? 'mini-card featured' : 'mini-card dimmed';
+    return `<div class="${cls}">
+      <span class="mini-icon">${meta.icon}</span>
+      <span class="mini-name" title="${meta.title}">${meta.title}</span>
+    </div>`;
+  }).join('');
+
+  const remaining = setup.order.length - showCount;
+  const moreHtml  = remaining > 0 ? `<div class="mini-more">+ ${remaining} more</div>` : '';
+
+  return `<div class="setup-mockup">
+    <div class="mockup-label">Layout Preview</div>
+    <div class="mini-grid">${tiles}${moreHtml}</div>
+  </div>`;
+}
+
+// ─── BUILD REGULAR CARD (preview) ────────────────────────────────────────────
+function buildHubCard(id) {
+  const meta = CARD_META[id];
+  if (!meta) return '';
+  const gc  = meta.section === 'health' ? ' gc-health' : ' gc-tools';
+  const pct = meta.section === 'health' ? 'Start →' : 'Open →';
+  return `<div class="goal-card${gc}">
+    <div class="ring-wrap">
+      <svg viewBox="0 0 50 50">
+        <circle class="r-track" cx="25" cy="25" r="${RING_R}"/>
+        <circle class="r-fill"  cx="25" cy="25" r="${RING_R}"
+          stroke-dasharray="${RING_CIRC}" stroke-dashoffset="${RING_CIRC}"/>
+      </svg>
+      <div class="ring-icon">${meta.icon}</div>
+    </div>
+    <div class="card-info">
+      <div class="card-title">${meta.title}</div>
+      <div class="card-desc">${meta.desc}</div>
+      <div class="card-pct">${pct}</div>
+    </div>
+  </div>`;
+}
+
+// ─── BUILD SMALL WIDGET CARD (mixed inline in goal-grid) ─────────────────────
+function buildWidgetCard(w) {
+  const m = WIDGET_META[w.type] || WIDGET_META.water;
+  return `<div class="hub-widget-card" data-widget="${w.type}" data-size="1">
+    <div class="hww-body">
+      <div class="hww-header">
+        <span class="hww-icon">${m.icon}</span>
+        <div class="hww-info">
+          <div class="hww-title">${m.title}</div>
+          <div class="hww-sub">${m.sub}</div>
+        </div>
+      </div>
+      <div class="prev-widget-placeholder">Live on hub</div>
+    </div>
+  </div>`;
+}
+
+// ─── BUILD FULL HUB PREVIEW ──────────────────────────────────────────────────
+// Widget + 6 cards → full-width .hub-widget-group (widget | 3-stack | 3-stack)
+// Any remaining cards after all widget groups flow in a goal-grid at the bottom
+function buildHubPreview(setup) {
+  const widgetMap = {};
+  setup.widgets.forEach(w => { widgetMap[`__widget${w.slot}`] = w; });
+
+  let html = '';
+  let cardBuf = [];
+  let i = 0;
+
+  const flushCards = () => {
+    if (!cardBuf.length) return;
+    html += `<div class="goal-grid" style="align-items:start">${cardBuf.join('')}</div>`;
+    cardBuf = [];
+  };
+
+  while (i < setup.order.length) {
+    const id = setup.order[i];
+    if (id.startsWith('__widget')) {
+      flushCards();
+      const w = widgetMap[id];
+      const col1Ids = setup.order.slice(i + 1, i + 4);
+      const col2Ids = setup.order.slice(i + 4, i + 7);
+      const col1Html = col1Ids.map(cid => buildHubCard(cid)).join('');
+      const col2Html = col2Ids.map(cid => buildHubCard(cid)).join('');
+      const widgetHtml = w ? buildWidgetCard(w) : '';
+      const pos = w ? (w.pos || 'left') : 'left';
+      const grpContent = pos === 'mid'
+        ? `<div class="hwg-cards">${col1Html}</div>${widgetHtml}<div class="hwg-cards">${col2Html}</div>`
+        : pos === 'right'
+        ? `<div class="hwg-cards">${col1Html}</div><div class="hwg-cards">${col2Html}</div>${widgetHtml}`
+        : `${widgetHtml}<div class="hwg-cards">${col1Html}</div><div class="hwg-cards">${col2Html}</div>`;
+      html += `<div class="hub-widget-group">${grpContent}</div>`;
+      i += 7;
+    } else {
+      cardBuf.push(buildHubCard(id));
+      i++;
+    }
+  }
+  flushCards();
+
+  const cardCount   = setup.order.filter(id => !id.startsWith('__widget')).length;
+  const widgetCount = setup.widgets.length;
+
+  return `
+    <div class="prev-info-strip">
+      👁 Preview — <span>${setup.title}</span>&nbsp;·&nbsp;${cardCount} cards&nbsp;·&nbsp;${widgetCount} widgets mixed in&nbsp;·&nbsp;rings fill as you complete tasks
+    </div>
+    <div class="prev-fake-bar">
+      <div class="prev-fake-btn">⚙️ Setups</div>
+      <div class="prev-fake-btn">⠿ Arrange</div>
+    </div>
+    ${html}`;
+}
+
+// ─── RENDER SETUP CARDS ───────────────────────────────────────────────────────
+function renderSetups() {
+  document.getElementById('setups-grid').innerHTML = SETUPS.map(s => `
+    <div class="setup-card" onclick="openPreview('${s.id}')">
+      <div class="setup-card-head">
+        <span class="setup-card-icon">${s.icon}</span>
+        <div class="setup-card-title">${s.title}</div>
+        <div class="setup-card-tag">${s.tag}</div>
+        <div class="setup-card-desc">${s.desc}</div>
+      </div>
+      ${renderMockup(s)}
+      <div class="setup-card-foot">
+        <button class="preview-btn" onclick="event.stopPropagation();openPreview('${s.id}')">👁 Preview Setup</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── PREVIEW OPEN / CLOSE ─────────────────────────────────────────────────────
+function openPreview(id) {
+  const setup = SETUPS.find(s => s.id === id);
+  if (!setup) return;
+
+  document.getElementById('prev-bar-icon').textContent  = setup.icon;
+  document.getElementById('prev-bar-title').textContent = setup.title;
+  document.getElementById('prev-bar-tag').textContent   = setup.tag;
+  document.getElementById('prev-bar-apply').onclick     = () => applySetup(id);
+  document.getElementById('prev-footer-apply').onclick  = () => applySetup(id);
+  document.getElementById('prev-hub').innerHTML         = buildHubPreview(setup);
+  document.getElementById('prev-sheet').querySelector('.prev-scroll').scrollTop = 0;
+
+  const overlay = document.getElementById('prev-overlay');
+  overlay.style.display = 'flex';
+  requestAnimationFrame(() => overlay.classList.add('open'));
+  document.body.style.overflow = 'hidden';
+}
+
+function closePreview() {
+  const overlay = document.getElementById('prev-overlay');
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  setTimeout(() => { overlay.style.display = 'none'; }, 420);
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('prev-overlay')) closePreview();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePreview(); });
+
+// ─── APPLY SETUP ─────────────────────────────────────────────────────────────
+function applySetup(id) {
+  const setup = SETUPS.find(s => s.id === id);
+  if (!setup) return;
+
+  const backup = {
+    order:       localStorage.getItem('doh_hub_card_order'),
+    hidden:      localStorage.getItem('doh_hub_hidden'),
+    groups:      localStorage.getItem('doh_hub_groups'),
+    collapsed:   localStorage.getItem('doh_hub_collapsed'),
+    cardGroups:  localStorage.getItem('doh_hub_card_groups'),
+    widget1:     localStorage.getItem('doh_hub_widget_1'),
+    widget2:     localStorage.getItem('doh_hub_widget_2'),
+    widget3:     localStorage.getItem('doh_hub_widget_3'),
+    widgetSize1: localStorage.getItem('doh_hub_widget_size_1'),
+    widgetSize2: localStorage.getItem('doh_hub_widget_size_2'),
+    widgetSize3: localStorage.getItem('doh_hub_widget_size_3'),
+    widgetPos1:  localStorage.getItem('doh_hub_widget_pos_1'),
+    widgetPos2:  localStorage.getItem('doh_hub_widget_pos_2'),
+    widgetPos3:  localStorage.getItem('doh_hub_widget_pos_3'),
+    appliedAt:   Date.now(),
+    setupTitle:  setup.title,
+  };
+  localStorage.setItem('doh_setup_backup', JSON.stringify(backup));
+
+  localStorage.setItem('doh_hub_card_order', JSON.stringify(setup.order));
+  localStorage.removeItem('doh_hub_groups');
+  localStorage.removeItem('doh_hub_collapsed');
+  localStorage.removeItem('doh_hub_card_groups');
+
+  setup.widgets.forEach(w => {
+    localStorage.setItem(`doh_hub_widget_${w.slot}`,      w.type);
+    localStorage.setItem(`doh_hub_widget_size_${w.slot}`, String(w.size));
+    localStorage.setItem(`doh_hub_widget_pos_${w.slot}`,  w.pos || 'left');
+  });
+
+  window.location.href = 'index.html';
+}
+
+// ─── UNDO ─────────────────────────────────────────────────────────────────────
+function undoSetup() {
+  const raw = localStorage.getItem('doh_setup_backup');
+  if (!raw) return;
+  let backup;
+  try { backup = JSON.parse(raw); } catch(e) { return; }
+
+  const restore = (key, val) => {
+    if (val !== null) localStorage.setItem(key, val); else localStorage.removeItem(key);
+  };
+  restore('doh_hub_card_order',    backup.order);
+  restore('doh_hub_hidden',        backup.hidden);
+  restore('doh_hub_groups',        backup.groups);
+  restore('doh_hub_collapsed',     backup.collapsed);
+  restore('doh_hub_card_groups',   backup.cardGroups);
+  restore('doh_hub_widget_1',      backup.widget1);
+  restore('doh_hub_widget_2',      backup.widget2);
+  restore('doh_hub_widget_3',      backup.widget3);
+  restore('doh_hub_widget_size_1', backup.widgetSize1);
+  restore('doh_hub_widget_size_2', backup.widgetSize2);
+  restore('doh_hub_widget_size_3', backup.widgetSize3);
+  restore('doh_hub_widget_pos_1',  backup.widgetPos1);
+  restore('doh_hub_widget_pos_2',  backup.widgetPos2);
+  restore('doh_hub_widget_pos_3',  backup.widgetPos3);
+  localStorage.removeItem('doh_setup_backup');
+
+  document.getElementById('undo-banner').style.display = 'none';
+  showToast('↺ Setup undone — your previous layout is restored.');
+}
+
+function checkUndoBanner() {
+  if (localStorage.getItem('doh_setup_backup')) {
+    document.getElementById('undo-banner').style.display = 'flex';
+  }
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+let _toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ─── PARTICLES ────────────────────────────────────────────────────────────────
+(function() {
+  const container = document.getElementById('particles');
+  if (!container) return;
+  const EMOJIS = ['🌿','💪','❤️','🦴','🧠','🥗','⚡','✅','🏆','🔥'];
+  function spawn() {
+    const el = document.createElement('div');
+    el.className = 'ptcl';
+    el.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+    el.style.cssText = `left:${Math.random()*100}vw;top:100vh;font-size:${.7+Math.random()*.9}rem;opacity:${.06+Math.random()*.1};animation-duration:${9+Math.random()*14}s;animation-delay:${Math.random()*2}s`;
+    container.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  }
+  setInterval(spawn, 1500);
+})();
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderSetups();
+checkUndoBanner();
+</script>
+</body>
+</html>
