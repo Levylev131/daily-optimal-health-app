@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sleep Guide — Daily Optimal Health</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --r: 14px; --r-sm: 10px;
+      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
+      --amber: #f5a623; --blue: #3ecfff; --rose: #ff6b6b; --purple: #b89eff;
+    }
+    html { min-height: 100%; scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+      color: var(--text); min-height: 100vh; overflow-x: hidden;
+    }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+    .top-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 24px; max-width: 900px; margin: 0 auto;
+      border-bottom: 1px solid var(--glass-b);
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(6,26,12,0.85); backdrop-filter: blur(16px);
+    }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: .88rem; font-weight: 600; transition: color .2s; background: none; border: none; cursor: pointer; white-space: nowrap; }
+    .back-btn:hover { color: var(--acc); }
+    .top-title { flex: 1; text-align: center; font-size: 1rem; font-weight: 800; text-shadow: 0 0 20px var(--glow); }
+    .top-spacer { width: 60px; }
+    .page { max-width: 900px; margin: 0 auto; padding: clamp(16px,4vw,28px) clamp(12px,3vw,20px) 100px; }
+    .hero { text-align: center; padding: clamp(20px,4vw,32px) 0 clamp(14px,3vw,24px); }
+    .hero-emoji { font-size: clamp(2.5rem,7vw,4rem); display: block; margin-bottom: 10px; filter: drop-shadow(0 0 16px var(--glow)); }
+    .hero-title {
+      font-size: clamp(1.6rem,5vw,2.6rem); font-weight: 900; letter-spacing: -1px; line-height: 1.1;
+      background: linear-gradient(135deg, #fff 30%, var(--acc));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px;
+    }
+    .hero-sub { color: var(--muted); font-size: clamp(.84rem,2vw,.98rem); max-width: 540px; margin: 0 auto; line-height: 1.6; }
+    .filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; padding-top: 4px; }
+    .filter-btn {
+      padding: 7px 14px; border-radius: 20px; border: 1px solid var(--glass-b);
+      background: var(--glass); color: var(--muted); font-size: .78rem; font-weight: 700;
+      cursor: pointer; transition: var(--trans); font-family: inherit; white-space: nowrap;
+    }
+    .filter-btn:hover { border-color: var(--acc); color: var(--text); }
+    .filter-btn.active { background: var(--acc); color: #000; border-color: var(--acc); box-shadow: 0 0 10px var(--glow); }
+    .practice-index { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+    .index-pill {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
+      padding: 5px 12px; font-size: .75rem; color: var(--muted); cursor: pointer;
+      transition: var(--trans); text-decoration: none; display: inline-block;
+    }
+    .index-pill:hover { border-color: var(--acc); color: var(--acc); }
+    .practice-card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px);
+      margin-bottom: 16px; overflow: hidden;
+      scroll-margin-top: 72px; transition: border-color .2s;
+    }
+    .practice-card.open { border-color: rgba(45,212,110,0.35); }
+    .practice-header {
+      display: flex; align-items: center; gap: 16px;
+      padding: clamp(14px,3vw,20px); cursor: pointer;
+      transition: background .15s; user-select: none;
+    }
+    .practice-header:hover { background: var(--glass-h); }
+    .practice-icon {
+      font-size: clamp(2rem,5vw,2.6rem); flex-shrink: 0;
+      width: clamp(52px,10vw,68px); height: clamp(52px,10vw,68px);
+      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.2);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    }
+    .practice-meta { flex: 1; min-width: 0; }
+    .practice-name { font-size: clamp(1rem,2.8vw,1.25rem); font-weight: 900; margin-bottom: 3px; }
+    .practice-tagline { color: var(--muted); font-size: .8rem; margin-bottom: 8px; font-style: italic; }
+    .practice-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+    .ptag {
+      font-size: .64rem; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: .5px; white-space: nowrap;
+    }
+    .ptag-timing      { background: rgba(245,166,35,0.15);  color: var(--amber); }
+    .ptag-environment { background: rgba(62,207,255,0.12);  color: var(--blue); }
+    .ptag-nutrition   { background: rgba(45,212,110,0.15);  color: var(--acc); }
+    .ptag-recovery    { background: rgba(160,120,255,0.15); color: var(--purple); }
+    .ptag-mental      { background: rgba(255,107,107,0.15); color: var(--rose); }
+    .expand-arrow { color: var(--muted); font-size: .8rem; transition: transform .25s; margin-left: 8px; flex-shrink: 0; }
+    .practice-card.open .expand-arrow { transform: rotate(180deg); }
+    .practice-body {
+      max-height: 0; overflow: hidden;
+      transition: max-height .45s cubic-bezier(.4,0,.2,1);
+      border-top: 1px solid transparent;
+    }
+    .practice-card.open .practice-body { max-height: 1800px; border-top-color: var(--glass-b); }
+    .practice-inner { padding: clamp(14px,3vw,22px); display: flex; flex-direction: column; gap: 18px; }
+    .mech-row { display: flex; gap: 7px; flex-wrap: wrap; }
+    .mech-badge {
+      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.25);
+      border-radius: 20px; padding: 4px 12px;
+      font-size: .72rem; font-weight: 700; color: var(--acc); letter-spacing: .3px;
+    }
+    .sec-lbl {
+      font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.3px;
+      color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+    }
+    .sec-lbl::after { content:''; flex:1; height:1px; background: var(--glass-b); }
+    .benefit-list { display: flex; flex-direction: column; gap: 8px; }
+    .benefit-item { display: flex; gap: 10px; align-items: flex-start; font-size: .84rem; line-height: 1.55; }
+    .benefit-dot {
+      width: 20px; height: 20px; border-radius: 50%; background: rgba(45,212,110,0.2);
+      color: var(--acc); font-size: .75rem; font-weight: 900;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+    }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media(max-width:560px) { .two-col { grid-template-columns: 1fr; } }
+    .info-box {
+      background: rgba(255,255,255,0.04); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); padding: 14px;
+    }
+    .info-box-text { font-size: .82rem; line-height: 1.65; color: rgba(240,255,244,0.85); }
+    .methods-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .method-pill {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
+      padding: 3px 10px; font-size: .7rem; color: var(--muted);
+    }
+    .tip-box {
+      background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.28);
+      border-radius: var(--r-sm); padding: 13px 15px; font-size: .8rem; line-height: 1.65;
+    }
+    .tip-box .tip-label { color: var(--amber); font-weight: 800; margin-bottom: 4px; font-size: .72rem; text-transform: uppercase; letter-spacing: .8px; }
+    .stack-box {
+      background: rgba(45,212,110,0.07); border: 1px solid rgba(45,212,110,0.22);
+      border-radius: var(--r-sm); padding: 11px 14px; font-size: .8rem; line-height: 1.6;
+    }
+    .stack-box .stack-label { color: var(--acc); font-weight: 800; margin-bottom: 3px; font-size: .72rem; text-transform: uppercase; letter-spacing: .8px; }
+    .back-top {
+      display: block; text-align: center; color: var(--muted); font-size: .76rem;
+      font-weight: 700; cursor: pointer; padding: 6px; transition: color .2s;
+      background: none; border: none; width: 100%; font-family: inherit;
+    }
+    .back-top:hover { color: var(--acc); }
+    .empty-state { text-align: center; color: var(--muted); padding: 48px 20px; font-size: .9rem; }
+  </style>
+  <script src="health-notifications.js" defer></script>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="history.back()">← Back</button>
+  <div class="top-title">😴 Sleep Guide</div>
+  <div class="top-spacer"></div>
+</div>
+
+<div class="page">
+
+  <div class="hero">
+    <span class="hero-emoji">🌙</span>
+    <div class="hero-title">The Science of Sleep</div>
+    <div class="hero-sub">Sleep is the single most impactful recovery and performance lever available. These are the evidence-based strategies that actually move the needle — from light management to temperature, timing, and nutrition.</div>
+  </div>
+
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" onclick="filterPractices('all',this)">All Topics</button>
+    <button class="filter-btn" onclick="filterPractices('timing',this)">Timing</button>
+    <button class="filter-btn" onclick="filterPractices('environment',this)">Environment</button>
+    <button class="filter-btn" onclick="filterPractices('nutrition',this)">Nutrition</button>
+    <button class="filter-btn" onclick="filterPractices('recovery',this)">Recovery</button>
+    <button class="filter-btn" onclick="filterPractices('mental',this)">Mental</button>
+  </div>
+
+  <div class="practice-index" id="practiceIndex"></div>
+  <div id="practiceList"></div>
+
+</div>
+
+<script>
+const TAG_CLASS = {
+  timing:      'ptag-timing',
+  environment: 'ptag-environment',
+  nutrition:   'ptag-nutrition',
+  recovery:    'ptag-recovery',
+  mental:      'ptag-mental',
+};
+const TAG_LABEL = {
+  timing:      'Timing',
+  environment: 'Environment',
+  nutrition:   'Nutrition',
+  recovery:    'Recovery',
+  mental:      'Mental',
+};
+
+const PRACTICES = [
+  {
+    id: 'sleep-architecture',
+    emoji: '🧠',
+    name: 'Sleep Architecture & Stages',
+    tagline: 'Understanding what happens during each cycle — and why the structure matters',
+    categories: ['recovery'],
+    mechanisms: ['NREM slow-wave memory consolidation', 'REM emotional processing', 'Glymphatic brain clearance', 'Growth hormone secretion', 'Adenosine washout'],
+    benefits: [
+      'Slow-wave sleep (NREM stage 3) consolidates declarative memory and procedural learning — the brain replays and encodes experiences from the day into long-term storage during this stage',
+      'REM sleep processes emotional memories, reducing their emotional charge — a core mechanism of psychological resilience and why sleep deprivation worsens anxiety and emotional reactivity',
+      'The glymphatic system (brain\'s lymphatic network) clears toxic metabolic waste — including beta-amyloid and tau proteins linked to Alzheimer\'s — at 60% greater efficiency during sleep than waking hours',
+      'Growth hormone peaks during the first NREM cycle (typically 11pm–1am) — physical recovery, tissue repair, and fat metabolism all depend on this early-night window',
+      'Chronic sleep restriction below 6 hours is associated with 8x increased Alzheimer\'s risk, 4x cardiovascular disease risk, and measurably accelerated cellular aging in longitudinal studies',
+    ],
+    howToPractice: 'A full sleep cycle is approximately 90 minutes. The first half of the night is slow-wave (SWS) dominated — critical for physical recovery and growth hormone. The second half is REM-dominated — critical for emotional and cognitive processing. Cutting sleep short by 1 hour eliminates the most REM-rich cycles. You need both halves every night.',
+    protocol: 'Target 7.5–9 hours to complete 5–6 full cycles. Set a fixed wake time and work backwards to your bedtime. The first 2 cycles (3 hours) carry the most SWS and are non-negotiable for physical recovery. Missing sleep cannot be "banked" in advance — only partially recovered.',
+    methods: ['Oura Ring (sleep stage tracking)', 'Whoop (recovery-focused)', 'Apple Watch (approximate stages)', 'Garmin watches', 'Consistent 90-min cycle scheduling'],
+    tip: 'The glymphatic system is your brain\'s nightly waste disposal — it clears the same toxic proteins that accumulate in Alzheimer\'s. This process requires deep sleep every night, not occasionally. Thinking of sleep as "optional recovery time" is like thinking of taking out the trash as optional — the consequences compound slowly, invisibly, and then suddenly.',
+    stack: 'Temperature management (core temp drop triggers deep sleep entry). Consistent schedule (prevents cycle fragmentation).',
+  },
+  {
+    id: 'light-management',
+    emoji: '💡',
+    name: 'Circadian Light Management',
+    tagline: 'Bright light in the morning. Darkness at night. The most impactful free sleep intervention.',
+    categories: ['timing', 'mental'],
+    mechanisms: ['Melanopsin photoreception (ipRGCs)', 'Melatonin suppression by blue light', 'Cortisol pulse timing', 'Serotonin → Melatonin cascade', 'Circadian phase shifting'],
+    benefits: [
+      'Morning sunlight within 60 minutes of waking sets the circadian master clock via melanopsin-expressing retinal cells — precisely timing every hormone cycle, metabolic process, and sleep-wake signal for the next 24 hours',
+      'Evening blue light (phones, screens, LED overhead lighting) suppresses melatonin production for 2–3 hours after exposure — a single evening of screen use delays sleep onset by an average of 40–50 minutes in research studies',
+      'Morning bright light anchors the cortisol awakening response — a natural alertness hormone pulse — which declines correctly only when morning light is received, preventing chronic cortisol dysregulation',
+      'Morning serotonin synthesis triggered by light converts to melatonin exactly 12–14 hours later, creating a built-in sleep timer — the same morning habit simultaneously improves daytime mood and nighttime sleep quality',
+      'Indoor daytime lighting delivers 200–500 lux; overcast outdoor light delivers 10,000+ lux; direct sun up to 100,000 lux — windows block 50–90% of biologically active wavelengths, making indoor substitutes largely ineffective',
+    ],
+    howToPractice: 'Step outside within 30–60 minutes of waking. Angle your face toward the sky (never stare directly at the sun). Stay for the full duration — indoors through a window does not count. In the evening, switch all lighting to warm amber/orange tones (2700K or lower) and avoid bright overhead lights and screens 1–2 hours before bed.',
+    protocol: 'Morning — sunny: 5–10 min outside. Overcast: 15–20 min. Heavy overcast/winter: 20–30 min. Evening — dim all lights to candle-level warmth after sunset. No bright or blue-spectrum lighting within 90 minutes of target bedtime. Blue-blocking glasses if screens are unavoidable.',
+    methods: ['Morning outdoor walk', 'Blue light blocking glasses', 'f.lux / Night Shift on devices', 'Philips Hue warm bulbs', 'Blackout curtains for sleep', '10,000 lux light therapy lamp (winter backup)'],
+    tip: 'Dim your home lighting to "sunset level" 90 minutes before bed. The melanopsin cells in your retina are maximally sensitive to blue (480nm) wavelengths — warm orange/red lights contain almost none of these. A single phone screen in a dark room is enough to delay melatonin by 60+ minutes. This is the highest-leverage, lowest-cost sleep environment change available.',
+    stack: 'Consistent sleep schedule (light anchors the clock; schedule locks the timing). Temperature management (the other half of evening wind-down).',
+  },
+  {
+    id: 'temperature',
+    emoji: '🌡️',
+    name: 'Temperature & Sleep',
+    tagline: 'Your core body temperature must drop 1–3°F to fall asleep — and the room controls this',
+    categories: ['environment', 'recovery'],
+    mechanisms: ['Core body temperature circadian rhythm', 'Peripheral vasodilation for heat dissipation', 'Thermoregulatory sleep gate', 'Warm bath pre-sleep paradox'],
+    benefits: [
+      'Sleep onset is gated by a core body temperature drop of 1–3°F — this is a biological requirement, not preference. The bedroom temperature directly controls how fast this drop occurs',
+      'A warm bath or shower (104°F / 40°C) taken 60–90 minutes before bed reduces average sleep onset time by 36% by drawing heat from core to periphery via skin vasodilation, accelerating the temperature drop that triggers sleep',
+      'Sleeping at 65–67°F (18–19°C) is associated with significantly more slow-wave sleep and fewer nighttime arousals compared to warmer rooms in temperature-controlled sleep studies',
+      'Socks in bed paradoxically improve sleep onset: warming the feet dilates peripheral blood vessels, providing a thermal outlet for core heat dissipation — speeding the core cooling cascade',
+      'Nighttime hot flashes, sweating, or frequent waking are commonly driven by elevated core temperature or inadequate heat dissipation — room temperature is the primary intervention before any supplements',
+    ],
+    howToPractice: 'Set the bedroom to 65–67°F (18–19°C). Use breathable, moisture-wicking sheets (linen, bamboo, or cotton percale). Take a warm shower or bath 60–90 minutes before target sleep time — the warm water heats the skin, which reflexively draws heat from the core to the periphery, triggering the temperature drop that initiates sleep.',
+    protocol: 'Bedroom temperature: 63–68°F (most people optimal at 65–67°F). Warm bath protocol: 10 minutes at 104°F water, 90 min before bed. Dress for bed on the cooler side — the body generates its own heat and needs room to offload it. Cool side of pillow provides additional comfort via skin cooling.',
+    methods: ['AC or fan at night', 'Chilipad / OOLER temperature-controlled mattress pad', 'Bamboo or linen sheets', 'Warm bath (90 min before bed)', 'Socks (paradoxical vasodilation)', 'Cooling pillow'],
+    tip: 'The warm bath before bed is one of the most replicated findings in sleep science — a 10-minute 104°F bath taken 90 minutes before bedtime reduces sleep onset latency by 36% (meta-analysis, Haghayegh et al., 2019). It works not by relaxation but by physics: heating the skin draws core heat to the periphery, triggering the same thermoregulatory cascade your body uses naturally at dusk. Every sleep researcher recommends this.',
+    stack: 'Evening routine (bath fits naturally into wind-down). Light management (dim lights concurrently with cooling down).',
+  },
+  {
+    id: 'caffeine',
+    emoji: '☕',
+    name: 'Caffeine & the Adenosine System',
+    tagline: 'Understanding the half-life — why your afternoon coffee is wrecking your deep sleep',
+    categories: ['timing', 'nutrition'],
+    mechanisms: ['Adenosine receptor competitive blockade', 'Sleep pressure (Process S) accumulation', 'Cortisol awakening response interaction', 'Caffeine half-life pharmacokinetics'],
+    benefits: [
+      'Caffeine has a 5–7 hour half-life in most adults — 400mg of coffee at 2pm leaves approximately 200mg (two espresso shots worth) still active in the bloodstream at 9pm, directly suppressing deep sleep without you feeling "awake"',
+      'Delaying caffeine 90 minutes after waking avoids competing with the natural cortisol awakening response — taking caffeine immediately on waking blunts the cortisol pulse, increases dependence, and leads to a harder energy crash by afternoon',
+      'Even when total sleep time is unchanged, afternoon caffeine measurably reduces slow-wave sleep depth and duration — meaning you sleep the same hours but with less restorative deep sleep',
+      'The afternoon 2–3pm energy dip is a normal circadian event, not a caffeine deficiency — using caffeine to override it delays adenosine repayment to the evening, compounding the sleep debt cycle',
+      'Genetic CYP1A2 variation causes 3–4x variation in caffeine metabolism speed between individuals — "slow metabolizers" see impaired sleep from caffeine consumed even 8–9 hours earlier',
+    ],
+    howToPractice: 'Take your first caffeine 90 minutes after waking — let the natural cortisol awakening response peak uninterrupted. This window of natural alertness is wasted if suppressed by caffeine. Set a hard caffeine cutoff at noon (1pm maximum for fast metabolizers). For the afternoon dip: a 10–20 minute nap before 3pm restores alertness more effectively than caffeine without the sleep cost.',
+    protocol: '90 min after waking: first caffeine allowed. 12pm: hard cutoff (1pm maximum). 400mg max daily. Green tea preferred over coffee for the built-in L-theanine ratio. If sleep is poor: try moving the cutoff to 10am for one week and measure the difference.',
+    methods: ['Coffee (80–100mg per shot)', 'Matcha (natural L-theanine + caffeine)', 'Green tea (35–70mg + theanine)', 'Black tea (50–75mg)', 'Avoid: energy drinks (variable doses), pre-workout (often 200–400mg+ unlabeled)'],
+    tip: 'Caffeine does not eliminate adenosine — it blocks its receptors temporarily. The adenosine accumulates behind the blockade the entire time caffeine is active. When caffeine wears off, all that accumulated adenosine hits the receptors simultaneously — this is the "caffeine crash." The only fix is to let adenosine clear naturally through sleep, not more caffeine.',
+    stack: 'Consistent wake time (caffeine timing depends on consistent morning anchor). Light management (morning light + delayed caffeine = optimal cortisol response).',
+  },
+  {
+    id: 'sleep-nutrition',
+    emoji: '🫐',
+    name: 'Sleep Nutrition & Magnesium',
+    tagline: 'The deficiencies and foods that directly affect sleep architecture',
+    categories: ['nutrition', 'recovery'],
+    mechanisms: ['GABA-A receptor potentiation (magnesium)', 'Melatonin precursor synthesis', 'Glutamate inhibition', 'Alcohol → REM suppression', 'Tryptophan → Serotonin → Melatonin cascade'],
+    benefits: [
+      'Magnesium deficiency — present in 50–68% of adults — directly impairs sleep by reducing GABA receptor sensitivity; GABA is the nervous system\'s primary inhibitory neurotransmitter required for sleep onset',
+      'Magnesium glycinate supplementation reduces cortisol, improves sleep onset time, and measurably increases sleep quality scores in randomized controlled trials in deficient adults',
+      'Tart cherry juice (240ml) contains the highest natural food source of melatonin and anti-inflammatory polyphenols; two daily servings reduce insomnia severity scores by 18% in peer-reviewed trials',
+      'Alcohol suppresses REM sleep by 24% even in moderate amounts (1–2 drinks) and eliminates the REM-dominant second half of the sleep architecture — you may sleep 8 hours and feel unrested because all emotional-cognitive restoration was cut off',
+      'High-glycemic meals within 2 hours of sleep are associated with more frequent nighttime awakenings via blood glucose fluctuations activating cortisol stress responses during the sleep period',
+    ],
+    howToPractice: 'Take 200–400mg magnesium glycinate 30–60 minutes before bed. Avoid large meals within 2–3 hours of bedtime. If you drink alcohol, build in a 3-hour buffer before target sleep time minimum. Foods that support sleep: tart cherry juice, kiwi fruit (two per night reduces sleep onset by 35% in one study), whole milk, eggs, fatty fish.',
+    protocol: 'Magnesium glycinate: 200–400mg at night (glycinate preferred over oxide — only 4% of oxide is absorbed). Tart cherry juice: 240ml morning + evening. No alcohol within 3 hours of bed. No large meals within 2 hours. Optional: 100–200mg L-theanine before bed for nervous system calming.',
+    methods: ['Magnesium glycinate capsules (best absorbed)', 'Magnesium L-threonate (crosses blood-brain barrier)', 'Tart cherry juice (natural melatonin)', 'Kiwi fruit (2x nightly)', 'Chamomile tea (apigenin → GABA-A)', 'L-theanine (calming, non-sedating)'],
+    tip: 'Alcohol is the most underestimated sleep destroyer — even one drink at dinner measurably suppresses REM sleep by 24%. You sleep the same hours but the second half (REM-dominant — where dreams, emotional processing, and memory consolidation happen) is truncated. Sleep trackers make this visible immediately. If you drink socially, the science is unambiguous: it costs sleep quality regardless of how quickly you "fall asleep."',
+    stack: 'Temperature management (both contribute to the wind-down cascade). Consistent schedule (nutrition timing aligns with the circadian feeding window).',
+  },
+  {
+    id: 'sleep-schedule',
+    emoji: '⏰',
+    name: 'Consistent Sleep Schedule',
+    tagline: 'The most powerful single-variable sleep intervention: same wake time, 7 days a week',
+    categories: ['timing'],
+    mechanisms: ['Suprachiasmatic nucleus entrainment', 'Adenosine timer calibration', 'Cortisol awakening response anchoring', 'Social jetlag elimination'],
+    benefits: [
+      'Sleep regularity — measured as consistency of timing — is independently predictive of all-cause mortality more than duration in large epidemiological cohorts; irregular sleep timing is categorized as "social jetlag" and carries metabolic and cardiovascular risk similar to shift work',
+      'The suprachiasmatic nucleus (master circadian clock) re-entrains completely after only 3–4 days of schedule shift — one "sleep-in" weekend sets the clock back, causing Monday fatigue that most people accept as normal',
+      'Sleep timing variability greater than ±45 minutes between weekdays and weekends doubles the metabolic syndrome risk in prospective studies independent of total sleep duration',
+      'Consistency of wake time (not bedtime) is the primary lever — a fixed alarm anchors the adenosine timer, the cortisol curve, and the melatonin cascade from a single daily reference point',
+      'Sleeping in to "recover" sleep debt delays the next night\'s sleep onset, perpetuating the deficit in a self-reinforcing cycle — a brief nap (before 3pm) breaks the cycle without disrupting the evening sleep drive',
+    ],
+    howToPractice: 'Set a single fixed wake time 7 days a week — including weekends and vacation. Build your bedtime from that target. If you fall short on sleep one night, use a 20-minute nap before 3pm as the recovery tool — not sleeping in. Bright light immediately on waking reinforces the anchor. Put the alarm across the room if snooze is a problem.',
+    protocol: 'Fixed wake time ±20 minutes every day. Allow 3 weeks for the full circadian reset. Bedtime: aim for same time but it\'s less critical than wake time. Recovery tool for missed sleep: 20 min nap, before 3pm, not after.',
+    methods: ['Same alarm daily (no weekend exceptions)', 'Bright light immediately on waking', 'No snooze button', 'Early afternoon nap (20 min) for partial recovery'],
+    tip: 'Treating weekend sleep differently than weekday sleep — the near-universal "sleeping in Saturday and Sunday" pattern — is the root cause of Sunday night insomnia and Monday fatigue that most people experience chronically. The circadian clock cannot distinguish "earned" late sleep from disruption. Pick a wake time that works 7 days a week, not 5.',
+    stack: 'Light management (morning light reinforces the wake-time anchor every day). Caffeine timing (first caffeine at 90 min post wake depends on a consistent wake time).',
+  },
+  {
+    id: 'sleep-environment',
+    emoji: '🛏️',
+    name: 'Sleep Environment Optimization',
+    tagline: 'Darkness, silence, and the conditioned association between bed and sleep',
+    categories: ['environment'],
+    mechanisms: ['Melatonin photosuppression (even through eyelids)', 'Acoustic arousal threshold reduction', 'Conditioned stimulus-response (bed = sleep)', 'Parasympathetic environment signaling'],
+    benefits: [
+      'Even low-level light (hallway under the door, standby LEDs, street light through curtains) during sleep partially suppresses melatonin and fragments sleep architecture — humans slept in near-total darkness for 99.9% of evolutionary history',
+      'A single night of sleeping with a dim light (40 lux, equivalent to a nightlight) significantly increased insulin resistance and nighttime heart rate in a 2022 Northwestern University study — the body remains reactive to light even during sleep',
+      'Acoustic arousal — waking in response to sound — reduces dramatically with consistent masking noise (white, pink, or brown noise) because variability triggers arousals, not volume; a constant sound floor reduces the amplitude of noise spikes',
+      'Using the bedroom for work, TV, or phone use conditions the brain to associate the bed with alertness — the reverse of what\'s needed. The bed-sleep association must be strictly maintained for conditioned sleepiness to work',
+      'A dedicated pre-sleep routine (same sequence of 3–4 calming activities) acts as a conditioned cue that reliably shifts the nervous system toward parasympathetic (rest) state within 20–30 minutes of starting',
+    ],
+    howToPractice: 'Make the bedroom completely dark: blackout curtains or a sleep mask, tape over standby lights on devices. Remove TVs and computers if possible — at minimum, face them away. Use white or pink noise if your environment has unpredictable sounds. Reserve the bed only for sleep (and sex). Do not use the bedroom for work, reading stimulating content, or anything that requires alertness.',
+    protocol: 'Light: 0 lux during sleep (blackout conditions). Sound: <35dB ambient or consistent masking noise. Temperature: 65–67°F. Devices: no screens visible during sleep. Routine: same 3–4 step sequence nightly, beginning 60 min before bed.',
+    methods: ['Blackout curtains', 'Sleep mask (Manta or similar)', 'White noise machine', 'Earplugs', 'Smart plug to cut device standby lights', 'Black electrical tape over LED indicators'],
+    tip: 'Research published in PNAS (2022) found that a single night of low-level light exposure (40 lux — less than a nightlight) during sleep significantly increased insulin resistance, heart rate, and next-day cortisol in healthy adults. The effect is real even through closed eyelids. Total darkness is not a comfort preference — it\'s a metabolic requirement.',
+    stack: 'Temperature (both are environmental factors controlled together as part of evening setup). Light management (evening light dimming leads directly into blackout sleep conditions).',
+  },
+];
+
+let activeFilter = 'all';
+
+function tagHtml(cat) {
+  return `<span class="ptag ${TAG_CLASS[cat]||''}">${TAG_LABEL[cat]||cat}</span>`;
+}
+
+function practiceCard(p) {
+  return `<div class="practice-card" id="${p.id}" data-cats="${p.categories.join(' ')}">
+    <div class="practice-header" onclick="toggleCard('${p.id}')">
+      <div class="practice-icon">${p.emoji}</div>
+      <div class="practice-meta">
+        <div class="practice-name">${p.name}</div>
+        <div class="practice-tagline">${p.tagline}</div>
+        <div class="practice-tags">${p.categories.map(tagHtml).join('')}</div>
+      </div>
+      <span class="expand-arrow">▼</span>
+    </div>
+    <div class="practice-body">
+      <div class="practice-inner">
+        <div>
+          <div class="sec-lbl">Key Mechanisms</div>
+          <div class="mech-row">${p.mechanisms.map(m=>`<span class="mech-badge">${m}</span>`).join('')}</div>
+        </div>
+        <div>
+          <div class="sec-lbl">Evidence-Based Benefits</div>
+          <div class="benefit-list">${p.benefits.map((b,i)=>`<div class="benefit-item"><div class="benefit-dot">${i+1}</div><span>${b}</span></div>`).join('')}</div>
+        </div>
+        <div class="two-col">
+          <div class="info-box">
+            <div class="sec-lbl">How to Practice</div>
+            <div class="info-box-text">${p.howToPractice}</div>
+          </div>
+          <div class="info-box">
+            <div class="sec-lbl">Protocol</div>
+            <div class="info-box-text">${p.protocol}</div>
+            <div class="methods-row">${p.methods.map(m=>`<span class="method-pill">${m}</span>`).join('')}</div>
+          </div>
+        </div>
+        <div class="tip-box"><div class="tip-label">Pro Tip</div>${p.tip}</div>
+        ${p.stack ? `<div class="stack-box"><div class="stack-label">Stack With</div>${p.stack}</div>` : ''}
+        <button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to top</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderAll() {
+  const filtered = activeFilter === 'all' ? PRACTICES : PRACTICES.filter(p => p.categories.includes(activeFilter));
+  document.getElementById('practiceList').innerHTML = filtered.length
+    ? filtered.map(practiceCard).join('')
+    : '<div class="empty-state">No topics match this filter.</div>';
+  document.getElementById('practiceIndex').innerHTML = filtered.map(p =>
+    `<a class="index-pill" href="#${p.id}" onclick="openAndScroll('${p.id}',event)">${p.emoji} ${p.name}</a>`
+  ).join('');
+}
+
+function toggleCard(id) { document.getElementById(id).classList.toggle('open'); }
+
+function openAndScroll(id, e) {
+  e.preventDefault();
+  const card = document.getElementById(id);
+  if (!card) return;
+  if (!card.classList.contains('open')) card.classList.add('open');
+  setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+
+function filterPractices(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+renderAll();
+</script>
+</body>
+</html>

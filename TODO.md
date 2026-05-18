@@ -69,6 +69,11 @@
 <!-- Add what's coming next -->
 
 ## Done (recent)
+- [x] Sleep Guide (`sleep.html`) — 7 topics: sleep architecture, light management, temperature, caffeine/adenosine, nutrition/magnesium, consistent schedule, environment optimization
+- [x] Supplement Guide (`supplements.html`) — 8 supplements: Magnesium Glycinate, Omega-3, Vitamin D3+K2, Creatine, Ashwagandha, NMN/NAD+, L-Theanine, Berberine — dosage, timing, mechanisms, stacking
+- [x] Cold Therapy Guide (`cold-therapy.html`) — 7 topics: cold showers, ice baths, contrast therapy, breathing under cold, timing/circadian, cold adaptation, mental health/dopamine
+- [x] Mobility Guide (`mobility.html`) — 7 topics: dynamic warm-up, static stretching, foam rolling, hip flexors, thoracic spine, loaded stretching, ankle mobility
+- [x] Fasting Guide (`fasting-guide.html`) — 8 topics: 16:8, OMAD, 5:2, extended fasting, autophagy, metabolic switching, fasting cognition, breaking the fast
 - [x] Setup Configurations page (`setups.html`) — 3 pre-built hub layouts (General Health, Muscle Gains, Weight Loss) with static mockup previews, one-click apply with full backup + undo, accessible via ⚙️ Setups button on hub toolbar
 - [x] Reminder names improved on index hub — full names for all pages, challenge reminders show challenge name, clicking navigates to the page
 - [x] Dashboard overhaul — clickable sections (all link to their pages), water tile in snapshot, auto-refresh every 60s, breathing timer section, empty states with action links

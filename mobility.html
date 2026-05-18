@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobility Guide — Daily Optimal Health</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --r: 14px; --r-sm: 10px;
+      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
+      --amber: #f5a623; --blue: #3ecfff; --rose: #ff6b6b; --purple: #b89eff;
+    }
+    html { min-height: 100%; scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+      color: var(--text); min-height: 100vh; overflow-x: hidden;
+    }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+    .top-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 24px; max-width: 900px; margin: 0 auto;
+      border-bottom: 1px solid var(--glass-b);
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(6,26,12,0.85); backdrop-filter: blur(16px);
+    }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: .88rem; font-weight: 600; transition: color .2s; background: none; border: none; cursor: pointer; white-space: nowrap; }
+    .back-btn:hover { color: var(--acc); }
+    .top-title { flex: 1; text-align: center; font-size: 1rem; font-weight: 800; text-shadow: 0 0 20px var(--glow); }
+    .top-spacer { width: 60px; }
+    .page { max-width: 900px; margin: 0 auto; padding: clamp(16px,4vw,28px) clamp(12px,3vw,20px) 100px; }
+    .hero { text-align: center; padding: clamp(20px,4vw,32px) 0 clamp(14px,3vw,24px); }
+    .hero-emoji { font-size: clamp(2.5rem,7vw,4rem); display: block; margin-bottom: 10px; filter: drop-shadow(0 0 16px var(--glow)); }
+    .hero-title {
+      font-size: clamp(1.6rem,5vw,2.6rem); font-weight: 900; letter-spacing: -1px; line-height: 1.1;
+      background: linear-gradient(135deg, #fff 30%, var(--acc));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px;
+    }
+    .hero-sub { color: var(--muted); font-size: clamp(.84rem,2vw,.98rem); max-width: 540px; margin: 0 auto; line-height: 1.6; }
+    .filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; padding-top: 4px; }
+    .filter-btn {
+      padding: 7px 14px; border-radius: 20px; border: 1px solid var(--glass-b);
+      background: var(--glass); color: var(--muted); font-size: .78rem; font-weight: 700;
+      cursor: pointer; transition: var(--trans); font-family: inherit; white-space: nowrap;
+    }
+    .filter-btn:hover { border-color: var(--acc); color: var(--text); }
+    .filter-btn.active { background: var(--acc); color: #000; border-color: var(--acc); box-shadow: 0 0 10px var(--glow); }
+    .practice-index { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+    .index-pill {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
+      padding: 5px 12px; font-size: .75rem; color: var(--muted); cursor: pointer;
+      transition: var(--trans); text-decoration: none; display: inline-block;
+    }
+    .index-pill:hover { border-color: var(--acc); color: var(--acc); }
+    .practice-card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px);
+      margin-bottom: 16px; overflow: hidden;
+      scroll-margin-top: 72px; transition: border-color .2s;
+    }
+    .practice-card.open { border-color: rgba(45,212,110,0.35); }
+    .practice-header {
+      display: flex; align-items: center; gap: 16px;
+      padding: clamp(14px,3vw,20px); cursor: pointer;
+      transition: background .15s; user-select: none;
+    }
+    .practice-header:hover { background: var(--glass-h); }
+    .practice-icon {
+      font-size: clamp(2rem,5vw,2.6rem); flex-shrink: 0;
+      width: clamp(52px,10vw,68px); height: clamp(52px,10vw,68px);
+      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.2);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    }
+    .practice-meta { flex: 1; min-width: 0; }
+    .practice-name { font-size: clamp(1rem,2.8vw,1.25rem); font-weight: 900; margin-bottom: 3px; }
+    .practice-tagline { color: var(--muted); font-size: .8rem; margin-bottom: 8px; font-style: italic; }
+    .practice-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+    .ptag {
+      font-size: .64rem; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: .5px; white-space: nowrap;
+    }
+    .ptag-flexibility  { background: rgba(62,207,255,0.12);  color: var(--blue); }
+    .ptag-mobility     { background: rgba(45,212,110,0.15);  color: var(--acc); }
+    .ptag-recovery     { background: rgba(160,120,255,0.15); color: var(--purple); }
+    .ptag-posture      { background: rgba(245,166,35,0.15);  color: var(--amber); }
+    .ptag-performance  { background: rgba(255,107,107,0.15); color: var(--rose); }
+    .expand-arrow { color: var(--muted); font-size: .8rem; transition: transform .25s; margin-left: 8px; flex-shrink: 0; }
+    .practice-card.open .expand-arrow { transform: rotate(180deg); }
+    .practice-body {
+      max-height: 0; overflow: hidden;
+      transition: max-height .45s cubic-bezier(.4,0,.2,1);
+      border-top: 1px solid transparent;
+    }
+    .practice-card.open .practice-body { max-height: 1800px; border-top-color: var(--glass-b); }
+    .practice-inner { padding: clamp(14px,3vw,22px); display: flex; flex-direction: column; gap: 18px; }
+    .mech-row { display: flex; gap: 7px; flex-wrap: wrap; }
+    .mech-badge {
+      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.25);
+      border-radius: 20px; padding: 4px 12px;
+      font-size: .72rem; font-weight: 700; color: var(--acc); letter-spacing: .3px;
+    }
+    .sec-lbl {
+      font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.3px;
+      color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+    }
+    .sec-lbl::after { content:''; flex:1; height:1px; background: var(--glass-b); }
+    .benefit-list { display: flex; flex-direction: column; gap: 8px; }
+    .benefit-item { display: flex; gap: 10px; align-items: flex-start; font-size: .84rem; line-height: 1.55; }
+    .benefit-dot {
+      width: 20px; height: 20px; border-radius: 50%; background: rgba(45,212,110,0.2);
+      color: var(--acc); font-size: .75rem; font-weight: 900;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+    }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media(max-width:560px) { .two-col { grid-template-columns: 1fr; } }
+    .info-box {
+      background: rgba(255,255,255,0.04); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); padding: 14px;
+    }
+    .info-box-text { font-size: .82rem; line-height: 1.65; color: rgba(240,255,244,0.85); }
+    .methods-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .method-pill {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
+      padding: 3px 10px; font-size: .7rem; color: var(--muted);
+    }
+    .tip-box {
+      background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.28);
+      border-radius: var(--r-sm); padding: 13px 15px; font-size: .8rem; line-height: 1.65;
+    }
+    .tip-box .tip-label { color: var(--amber); font-weight: 800; margin-bottom: 4px; font-size: .72rem; text-transform: uppercase; letter-spacing: .8px; }
+    .stack-box {
+      background: rgba(45,212,110,0.07); border: 1px solid rgba(45,212,110,0.22);
+      border-radius: var(--r-sm); padding: 11px 14px; font-size: .8rem; line-height: 1.6;
+    }
+    .stack-box .stack-label { color: var(--acc); font-weight: 800; margin-bottom: 3px; font-size: .72rem; text-transform: uppercase; letter-spacing: .8px; }
+    .back-top {
+      display: block; text-align: center; color: var(--muted); font-size: .76rem;
+      font-weight: 700; cursor: pointer; padding: 6px; transition: color .2s;
+      background: none; border: none; width: 100%; font-family: inherit;
+    }
+    .back-top:hover { color: var(--acc); }
+    .empty-state { text-align: center; color: var(--muted); padding: 48px 20px; font-size: .9rem; }
+  </style>
+  <script src="health-notifications.js" defer></script>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="history.back()">← Back</button>
+  <div class="top-title">🤸 Mobility Guide</div>
+  <div class="top-spacer"></div>
+</div>
+
+<div class="page">
+
+  <div class="hero">
+    <span class="hero-emoji">🦵</span>
+    <div class="hero-title">Mobility & Flexibility Guide</div>
+    <div class="hero-sub">Pain-free movement, better posture, and injury prevention. These are the practices that fix the root causes — not just the symptoms — of the stiffness and pain that come from modern sedentary life.</div>
+  </div>
+
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" onclick="filterPractices('all',this)">All Topics</button>
+    <button class="filter-btn" onclick="filterPractices('flexibility',this)">Flexibility</button>
+    <button class="filter-btn" onclick="filterPractices('mobility',this)">Mobility</button>
+    <button class="filter-btn" onclick="filterPractices('recovery',this)">Recovery</button>
+    <button class="filter-btn" onclick="filterPractices('posture',this)">Posture</button>
+    <button class="filter-btn" onclick="filterPractices('performance',this)">Performance</button>
+  </div>
+
+  <div class="practice-index" id="practiceIndex"></div>
+  <div id="practiceList"></div>
+
+</div>
+
+<script>
+const TAG_CLASS = {
+  flexibility: 'ptag-flexibility',
+  mobility:    'ptag-mobility',
+  recovery:    'ptag-recovery',
+  posture:     'ptag-posture',
+  performance: 'ptag-performance',
+};
+const TAG_LABEL = {
+  flexibility: 'Flexibility',
+  mobility:    'Mobility',
+  recovery:    'Recovery',
+  posture:     'Posture',
+  performance: 'Performance',
+};
+
+const PRACTICES = [
+  {
+    id: 'dynamic-warmup',
+    emoji: '🏃',
+    name: 'Dynamic Warm-Up',
+    tagline: 'Move to become mobile — the right way to prepare joints and muscles for exercise',
+    categories: ['mobility', 'performance'],
+    mechanisms: ['Synovial fluid production', 'Neural activation & motor pattern priming', 'Muscle temperature increase (contractile efficiency)', 'Proprioceptive system priming', 'Muscle spindle sensitivity calibration'],
+    benefits: [
+      'Dynamic movements through full range of motion (leg swings, hip circles, inchworms) increase synovial fluid production in joints — this viscous fluid is the joint\'s lubricant; cold, static joints have less of it, making movement stiffer and higher-risk',
+      'Dynamic warm-up activates the neuromuscular system — the nervous system needs to "turn on" specific motor patterns before they can be executed at full speed or load; skipping this step reduces force production and coordination',
+      'Research consistently shows that static stretching before exercise reduces power output by 5–8% in the subsequent session — dynamic movement replaces static stretching as the pre-exercise standard and does not carry this penalty',
+      'Moving joints through their range of motion before loading them prepares the musculotendinous unit for the force demands of exercise — reducing the mechanical mismatch that causes acute strains and sprains',
+      'Even 5–10 minutes of targeted dynamic movement increases core body temperature by 1–2°F — the optimal range for contractile muscle efficiency, enzymatic reaction rates, and neural conduction speed',
+    ],
+    howToPractice: 'Perform 5–10 minutes of continuous movement that mirrors the workout you\'re about to do. Leg day: hip circles, leg swings, bodyweight squats, inchworms. Upper body day: arm circles, shoulder dislocations with a band, thoracic rotations, push-up plus. Full body: world\'s greatest stretch, A-skips, hip 90/90 rotations. Move through range, don\'t hold.',
+    protocol: '5–10 minutes, immediately before every training session. Start with general movement (walking, light jumping jacks) for 60–90 seconds, then move to targeted dynamic exercises. 8–12 reps of each movement, not held. Mimic the planes and patterns of the upcoming session.',
+    methods: ['World\'s greatest stretch (full-body)', 'Leg swings (hip flexor + hamstring)', 'Hip circles', 'Arm circles + band shoulder dislocations', 'Inchworms (hamstring + thoracic)', 'A-skips (hip + ankle)', 'Thoracic rotations (cat-cow, thread-the-needle)'],
+    tip: 'Static stretching before lifting reduces power output by 5–8% — a consistent finding across the sports science literature. This doesn\'t mean static stretching is bad; it means it belongs after training, not before. Dynamic movement is the pre-exercise standard. Save your hamstring stretches for the post-workout cool-down when muscles are warm and pliable.',
+    stack: 'Foam rolling (do before dynamic warm-up to reduce any muscular tightness first). Thoracic mobility (include thoracic rotations in every warm-up regardless of the day\'s focus).',
+  },
+  {
+    id: 'static-stretching',
+    emoji: '🧘',
+    name: 'Static Stretching',
+    tagline: 'Daily low-intensity holds — the only way to actually add muscle length',
+    categories: ['flexibility', 'recovery'],
+    mechanisms: ['Sarcomere addition in series (structural lengthening)', 'Muscle spindle Ia afferent adaptation', 'Creep deformation of connective tissue', 'Golgi tendon organ inhibitory feedback', 'Neuromuscular inhibition via sustained tension'],
+    benefits: [
+      'Daily static stretching adds sarcomeres in series (parallel to the line of pull) — this is genuine structural muscle lengthening, not just improved neural tolerance to the stretched position; confirmed by ultrasound measures of fascicle length increase',
+      '30-second holds are the minimum effective stimulus for flexibility adaptation — holds shorter than 15 seconds show no lasting ROM improvement in research; 30–60 seconds is the evidence-backed sweet spot per stretch',
+      'Evening flexibility work doubles as stress reduction — passive static stretching activates the parasympathetic nervous system and measurably reduces cortisol, making it one of the most effective bedtime wind-down practices that also produces physical adaptation',
+      'Regular hip flexor, hamstring, and thoracic stretching directly reduces lower back pain in sedentary adults — addressing the shortened muscles that pull the spine out of neutral alignment every hour you sit',
+      'Flexibility gains from daily low-intensity stretching compound over weeks — unlike aggressive weekly sessions that fight the nervous system, daily gentle holds progressively teach the protective reflex that it\'s safe to extend into the new range',
+    ],
+    howToPractice: 'After exercise or in the evening when muscles are warm. Hold each stretch 30–60 seconds, 2–3 sets per muscle group. Breathe throughout — exhale into the stretch, don\'t force. Go to mild discomfort, not pain. Pain triggers the stretch reflex (the opposite of what you want). Daily practice produces faster gains than 3x/week.',
+    protocol: 'Daily: 10–15 minutes post-workout or before bed. Key areas for most adults: hip flexors (couch stretch), hamstrings (forward fold), chest/shoulders (doorframe stretch), thoracic (foam roller extension), calves (standing calf stretch). 30–60 second holds, 2 sets each.',
+    methods: ['Couch stretch (hip flexors)', 'Standing/seated hamstring forward fold', 'Doorframe chest stretch', 'Pigeon pose / figure-4 (glutes + piriformis)', 'Overhead tricep stretch (thoracic + lats)', 'Standing quad stretch', 'Calf stretch (wall-assisted)'],
+    tip: 'Flexibility is not gained by stretching harder — it\'s gained by stretching more consistently at lower intensity. The stretch reflex (muscle spindle response) fires when stretch is too aggressive or too fast, causing the muscle to contract and resist. Daily gentle holds progressively teach the nervous system that the range is safe. One aggressive stretch session per week fights the reflex. Daily gentle exposure educates it.',
+    stack: 'Foam rolling (pre-stretch — releases muscular tightness first so the stretch targets connective tissue more effectively). Loaded stretching (the advanced progression that adds structural lengthening beyond neural adaptation).',
+  },
+  {
+    id: 'foam-rolling',
+    emoji: '🪵',
+    name: 'Foam Rolling (Self-Myofascial Release)',
+    tagline: 'Neurological muscle release — not tissue breakup, but targeted inhibitory signaling',
+    categories: ['recovery', 'flexibility'],
+    mechanisms: ['Golgi tendon organ (GTO) autogenic inhibition', 'Fascial hydration and fluid redistribution', 'Parasympathetic activation via skin mechanoreceptors', 'Blood flow increase post-compression', 'Type III/IV afferent nerve downregulation'],
+    benefits: [
+      'Reduces delayed onset muscle soreness (DOMS) by 30% when used systematically after resistance training — the most consistently replicated sports recovery finding across meta-analyses',
+      'Increases range of motion before exercise more effectively than static stretching without the power output reduction — making it the preferred pre-exercise mobility tool over static stretching',
+      'The mechanism is neurological, not mechanical: sustained pressure on a muscle activates the Golgi tendon organ (GTO), which sends an inhibitory signal to the alpha motor neurons, causing the muscle to relax and lengthen — not "break up fascia"',
+      'Reduces perceived fatigue and soreness in the 24–72 hours post-exercise recovery window, with cumulative effects over a training block when used consistently',
+      'Stimulates parasympathetic response via skin mechanoreceptors — slow, sustained foam rolling is measurably calming, explaining why athletes and coaches use it in pre-competition anxiety management protocols',
+    ],
+    howToPractice: 'Roll slowly — 1 inch per second maximum. When you find a tender or tight spot, stop and hold for 20–30 seconds rather than rolling back and forth aggressively. The hold is where the GTO inhibition happens. Aggressive rolling stimulates the stretch reflex and increases muscle tone — the opposite of the goal. Target: calves, IT band, thoracic spine, hip flexors, glutes, lats.',
+    protocol: 'Pre-workout: 5–8 minutes on target areas for mobility improvement. Post-workout: 5–10 minutes for DOMS reduction and recovery. 30–90 seconds per muscle group. Find the tender spot → hold → move to the next area. Do not roll directly over joints, bones, or the lumbar spine.',
+    methods: ['Standard foam roller (36", medium density)', 'Massage ball / lacrosse ball (targeted, deeper pressure)', 'Massage stick', 'Vibrating foam roller (adds mechanical stimulation)', 'Percussion device (Theragun, Hypervolt)'],
+    tip: 'The foam roller doesn\'t "break up fascia." Fascia is a sheet of dense connective tissue — it takes forces measured in hundreds of pounds to mechanically deform it, not a foam cylinder. The entire benefit is neurological: the Golgi tendon organ senses sustained tension and sends an inhibitory signal causing the muscle to relax. Hold the pressure point still instead of rolling aggressively to maximize GTO stimulation.',
+    stack: 'Dynamic warm-up (foam roll first, then dynamic movement — the sequence matters). Static stretching (foam roll before stretching to release muscular tension first, making the stretch more effective on connective tissue).',
+  },
+  {
+    id: 'hip-flexors',
+    emoji: '🦴',
+    name: 'Hip Flexor Health',
+    tagline: 'The most neglected muscle group in modern life — the root cause of most lower back pain',
+    categories: ['posture', 'mobility', 'recovery'],
+    mechanisms: ['Psoas-to-lumbar vertebrae attachment (L1–L5)', 'Anterior pelvic tilt correction', 'Lumbar lordosis normalization', 'Hip extension ROM restoration', 'Reciprocal inhibition of glutes'],
+    benefits: [
+      'The psoas major attaches directly to the lumbar vertebrae (L1–L5) — chronically shortened hip flexors physically pull the lumbar spine into exaggerated lordosis, compressing the posterior disc space and facet joints; this is the anatomical root cause of most non-specific lower back pain in desk workers',
+      'Sitting for 6+ hours per day progressively shortens the hip flexors over months — this is not a flexibility issue, it\'s a structural adaptation. The muscle literally gets shorter (loses sarcomeres) in the held shortened position',
+      'Tight hip flexors inhibit the gluteus maximus via reciprocal inhibition — weak, inhibited glutes force the hamstrings and lower back to compensate during hip extension movements, driving overuse injury at these compensatory sites',
+      'Anterior pelvic tilt (the "butt-out, stomach-forward" posture common in people with tight hip flexors) creates a visible postural change within weeks of beginning targeted hip flexor work',
+      'Couch stretch (90-second holds, twice daily) produces measurable hip flexor length increase and lower back pain reduction in as little as 4 weeks of consistent practice',
+    ],
+    howToPractice: 'Couch stretch: kneel facing away from a wall, place the back knee against the wall (shin up the wall), move front foot forward until the back hip drops. Squeeze glute of the back leg. Hold 90 seconds each side. This is the most effective hip flexor stretch available — more effective than a standard lunge stretch because the posterior pelvic tilt it requires creates a maximum tissue stretch.',
+    protocol: 'Couch stretch: 90 seconds each side, 2x daily (morning and evening). 30 days to see significant structural change. Supplement with: hip flexor strengthening at long lengths (deficit lunges, hip thrusts, ATG split squats) and deadbugs (core stability to prevent lumbar extension compensation).',
+    methods: ['Couch stretch (wall-assisted — most effective)', '90/90 hip stretch', 'Kneeling hip flexor lunge stretch', 'Standing hip flexor stretch', 'Deficit reverse lunge (strengthening)', 'Deadbug (core stabilization)', 'Hip thrust (glute activation)'],
+    tip: 'Two couch stretches per day (90 seconds each side) will likely eliminate chronic lower back pain within 30 days for most desk workers. Not because the lower back itself is the problem, but because the hip flexors pulling the lumbar spine forward IS the problem. The couch stretch is high discomfort in the first week and then progressively comfortable as length is restored. Stick through the first week.',
+    stack: 'Thoracic spine mobility (hip + thoracic work together address the full postural chain). Ankle mobility (the kinetic chain runs from ankle through hip — restricted ankles force hip compensation). Foam rolling (roll hip flexors before stretching them).',
+  },
+  {
+    id: 'thoracic-mobility',
+    emoji: '🫀',
+    name: 'Thoracic Spine Mobility',
+    tagline: 'The key to posture, shoulder health, breathing capacity, and neck pain relief',
+    categories: ['posture', 'performance', 'flexibility'],
+    mechanisms: ['Rib cage expansion for respiratory mechanics', 'Scapular upward rotation (shoulder elevation pathway)', 'Cervical spine neutral position', 'Spinal erector recruitment', 'Thoracic extension ROM for overhead movements'],
+    benefits: [
+      'Loss of thoracic extension (kyphotic "phone posture") cascades up the chain: the shoulder cannot fully elevate without thoracic extension (the scapula cannot tip forward), the neck is forced into chronic forward flexion, and headaches from sub-occipital tension become chronic',
+      'Full overhead shoulder range of motion (reaching straight up) requires ~10 degrees of thoracic extension — individuals with kyphotic thoracic spines literally cannot raise the arm to full overhead position without compensating through lumbar extension',
+      'Reduced thoracic rotation limits rotational sports performance (golf, tennis, baseball, swimming) — the thorax supplies the majority of rotational range; hip rotation and cervical rotation compensate when thoracic is restricted, creating injury cascades',
+      'Thoracic kyphosis restricts rib expansion, reducing maximum inspiratory volume — tight thoracic extensors make deep breathing mechanically more difficult and contribute to chronic diaphragmatic underuse',
+      'Improving thoracic extension measurably reduces shoulder impingement symptoms in 4–6 weeks in adults with desk-induced kyphosis — without any direct treatment to the shoulder itself',
+    ],
+    howToPractice: 'Foam roller thoracic extension: place the roller horizontally across the mid-back (not lower back), arms crossed or behind the head, and extend over the roller — hold 30–60 seconds and move one vertebral segment at a time. Thoracic rotations: seated or in quadruped (thread-the-needle), rotate through the full available range slowly. Daily.',
+    protocol: 'Foam roller extension: 30–60 sec at each spinal segment (T4–T8), working up and down the thoracic spine. 5–8 minutes daily. Thoracic rotation: 10 reps each direction in seated or quadruped. Wall slides for overhead mobility restoration. Cat-cow: 10 full cycles before any upper body session.',
+    methods: ['Foam roller thoracic extension', 'Seated thoracic rotation', 'Thread-the-needle (quadruped rotation)', 'Cat-cow (full spinal mobilization)', 'Wall slides (shoulder + thoracic)', 'Quadruped thoracic rotation', 'Open-book stretch (side-lying rotation)'],
+    tip: 'Shoulder pain during bench press or overhead press is frequently diagnosed as a rotator cuff or shoulder impingement problem when it\'s actually a thoracic restriction. You cannot raise the arm to full overhead range if the thoracic spine is kyphotic — the scapular mechanics that enable overhead motion depend on thoracic extension. Address thoracic mobility for 4 weeks before assuming the shoulder itself is the problem.',
+    stack: 'Hip flexor health (hip and thoracic work together address the full postural compensation chain). Foam rolling (thoracic rolling before rotation work). Dynamic warm-up (include thoracic mobility in every warm-up sequence regardless of workout focus).',
+  },
+  {
+    id: 'loaded-stretching',
+    emoji: '🏋️',
+    name: 'Loaded Stretching',
+    tagline: 'The research-backed path to permanent flexibility gains — strength at end range',
+    categories: ['flexibility', 'performance', 'recovery'],
+    mechanisms: ['Mechanical tension-driven sarcomere addition in series', 'Muscle hypertrophy at long lengths (longitudinal)', 'Myofibrillar remodeling via mechanical loading', 'Fascicle length increase (ultrasound-confirmed)', 'End-range strength building (injury prevention)'],
+    benefits: [
+      'Loaded stretching (strengthening through full range of motion to end range) adds sarcomeres in series — the same structural lengthening that static stretching achieves, but at 40–50% greater magnitude per unit of time invested',
+      'Produces simultaneous flexibility and strength at the newly acquired range — unlike passive static stretching which only builds neural tolerance, loaded stretching builds structural tissue capacity at the lengthened position, reducing injury risk at that range',
+      'Romanian deadlifts, ATG split squats, and Nordic curls have all demonstrated significant fascicle length increases (genuine muscle lengthening confirmed by ultrasound) after 6–8 week training blocks',
+      'End-range strength is the injury-prevention goal that flexibility work alone cannot achieve — a joint that is hypermobile but weak at end range is more injury-prone than a stiff joint; loaded stretching addresses both simultaneously',
+      'The Knees Over Toes (ATG) methodology is built on this principle: loading the knee, hip, and ankle through their full ROM — including deep end ranges — produces greater combined flexibility and structural strength than any amount of passive stretching',
+    ],
+    howToPractice: 'Incorporate loaded stretching movements into your training program rather than treating it as separate flexibility work. Romanian deadlifts for hamstrings: slow 3–4 second eccentric, full hip hinge to end range, 3 sets of 8–10. ATG split squat for hip flexors + quads: front shin vertical, back knee approaching floor, 3 sets of 8 each side. Nordic curl for hamstring eccentrics: 3 sets of 5–8.',
+    protocol: '2–3 sessions per week as part of lower body training. Romanian deadlift (hamstrings), ATG split squat (hip flexors + quads), Nordic curl (hamstrings, advanced), Jefferson curl (full posterior chain, light weight). Slow eccentrics (3–4 seconds down), pause at end range. Progress load conservatively — the end range is the highest tissue-stress position.',
+    methods: ['Romanian deadlift (full hip hinge + hamstring length)', 'ATG split squat (hip flexor + quad depth)', 'Nordic curl / reverse Nordic (hamstring eccentric)', 'Jefferson curl (full posterior chain — light weight)', 'Deficit reverse lunge (hip flexor + quad depth)', 'Single-leg RDL'],
+    tip: 'Static stretching produces flexibility by improving the nervous system\'s tolerance to a lengthened position. Loaded stretching produces flexibility by adding actual structural length (sarcomeres in series). For permanent, lasting changes in joint range of motion — the kind that carries into your sport or movement — loaded stretching is the mechanism that achieves it. Static stretching is the warmup. Loaded stretching is the training.',
+    stack: 'Dynamic warm-up (before loaded stretching — especially important at end range). Foam rolling (pre-session to reduce muscular tightness before loading end range). Static stretching (after session — stretch what you just loaded while warm).',
+  },
+  {
+    id: 'ankle-mobility',
+    emoji: '🦶',
+    name: 'Ankle Mobility',
+    tagline: 'The overlooked foundation — restricted ankles are the root cause of knee pain, hip compensation, and poor squat mechanics',
+    categories: ['mobility', 'performance', 'posture'],
+    mechanisms: ['Dorsiflexion ROM (ankle to shin angle)', 'Kinetic chain compensation (ankle → knee → hip)', 'Achilles tendon elastic energy storage', 'Subtalar joint mechanics', 'Plantar fascia load distribution'],
+    benefits: [
+      'Limited ankle dorsiflexion (the ability to bring shin over foot) is the most common root cause of heel rise in the squat, valgus knee collapse, hip compensations, and chronic knee pain — fixing the ankle resolves these downstream problems without any direct intervention at the knee or hip',
+      'Every step, squat, lunge, and jump requires adequate ankle dorsiflexion — restricted ankles force the body to compensate through tibial internal rotation, knee valgus, and hip internal rotation on every repetition of every lower body movement throughout the day',
+      'Achilles tendon stiffness (a common co-factor with restricted dorsiflexion) reduces the tendon\'s elastic energy storage capacity — the spring-like recoil mechanism that returns energy during gait and reduces muscle work; tight Achilles tendons increase metabolic cost of walking and running by measurable amounts',
+      'Plantar fasciitis and chronic heel pain are frequently downstream of ankle mobility restriction and Achilles tendon tightness — addressing the ankle changes the load distribution on the plantar fascia before any orthotics or direct intervention are needed',
+      'A 5-degree improvement in ankle dorsiflexion allows the knee to track properly over the foot during squatting, significantly reducing patellofemoral compression and the anterior knee pain that comes with it',
+    ],
+    howToPractice: 'Knee-to-wall test: stand 3–4 inches from a wall, feet straight ahead. Touch your knee to the wall without lifting the heel. If you can\'t do it, your dorsiflexion is limiting your movement quality. Wall ankle mobilization: stand closer (2–3 inches), drive the knee toward the wall while keeping the heel flat. 3 sets of 30 seconds per side daily.',
+    protocol: 'Wall ankle stretch: 3 sets of 30 seconds per side, daily. Standing calf raises: 3 sets of 15–20 with full heel drop at the bottom (Achilles lengthening). Banded ankle distraction: band on rear of ankle, step forward, drive knee over toe while band pulls the joint backward — 10 reps per side. Progress the knee-to-wall distance over 4–6 weeks.',
+    methods: ['Wall ankle stretch (knee-to-wall)', 'Standing calf raise with full ROM heel drop', 'Banded ankle distraction', 'Single-leg balance work (proprioceptive)', 'Heel walks', 'Ankle circles (warm-up mobility)'],
+    tip: 'The knee-to-wall test is the simplest ankle mobility assessment. Stand with your big toe 4 inches from the wall and try to touch your knee to the wall without your heel coming up. Fail the test? Every squat rep, every step, every lunge is being compensated through your knee and hip. Daily ankle work for 30 days moves the wall distance significantly. Measure it before and after.',
+    stack: 'Hip flexor health (ankle and hip restrictions compound into the same movement patterns — fix both together). Dynamic warm-up (include ankle circles and wall ankle stretch in every warm-up). Foam rolling (calf rolling before ankle stretches).',
+  },
+];
+
+let activeFilter = 'all';
+
+function tagHtml(cat) {
+  return `<span class="ptag ${TAG_CLASS[cat]||''}">${TAG_LABEL[cat]||cat}</span>`;
+}
+
+function practiceCard(p) {
+  return `<div class="practice-card" id="${p.id}" data-cats="${p.categories.join(' ')}">
+    <div class="practice-header" onclick="toggleCard('${p.id}')">
+      <div class="practice-icon">${p.emoji}</div>
+      <div class="practice-meta">
+        <div class="practice-name">${p.name}</div>
+        <div class="practice-tagline">${p.tagline}</div>
+        <div class="practice-tags">${p.categories.map(tagHtml).join('')}</div>
+      </div>
+      <span class="expand-arrow">▼</span>
+    </div>
+    <div class="practice-body">
+      <div class="practice-inner">
+        <div>
+          <div class="sec-lbl">Key Mechanisms</div>
+          <div class="mech-row">${p.mechanisms.map(m=>`<span class="mech-badge">${m}</span>`).join('')}</div>
+        </div>
+        <div>
+          <div class="sec-lbl">Evidence-Based Benefits</div>
+          <div class="benefit-list">${p.benefits.map((b,i)=>`<div class="benefit-item"><div class="benefit-dot">${i+1}</div><span>${b}</span></div>`).join('')}</div>
+        </div>
+        <div class="two-col">
+          <div class="info-box">
+            <div class="sec-lbl">How to Practice</div>
+            <div class="info-box-text">${p.howToPractice}</div>
+          </div>
+          <div class="info-box">
+            <div class="sec-lbl">Protocol</div>
+            <div class="info-box-text">${p.protocol}</div>
+            <div class="methods-row">${p.methods.map(m=>`<span class="method-pill">${m}</span>`).join('')}</div>
+          </div>
+        </div>
+        <div class="tip-box"><div class="tip-label">Pro Tip</div>${p.tip}</div>
+        ${p.stack ? `<div class="stack-box"><div class="stack-label">Stack With</div>${p.stack}</div>` : ''}
+        <button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to top</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderAll() {
+  const filtered = activeFilter === 'all' ? PRACTICES : PRACTICES.filter(p => p.categories.includes(activeFilter));
+  document.getElementById('practiceList').innerHTML = filtered.length
+    ? filtered.map(practiceCard).join('')
+    : '<div class="empty-state">No topics match this filter.</div>';
+  document.getElementById('practiceIndex').innerHTML = filtered.map(p =>
+    `<a class="index-pill" href="#${p.id}" onclick="openAndScroll('${p.id}',event)">${p.emoji} ${p.name}</a>`
+  ).join('');
+}
+
+function toggleCard(id) { document.getElementById(id).classList.toggle('open'); }
+
+function openAndScroll(id, e) {
+  e.preventDefault();
+  const card = document.getElementById(id);
+  if (!card) return;
+  if (!card.classList.contains('open')) card.classList.add('open');
+  setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+
+function filterPractices(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+renderAll();
+</script>
+</body>
+</html>
