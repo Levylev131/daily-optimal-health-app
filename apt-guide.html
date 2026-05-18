@@ -159,6 +159,21 @@
       background: none; border: none; width: 100%; font-family: inherit;
     }
     .back-top:hover { color: var(--acc); }
+
+    .nav-arrows {
+      position: fixed; right: clamp(12px,2vw,22px); top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 10px; z-index: 200;
+    }
+    .nav-arrow {
+      width: 48px; height: 48px; border-radius: 50%;
+      border: 2.5px solid var(--acc); background: rgba(45,212,110,0.12);
+      color: var(--acc); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: var(--trans); backdrop-filter: blur(8px);
+      box-shadow: 0 0 12px rgba(45,212,110,0.18);
+    }
+    .nav-arrow:hover { background: var(--acc); color: #000; box-shadow: 0 0 22px var(--glow); transform: scale(1.07); }
+    .nav-arrow.disabled { opacity: 0.2; pointer-events: none; }
+    @media(max-width:600px) { .nav-arrows { display: none; } }
   </style>
   <script src="health-notifications.js" defer></script>
 </head>
@@ -181,6 +196,15 @@
   <div class="step-track" id="stepTrack"></div>
   <div id="cardList"></div>
 
+</div>
+
+<div class="nav-arrows">
+  <button class="nav-arrow disabled" id="nav-up" onclick="navStep(-1)" title="Previous step">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 14L11 8L17 14" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <button class="nav-arrow" id="nav-down" onclick="navStep(1)" title="Next step">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 8L11 14L17 8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
 </div>
 
 <script>
@@ -365,6 +389,23 @@ function jumpTo(id) {
 }
 
 renderCards();
+
+let currentStep = -1;
+
+function updateArrows() {
+  document.getElementById('nav-up').classList.toggle('disabled', currentStep <= 0);
+  document.getElementById('nav-down').classList.toggle('disabled', currentStep >= STEPS.length - 1);
+}
+
+function navStep(dir) {
+  const next = currentStep + dir;
+  if (next < 0 || next >= STEPS.length) return;
+  currentStep = next;
+  jumpTo(STEPS[currentStep].id);
+  updateArrows();
+}
+
+updateArrows();
 </script>
 </body>
 </html>
