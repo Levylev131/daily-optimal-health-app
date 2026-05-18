@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anterior Pelvic Tilt Guide — Daily Optimal Health</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --r: 14px; --r-sm: 10px;
+      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
+      --amber: #f5a623; --blue: #3ecfff; --rose: #ff6b6b; --purple: #b89eff;
+    }
+    html { min-height: 100%; scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+      color: var(--text); min-height: 100vh; overflow-x: hidden;
+    }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+    .top-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 24px; max-width: 900px; margin: 0 auto;
+      border-bottom: 1px solid var(--glass-b);
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(6,26,12,0.85); backdrop-filter: blur(16px);
+    }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: .88rem; font-weight: 600; transition: color .2s; background: none; border: none; cursor: pointer; white-space: nowrap; }
+    .back-btn:hover { color: var(--acc); }
+    .top-title { flex: 1; text-align: center; font-size: 1rem; font-weight: 800; text-shadow: 0 0 20px var(--glow); }
+    .top-spacer { width: 60px; }
+    .page { max-width: 900px; margin: 0 auto; padding: clamp(16px,4vw,28px) clamp(12px,3vw,20px) 100px; }
+    .hero { text-align: center; padding: clamp(20px,4vw,32px) 0 clamp(14px,3vw,24px); }
+    .hero-emoji { font-size: clamp(2.5rem,7vw,4rem); display: block; margin-bottom: 10px; filter: drop-shadow(0 0 16px var(--glow)); }
+    .hero-title {
+      font-size: clamp(1.6rem,5vw,2.6rem); font-weight: 900; letter-spacing: -1px; line-height: 1.1;
+      background: linear-gradient(135deg, #fff 30%, var(--acc));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px;
+    }
+    .hero-sub { color: var(--muted); font-size: clamp(.84rem,2vw,.98rem); max-width: 560px; margin: 0 auto; line-height: 1.6; }
+    .filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; padding-top: 4px; }
+    .filter-btn {
+      padding: 7px 14px; border-radius: 20px; border: 1px solid var(--glass-b);
+      background: var(--glass); color: var(--muted); font-size: .78rem; font-weight: 700;
+      cursor: pointer; transition: var(--trans); font-family: inherit; white-space: nowrap;
+    }
+    .filter-btn:hover { border-color: var(--acc); color: var(--text); }
+    .filter-btn.active { background: var(--acc); color: #000; border-color: var(--acc); box-shadow: 0 0 10px var(--glow); }
+    .practice-index { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+    .index-pill {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
+      padding: 5px 12px; font-size: .75rem; color: var(--muted); cursor: pointer;
+      transition: var(--trans); text-decoration: none; display: inline-block;
+    }
+    .index-pill:hover { border-color: var(--acc); color: var(--acc); }
+    .practice-card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px);
+      margin-bottom: 16px; overflow: hidden;
+      scroll-margin-top: 72px; transition: border-color .2s;
+    }
+    .practice-card.open { border-color: rgba(45,212,110,0.35); }
+    .practice-header {
+      display: flex; align-items: center; gap: 16px;
+      padding: clamp(14px,3vw,20px); cursor: pointer;
+      transition: background .15s; user-select: none;
+    }
+    .practice-header:hover { background: var(--glass-h); }
+    .practice-icon {
+      font-size: clamp(2rem,5vw,2.6rem); flex-shrink: 0;
+      width: clamp(52px,10vw,68px); height: clamp(52px,10vw,68px);
+      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.2);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    }
+    .practice-meta { flex: 1; min-width: 0; }
+    .practice-name { font-size: clamp(1rem,2.8vw,1.25rem); font-weight: 900; margin-bottom: 3px; }
+    .practice-tagline { color: var(--muted); font-size: .8rem; margin-bottom: 8px; font-style: italic; }
+    .practice-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+    .ptag {
+      font-size: .64rem; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: .5px; white-space: nowrap;
+    }
+    .ptag-assessment   { background: rgba(62,207,255,0.12);  color: var(--blue); }
+    .ptag-stretching   { background: rgba(245,166,35,0.15);  color: var(--amber); }
+    .ptag-strengthening{ background: rgba(45,212,110,0.15);  color: var(--acc); }
+    .ptag-core         { background: rgba(160,120,255,0.15); color: var(--purple); }
+    .ptag-posture      { background: rgba(255,107,107,0.15); color: var(--rose); }
+    .ptag-daily        { background: rgba(200,255,100,0.12); color: #c5e860; }
+    .expand-arrow { color: var(--muted); font-size: .8rem; transition: transform .25s; margin-left: 8px; flex-shrink: 0; }
+    .practice-card.open .expand-arrow { transform: rotate(180deg); }
+    .practice-body {
+      max-height: 0; overflow: hidden;
+      transition: max-height .45s cubic-bezier(.4,0,.2,1);
+      border-top: 1px solid transparent;
+    }
+    .practice-card.open .practice-body { max-height: 1800px; border-top-color: var(--glass-b); }
+    .practice-inner { padding: clamp(14px,3vw,22px); display: flex; flex-direction: column; gap: 18px; }
+    .mech-row { display: flex; gap: 7px; flex-wrap: wrap; }
+    .mech-badge {
+      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.25);
+      border-radius: 20px; padding: 4px 12px;
+      font-size: .72rem; font-weight: 700; color: var(--acc); letter-spacing: .3px;
+    }
+    .sec-lbl {
+      font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.3px;
+      color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+    }
+    .sec-lbl::after { content:''; flex:1; height:1px; background: var(--glass-b); }
+    .benefit-list { display: flex; flex-direction: column; gap: 8px; }
+    .benefit-item { display: flex; gap: 10px; align-items: flex-start; font-size: .84rem; line-height: 1.55; }
+    .benefit-dot {
+      width: 20px; height: 20px; border-radius: 50%; background: rgba(45,212,110,0.2);
+      color: var(--acc); font-size: .75rem; font-weight: 900;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+    }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media(max-width:560px) { .two-col { grid-template-columns: 1fr; } }
+    .info-box {
+      background: rgba(255,255,255,0.04); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); padding: 14px;
+    }
+    .info-box-text { font-size: .82rem; line-height: 1.65; color: rgba(240,255,244,0.85); }
+    .methods-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .method-pill {
+      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
+      padding: 3px 10px; font-size: .7rem; color: var(--muted);
+    }
+    .tip-box {
+      background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.28);
+      border-radius: var(--r-sm); padding: 13px 15px; font-size: .8rem; line-height: 1.65;
+    }
+    .tip-box .tip-label { color: var(--amber); font-weight: 800; margin-bottom: 4px; font-size: .72rem; text-transform: uppercase; letter-spacing: .8px; }
+    .stack-box {
+      background: rgba(45,212,110,0.07); border: 1px solid rgba(45,212,110,0.22);
+      border-radius: var(--r-sm); padding: 11px 14px; font-size: .8rem; line-height: 1.6;
+    }
+    .stack-box .stack-label { color: var(--acc); font-weight: 800; margin-bottom: 3px; font-size: .72rem; text-transform: uppercase; letter-spacing: .8px; }
+    .back-top {
+      display: block; text-align: center; color: var(--muted); font-size: .76rem;
+      font-weight: 700; cursor: pointer; padding: 6px; transition: color .2s;
+      background: none; border: none; width: 100%; font-family: inherit;
+    }
+    .back-top:hover { color: var(--acc); }
+    .empty-state { text-align: center; color: var(--muted); padding: 48px 20px; font-size: .9rem; }
+  </style>
+  <script src="health-notifications.js" defer></script>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="history.back()">← Back</button>
+  <div class="top-title">⚖️ Anterior Pelvic Tilt</div>
+  <div class="top-spacer"></div>
+</div>
+
+<div class="page">
+
+  <div class="hero">
+    <span class="hero-emoji">🦴</span>
+    <div class="hero-title">Fix Anterior Pelvic Tilt</div>
+    <div class="hero-sub">APT is the most common postural dysfunction in desk workers — and the root cause of most lower back pain, glute weakness, and knee tracking issues. This guide covers the full correction protocol: assessment, lengthening, activation, and daily habit rewiring.</div>
+  </div>
+
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" onclick="filterPractices('all',this)">All Topics</button>
+    <button class="filter-btn" onclick="filterPractices('assessment',this)">Assessment</button>
+    <button class="filter-btn" onclick="filterPractices('stretching',this)">Stretching</button>
+    <button class="filter-btn" onclick="filterPractices('strengthening',this)">Strengthening</button>
+    <button class="filter-btn" onclick="filterPractices('core',this)">Core</button>
+    <button class="filter-btn" onclick="filterPractices('posture',this)">Posture</button>
+    <button class="filter-btn" onclick="filterPractices('daily',this)">Daily Habits</button>
+  </div>
+
+  <div class="practice-index" id="practiceIndex"></div>
+  <div id="practiceList"></div>
+
+</div>
+
+<script>
+const TAG_CLASS = {
+  assessment:    'ptag-assessment',
+  stretching:    'ptag-stretching',
+  strengthening: 'ptag-strengthening',
+  core:          'ptag-core',
+  posture:       'ptag-posture',
+  daily:         'ptag-daily',
+};
+const TAG_LABEL = {
+  assessment:    'Assessment',
+  stretching:    'Stretching',
+  strengthening: 'Strengthening',
+  core:          'Core',
+  posture:       'Posture',
+  daily:         'Daily Habits',
+};
+
+const PRACTICES = [
+  {
+    id: 'understanding-apt',
+    emoji: '📐',
+    name: 'Understanding Anterior Pelvic Tilt',
+    tagline: 'The anatomy, the muscular imbalance, and how to know if you have it',
+    categories: ['assessment', 'posture'],
+    mechanisms: ['Psoas/iliacus attachment to lumbar vertebrae (L1–L5)', 'Reciprocal inhibition (tight hip flexors → inhibited glutes)', 'Anterior superior iliac spine (ASIS) rotation', 'Lumbar lordosis exaggeration under hip flexor tension', 'Lower crossed syndrome pattern (Janda)'],
+    benefits: [
+      'APT is defined as the anterior (forward) rotation of the pelvis — the front of the pelvis (ASIS) drops down and forward while the back of the pelvis (PSIS) rises, creating an exaggerated lumbar curve (lordosis) and a "butt-out" posture',
+      'The underlying pattern is Lower Crossed Syndrome (Janda): tight hip flexors + tight lumbar extensors opposing weak glutes + weak deep abdominals — the two pairs of muscles are on opposite sides of the same joint and are chronically unbalanced',
+      'The psoas major directly attaches to the lumbar vertebrae (L1–L5) and femur — when chronically shortened from hours of sitting, it physically pulls the lumbar spine into forward flexion and the pelvis into anterior tilt simultaneously',
+      'Reciprocal inhibition: when the hip flexors are persistently tight and active, the nervous system reflexively reduces neural drive to the opposing glutes — explaining why people with APT cannot "feel" their glutes fire during exercises and have weak glutes despite training',
+      'APT prevalence in desk workers is estimated at 75–85% — it is so common it is frequently mistaken as normal anatomy; most lower back pain, anterior knee pain, and hamstring strains in sedentary adults trace to this postural pattern as the root cause',
+    ],
+    howToPractice: 'Self-assessment — standing wall test: stand with heels, back, and head touching a wall. Place your hand flat against the lower back. If you can fit more than a fist-width of space between your lower back and the wall, significant anterior pelvic tilt is present. Normal: enough space for a flat hand. Thomas test (lying): lie on a table edge, pull one knee to your chest — if the other leg rises off the table, the hip flexor on that side is tight.',
+    protocol: 'Wall test: aim to reduce the lower-back gap to hand-flat width over 8–12 weeks of correction work. Re-test monthly. Thomas test: both legs should stay flat when the opposite knee is pulled to the chest. Visual assessment: from the side, the pelvis should be roughly level — not tipped forward with the lower back arching excessively.',
+    methods: ['Standing wall test (self-assessment)', 'Thomas test (hip flexor tightness)', 'ASIS-PSIS level comparison (visual)', 'Plumb line assessment (standing side view)', 'Video self-recording in standing (side profile)'],
+    tip: 'Most people with APT have had it so long they believe their posture is normal. The wall test is the clearest quick screen: if your lower back is more than a hand\'s width from the wall while standing neutrally, APT is present. The good news is that APT is almost entirely correctable through targeted strengthening and stretching — it is not structural, it is muscular and habitual.',
+    stack: 'Hip flexor release (the primary driver — start here). Glute activation (the inhibited antagonist — work simultaneously). Daily posture correction (the habits that maintain APT must change alongside the tissue work).',
+  },
+  {
+    id: 'hip-flexor-release',
+    emoji: '🧎',
+    name: 'Hip Flexor Release',
+    tagline: 'The primary driver of APT — lengthening the psoas and iliacus is the non-negotiable first step',
+    categories: ['stretching', 'posture'],
+    mechanisms: ['Psoas lengthening at the lumbar attachment', 'Iliacus stretch via anterior hip capsule', 'Sarcomere addition in series (sustained daily holds)', 'Posterior pelvic tilt as psoas tension reduces', 'Reciprocal inhibition release → glute disinhibition'],
+    benefits: [
+      'The psoas major is the deepest hip flexor — it crosses from the lumbar vertebrae through the pelvis to the femur, and no amount of glute or core work will correct APT if this muscle remains chronically shortened; lengthening it is the prerequisite for everything else',
+      'The couch stretch is the most effective hip flexor lengthening exercise available — it creates simultaneous stretch of the psoas, iliacus, rectus femoris, and TFL by combining a hip extension position with a posterior pelvic tilt, maximizing tissue tension along the full anterior hip line',
+      'Daily 90-second holds (not weekly aggressive sessions) is the protocol that adds sarcomeres in series and produces genuine structural lengthening — forcing a passive muscle spindle adaptation through daily low-intensity exposure rather than fighting the stretch reflex with force',
+      'As hip flexor length improves, the lumbar spine is no longer being pulled forward — lordosis visibly decreases, the lower back "flattens" toward neutral, and lower back pain often reduces substantially within 2–4 weeks of consistent daily practice',
+      'Releasing hip flexor tension also removes the reciprocal inhibition signal to the glutes — the glutes become neurologically "available" again, and training them becomes productive where before they remained underactivated despite exercise',
+    ],
+    howToPractice: 'Couch stretch: kneel facing away from a wall. Place the back shin up the wall (knee near the floor, shin vertical up the wall). Step the front foot forward until it\'s at roughly 90 degrees. Now actively squeeze the glute of the back leg and tuck the pelvis under (posterior tilt) — this is the key: without the tuck, the stretch bypasses the psoas. Hold 90 seconds per side. The discomfort should be at the front of the back hip, not in the knee.',
+    protocol: 'Couch stretch: 90 seconds per side, twice daily (morning + evening). Minimum 30 days for measurable structural change. Additional: kneeling hip flexor lunge with posterior tilt (30–60 sec, 2–3 sets per side after training). 90/90 hip stretch for iliacus specifically (3 minutes each side). Consistency outweighs intensity — gentle daily holds beat aggressive weekly sessions.',
+    methods: ['Couch stretch (wall-assisted) — primary', 'Kneeling hip flexor lunge with PPT cue', '90/90 hip stretch (iliacus focus)', 'Standing hip flexor stretch (lesser effect)', 'Foam roller on hip flexors (pre-stretch neurological release)', 'Psoas release on massage ball (advanced)'],
+    tip: 'The couch stretch is uncomfortable in week 1 and almost comfortable by week 4. The discomfort is coming from genuinely shortened tissue that has adapted to a shortened position — it is not an injury signal. The threshold to watch for: pain in the knee (adjust position — the shin angle is wrong) vs. deep anterior hip/groin tension (correct stretch, continue). Progress the stretch by moving the front foot further forward as length improves.',
+    stack: 'Glute activation (do immediately after hip flexor release — the disinhibition window is real and glutes are more recruitable right after stretching the hip flexors). Daily posture habits (hip flexors re-shorten from sitting — the stretch must be daily to outpace the daily reloading).',
+  },
+  {
+    id: 'glute-activation',
+    emoji: '🍑',
+    name: 'Glute Activation & Strengthening',
+    tagline: 'Reawakening the inhibited antagonist — the glutes cannot be strengthened until they are first activated',
+    categories: ['strengthening', 'posture'],
+    mechanisms: ['Reciprocal inhibition reversal (hip flexor release → glute disinhibition)', 'Gluteus maximus posterior pelvic tilt function', 'Gluteus medius pelvic stabilization', 'Motor pattern re-establishment (neuromuscular re-patterning)', 'Force couple restoration at the pelvis'],
+    benefits: [
+      'Chronically tight hip flexors cause reciprocal inhibition of the gluteus maximus — the glutes are neurologically downregulated, meaning they fail to fire during exercises like squats and deadlifts regardless of effort; this is why "I can\'t feel my glutes" is nearly universal in people with APT',
+      'The gluteus maximus is a primary posterior pelvic tilt muscle — its contraction pulls the back of the pelvis down, directly opposing the anterior tilt; strengthening it is the active correction to the hip flexor\'s passive pull',
+      'Gluteus medius weakness (common in APT) allows the pelvis to drop on the unsupported side during walking and single-leg stance, a compensatory pattern that drives knee valgus, IT band syndrome, and hip pain as downstream consequences',
+      'The activation sequence matters: glute isolation exercises (bridges, clamshells) before compound movements re-establish the neural connection first, making the glute contribution to subsequent squats and deadlifts immediately larger',
+      'APT correction requires both lengthening the hip flexors AND strengthening the glutes simultaneously — addressing only one side of the imbalance produces partial results; both must be trained in the same program',
+    ],
+    howToPractice: 'Start with activation drills before any heavy lower body training. Glute bridge: lie on back, feet flat, hip-width apart. Squeeze glutes first, then drive hips up. Hold the top for 2 seconds — feel the glute squeeze, not the hamstring. Clamshell: side-lying, knees bent, rotate the top knee open (like a clamshell) without rotating the pelvis. These teach the glutes to fire before loading them.',
+    protocol: 'Daily activation (before training or as a standalone routine): glute bridge 3×15 (2-sec hold at top), clamshell 3×15 each side, single-leg glute bridge 3×10 each side. Progress to: hip thrusts (loaded), Bulgarian split squat, Romanian deadlift (all with conscious glute contraction cue). Twice weekly loaded glute work minimum.',
+    methods: ['Glute bridge (bilateral — activation)', 'Single-leg glute bridge (isolation + stability)', 'Clamshell (glute medius)', 'Banded hip abduction walks (medius + minimus)', 'Hip thrust (primary loaded exercise)', 'Bulgarian split squat', 'Step-ups', 'Cable pull-throughs'],
+    tip: 'The cue that unlocks glute activation is "squeeze first, then move." Before any hip extension movement — bridge, thrust, squat, step-up — contract the glutes consciously before the movement begins. This pre-activation fires the motor pattern and overrides the inhibition. People who cannot feel their glutes during squats almost universally have not pre-activated: add a 3-second glute squeeze before each rep and the sensation changes immediately.',
+    stack: 'Hip flexor release (do before glute work — the disinhibition window post-stretch makes glutes more activatable). Core stabilization (glutes and core work together to stabilize the pelvis; train both in the same session). Hip thrusts as primary loaded exercise.',
+  },
+  {
+    id: 'core-stabilization',
+    emoji: '🏋️',
+    name: 'Core Stabilization',
+    tagline: 'The difference between "ab training" and the deep stabilizers that actually hold the pelvis neutral',
+    categories: ['core', 'posture'],
+    mechanisms: ['Transverse abdominis (TVA) pelvic floor co-contraction', 'Intra-abdominal pressure for spinal stabilization', 'Posterior pelvic tilt under load (neutral spine maintenance)', 'Multifidus and erector spinae rebalancing', 'Diaphragm-pelvic floor pressure canister'],
+    benefits: [
+      'The muscles that resist APT under load are not the rectus abdominis (six-pack) — they are the transverse abdominis (TVA), internal obliques, and pelvic floor, which create intra-abdominal pressure that stabilizes the lumbar spine in neutral without movement',
+      'Traditional ab exercises (crunches, sit-ups) strengthen the rectus abdominis in spinal flexion but do not train the TVA\'s stabilization role — they can actually worsen APT by strengthening muscles that pull the ribcage toward the pelvis rather than maintaining neutral lumbar position',
+      'The McGill Big 3 (curl-up, side plank, bird dog) are the most validated core stability protocol for lower back pain — they build spinal stabilization in neutral spine position, directly addressing the failure of stabilizer co-contraction that allows APT to persist under load',
+      'Dead bug exercises train the TVA and pelvic floor to maintain posterior pelvic tilt while the limbs move — the exact functional demand of walking, running, and lifting; the lumbar spine must stay imprinted against the floor throughout',
+      'Posterior pelvic tilt under load (maintaining a neutral or slightly tucked pelvis during squats, deadlifts, and carries) is the performance expression of adequate core stability — the pelvis should not anteriorly tilt as load increases',
+    ],
+    howToPractice: 'Dead bug: lie on back, lower back pressed firmly to the floor (not arched). Extend one arm and the opposite leg simultaneously while maintaining the lower back contact with the floor — any lower back lift means the TVA has disengaged. Return and switch. If your back lifts, reduce range of motion until control is established. This is the foundational APT core exercise.',
+    protocol: 'Dead bug: 3 sets of 8–10 per side (slow — 3 sec down, pause, 3 sec back). McGill Curl-up: 3×10 (no neck strain — hands under lumbar curve, one knee bent). Side plank: 3×20–30 sec each side. Bird dog: 3×10 per side (4-count hold). Progress: add resistance to dead bug (leg lowering, dumbbell arms), longer side plank holds, single-leg dead bugs.',
+    methods: ['Dead bug (TVA primary exercise)', 'McGill curl-up (safe spinal flexion)', 'Side plank (lateral stability)', 'Bird dog (posterior chain + core co-contraction)', 'Hollow body hold (advanced TVA)', 'Pallof press (anti-rotation)', 'Plank (with posterior pelvic tilt cue, not rib flare)'],
+    tip: 'During every dead bug rep, the goal is to keep the lower back completely imprinted on the floor as the limbs move. The moment the lower back arches and loses contact, the TVA has disengaged and the pelvis has anteriorly tilted — you\'ve recreated APT under load. Shorten the range until you can maintain the contact. This single movement test reveals exactly how much anterior pelvic tilt occurs under loading and trains the fix simultaneously.',
+    stack: 'Glute activation (train in the same session — pelvis stability requires both anterior and posterior contributors). Hip flexor release (a tight psoas can override TVA stabilization regardless of core strength — release first). Dead bug + glute bridge superset is the most efficient APT daily correction pair.',
+  },
+  {
+    id: 'hamstring-work',
+    emoji: '🦵',
+    name: 'Hamstring Strengthening',
+    tagline: 'The posterior chain pull — hamstrings assist posterior pelvic tilt and are often weak despite feeling tight',
+    categories: ['strengthening', 'stretching'],
+    mechanisms: ['Hamstring attachment to ischial tuberosity (PSIS-adjacent)', 'Posterior pelvic tilt force contribution', 'Knee flexion / hip extension dual function', 'Passive insufficiency at short length (sitting-shortened)', '"Tight but weak" — neurogenic tightness vs true shortness'],
+    benefits: [
+      'Hamstrings attach to the ischial tuberosity (sitting bones) — contraction pulls this point downward and backward, contributing to posterior pelvic tilt; strengthening the hamstrings increases the opposing pull that counteracts the anterior tilt from hip flexors',
+      'Most people with APT perceive their hamstrings as "tight" and avoid hamstring exercises — but this tightness is frequently neurogenic (the nervous system protecting a muscle it perceives as weak or under threat) rather than structural shortness; the solution is strengthening, not more stretching',
+      'Chronic sitting shortens the hamstrings at their proximal (hip) attachment while lengthening them distally — producing a confusing pattern where they feel tight in stretching but test as both weak and restricted; progressive loading through full range corrects both simultaneously',
+      'Nordic curls (eccentric hamstring loading) increase fascicle length — genuine structural lengthening of the hamstring — more effectively than static stretching alone, and also build the eccentric strength that prevents hamstring strains',
+      'The Romanian deadlift is the primary hamstring exercise for APT correction: it loads the hamstring at a long length (hip hinge to end range), builds posterior chain strength in the pattern that opposes APT, and teaches the hip hinge movement pattern that protects the lower back during daily activities',
+    ],
+    howToPractice: 'Romanian deadlift: stand hip-width, soft knee, hinge at the hip (not squat) by pushing the hips back. Lower until you feel a deep hamstring stretch — typically mid-shin for most people. Pause briefly, then drive hips forward to return. The lower back should remain neutral throughout — not rounding or excessively arching. Start with light weight and focus entirely on feeling the hamstring load.',
+    protocol: 'Romanian deadlift: 3–4 sets of 8–10, twice weekly. Nordic curl (advanced, eccentric): 3 sets of 5–8 negatives (lower as slowly as possible). Prone leg curl: 3×12–15 (isolation). Lying hamstring stretch (30–60 sec) after — the stretch after loaded lengthening is more effective than cold stretching. Progress RDL weight conservatively.',
+    methods: ['Romanian deadlift (primary — hip hinge loading)', 'Nordic curl / eccentric curl (structural lengthening)', 'Prone leg curl (isolation)', 'Single-leg RDL (unilateral balance)', 'Lying hamstring stretch (post-exercise)', 'Seated hamstring stretch with posterior pelvic tilt cue'],
+    tip: 'The "tight hamstrings" that most desk workers experience are almost never structurally short — they are neurologically guarded. The nervous system perceives a weakened, underused muscle and creates tightness as a protective mechanism. Stretching a neurogenically tight hamstring repeatedly provides temporary relief but no lasting change because the underlying weakness remains. Progressive loading (RDLs, Nordic curls) resolves both the tightness and the weakness simultaneously — it is both the treatment and the fix.',
+    stack: 'Glute activation (train hamstrings and glutes in the same session — they are functional partners for posterior pelvic tilt and hip extension). Core stabilization (neutral spine during RDL requires TVA engagement — core and hamstrings are trained in the same movement). Hip flexor release (balance the posterior chain loading with anterior chain lengthening).',
+  },
+  {
+    id: 'lumbar-release',
+    emoji: '🌀',
+    name: 'Lumbar Erector Release',
+    tagline: 'The tight upper half of the APT pattern — releasing the lumbar extensors that maintain the arch',
+    categories: ['stretching', 'posture'],
+    mechanisms: ['Lumbar erector spinae (iliocostalis, longissimus) chronic overactivation', 'Lumbar facet joint decompression via flexion', 'Multifidus hypertonicity reduction', 'QL (quadratus lumborum) lateral tension', 'Lumbar lordosis passive reduction'],
+    benefits: [
+      'In APT, the lumbar erectors (the muscles running along the spine) are chronically shortened and over-activated — they are holding the lumbar spine in extension against the gravity load of the tilted pelvis, accumulating significant myofascial tension that presents as lower back stiffness and pain',
+      'Lumbar flexion stretches (child\'s pose, knees-to-chest, cat-cow) decompress the facet joints of the lumbar spine — these small joints become compressed by the constant extension of APT and are a significant pain generator that responds immediately to lumbar flexion',
+      'The quadratus lumborum (QL), which connects the iliac crest to the lower ribs and lumbar spine laterally, becomes asymmetrically tight in APT — lateral lumbar stretches and QL rolling reduce this tension, which often manifests as hip hiking and lateral lower back tightness',
+      'Releasing lumbar extensor tension before strengthening the antagonist core muscles produces better results than strengthening alone — a hypertonic muscle resists lengthening training until the neurological tone is reduced first',
+      'Cat-cow performed as deliberate spinal mobilization (not just warm-up range) provides both myofascial release and active spinal movement through flexion and extension, recalibrating the proprioceptive sense of neutral spine position',
+    ],
+    howToPractice: 'Child\'s pose: from kneeling, sit back toward heels, extend arms forward on the ground. Breathe into the lower back — on each exhale, allow the lower back to round and release further. Hold 2–3 minutes. Knees-to-chest: lying on back, pull both knees to chest and gently rock side to side. Cat-cow: on all fours, alternate between full lumbar flexion (cat — round the back, tuck pelvis) and extension (cow — sag the back, tilt pelvis forward). Move slowly through each rep.',
+    protocol: 'Morning and evening: child\'s pose (2–3 minutes), knees-to-chest rock (60 seconds). Before core/glute work: cat-cow (10 slow cycles). QL foam rolling: 60 seconds per side (roll the area between the bottom rib and the top of the hip bone). This decompression work pairs with the strengthening work — do releases before activation, not after.',
+    methods: ['Child\'s pose (lumbar flexion decompression)', 'Knees-to-chest rock', 'Cat-cow (full spinal mobilization)', 'Seated forward fold (lumbar + hamstring)', 'QL foam rolling or tennis ball (lateral lumbar)', 'Supine twist (thoracolumbar fascia)', 'McKenzie press-up (extension after sustained flexion — for disc-related APT)'],
+    tip: 'The lower back pain associated with APT is mostly compressive — the spine is being held in extension, loading the facet joints and compressing the posterior disc space. Lumbar flexion (rounding the back) provides immediate relief by decompressing these structures. Child\'s pose for 2 minutes in the morning is one of the fastest lower back pain relief tools available — it works within minutes because the mechanism is mechanical decompression, not healing.',
+    stack: 'Hip flexor release (stretch the lumbar extensors alongside the hip flexors — they are both in the "tight" half of the APT imbalance). Core stabilization (release lumbar tension first, then train the core to stabilize in the newly available neutral range). Morning routine: lumbar release → hip flexor stretch → glute activation is the ideal sequence.',
+  },
+  {
+    id: 'daily-habits',
+    emoji: '🪑',
+    name: 'Daily Habit Corrections',
+    tagline: 'APT is primarily a postural habit — the correction work only sticks if the daily patterns change',
+    categories: ['daily', 'posture'],
+    mechanisms: ['Postural motor pattern re-grooving (neuroplasticity)', 'Sitting position → continuous hip flexor loading', 'Standing neutral pelvis cueing', 'Gait mechanics correction (glute activation per step)', 'Rib flare correction (co-occurring with APT)'],
+    benefits: [
+      'All the stretching and strengthening in the world will not permanently fix APT if you return to 8+ hours of sitting in an anterior-tilt position daily — the tissue work creates the available range; the habit work determines which position the body defaults to',
+      'The single most impactful daily change for APT is reducing unbroken sitting time — every 45–60 minutes of continuous sitting re-loads the hip flexors into their shortened position; standing or walking for even 5 minutes every hour breaks this reloading cycle',
+      'Neutral pelvis standing cue — "tuck and release" — teaches the body the neutral spine position: slightly tuck the pelvis under (as if bracing for a punch), then release 20% of that tuck; this is neutral. Most people with APT have never consciously felt this position and need hundreds of daily repetitions to internalize it',
+      'Gait correction: consciously extending the hip fully at the back of each stride — the brief moment when the body is in front of the back foot — activates the glute on that side. APT sufferers typically have a shortened stride and minimal hip extension, meaning the glutes contribute minimally to each step',
+      'Rib flare (the lower ribs flaring outward and forward) almost always co-occurs with APT — the two are mechanically linked. The fix is an exhale cue: on every exhale, allow the ribs to drop down and in toward the spine; the combination of neutral pelvis + closed ribs is the complete standing posture correction',
+    ],
+    howToPractice: 'Standing neutral pelvis practice: 20 times per day, anywhere — in line, waiting, at the sink. Tuck the pelvis slightly (squeeze glutes, tuck tailbone), then release 20% of the tuck — that release position is neutral. The rep count is the practice. Sitting: use a chair with a slight forward tilt or a lumbar roll to discourage posterior slumping — but prioritize standing/walking breaks over optimizing the sitting position.',
+    protocol: 'Break sitting every 45–60 minutes with 3–5 minutes standing or walking. Neutral pelvis reps: 20 conscious corrections per hour while standing. Gait: focus on full hip extension at the back of each stride for 5 minutes per day during walks. Rib check: 10 exhale-and-close-the-ribs reps per hour. Chair adjustment: seat slightly tilted forward (towel roll under front of seat) to reduce posterior tilt slumping.',
+    methods: ['Sitting timer / break reminder (every 45–60 min)', 'Standing desk or desk converter', 'Neutral pelvis standing cue (tuck and 20% release)', 'Gait hip extension focus during walks', 'Rib flare exhale cue (exhale → ribs down and in)', 'Lumbar roll for car and office chair', 'Phone-height reminder (low phone → neck flexion + APT coupling)'],
+    tip: 'Neutral pelvis is a skill, not a shape. The body defaults to APT because it has been reinforced by thousands of hours of sitting — re-grooving the pattern requires thousands of conscious repetitions of the neutral position. 20 reps per hour × 8 waking hours = 160 reps/day × 30 days = 4,800 reps in a month. At that volume, the neutral pelvis position begins to become the automatic default. The stretches and strengthening exercises create the capacity; the reps build the habit.',
+    stack: 'Hip flexor release (do twice daily to counteract the daily sitting reloading). Glute activation (brief activation routine every morning locks in the neuromuscular pattern before the day reinforces APT). Consistency across all 7 entries in this guide — APT correction is a system, not a single exercise.',
+  },
+];
+
+let activeFilter = 'all';
+
+function tagHtml(cat) {
+  return `<span class="ptag ${TAG_CLASS[cat]||''}">${TAG_LABEL[cat]||cat}</span>`;
+}
+
+function practiceCard(p) {
+  return `<div class="practice-card" id="${p.id}" data-cats="${p.categories.join(' ')}">
+    <div class="practice-header" onclick="toggleCard('${p.id}')">
+      <div class="practice-icon">${p.emoji}</div>
+      <div class="practice-meta">
+        <div class="practice-name">${p.name}</div>
+        <div class="practice-tagline">${p.tagline}</div>
+        <div class="practice-tags">${p.categories.map(tagHtml).join('')}</div>
+      </div>
+      <span class="expand-arrow">▼</span>
+    </div>
+    <div class="practice-body">
+      <div class="practice-inner">
+        <div>
+          <div class="sec-lbl">Key Mechanisms</div>
+          <div class="mech-row">${p.mechanisms.map(m=>`<span class="mech-badge">${m}</span>`).join('')}</div>
+        </div>
+        <div>
+          <div class="sec-lbl">Evidence-Based Benefits</div>
+          <div class="benefit-list">${p.benefits.map((b,i)=>`<div class="benefit-item"><div class="benefit-dot">${i+1}</div><span>${b}</span></div>`).join('')}</div>
+        </div>
+        <div class="two-col">
+          <div class="info-box">
+            <div class="sec-lbl">How to Practice</div>
+            <div class="info-box-text">${p.howToPractice}</div>
+          </div>
+          <div class="info-box">
+            <div class="sec-lbl">Protocol</div>
+            <div class="info-box-text">${p.protocol}</div>
+            <div class="methods-row">${p.methods.map(m=>`<span class="method-pill">${m}</span>`).join('')}</div>
+          </div>
+        </div>
+        <div class="tip-box"><div class="tip-label">Pro Tip</div>${p.tip}</div>
+        ${p.stack ? `<div class="stack-box"><div class="stack-label">Stack With</div>${p.stack}</div>` : ''}
+        <button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to top</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderAll() {
+  const filtered = activeFilter === 'all' ? PRACTICES : PRACTICES.filter(p => p.categories.includes(activeFilter));
+  document.getElementById('practiceList').innerHTML = filtered.length
+    ? filtered.map(practiceCard).join('')
+    : '<div class="empty-state">No topics match this filter.</div>';
+  document.getElementById('practiceIndex').innerHTML = filtered.map(p =>
+    `<a class="index-pill" href="#${p.id}" onclick="openAndScroll('${p.id}',event)">${p.emoji} ${p.name}</a>`
+  ).join('');
+}
+
+function toggleCard(id) { document.getElementById(id).classList.toggle('open'); }
+
+function openAndScroll(id, e) {
+  e.preventDefault();
+  const card = document.getElementById(id);
+  if (!card) return;
+  if (!card.classList.contains('open')) card.classList.add('open');
+  setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+
+function filterPractices(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+renderAll();
+</script>
+</body>
+</html>
