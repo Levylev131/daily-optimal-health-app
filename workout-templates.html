@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Programs — Daily Optimal Health</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --acc: #2dd46e; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --r: 14px; --r-sm: 10px;
+    }
+    html { min-height: 100%; scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg1));
+      background-size: 400% 400%; animation: gradShift 18s ease infinite;
+      color: var(--text); min-height: 100vh; overflow-x: hidden;
+    }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+    .top-bar {
+      display:flex; align-items:center; gap:12px;
+      padding:14px 24px; max-width:1000px; margin:0 auto;
+      border-bottom:1px solid var(--glass-b);
+      position:sticky; top:0; z-index:100;
+      background:rgba(6,26,12,0.9); backdrop-filter:blur(16px);
+    }
+    .back-btn { color:var(--muted); font-size:.88rem; font-weight:600; background:none; border:none; cursor:pointer; transition:color .2s; text-decoration:none; }
+    .back-btn:hover { color:var(--acc); }
+    .top-title { flex:1; text-align:center; font-size:1rem; font-weight:800; text-shadow:0 0 20px var(--glow); }
+
+    .page { max-width:1000px; margin:0 auto; padding:clamp(16px,4vw,32px) clamp(12px,3vw,20px) 80px; }
+
+    .hero { text-align:center; padding:32px 0 28px; }
+    .hero h1 { font-size:clamp(1.5rem,4vw,2.2rem); font-weight:900; margin-bottom:10px; text-shadow:0 0 40px var(--glow); }
+    .hero p { color:var(--muted); font-size:.92rem; line-height:1.65; max-width:520px; margin:0 auto; }
+
+    .filter-row {
+      display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:28px;
+    }
+    .filter-chip {
+      padding:6px 16px; border-radius:20px; font-size:.78rem; font-weight:700;
+      cursor:pointer; background:rgba(255,255,255,0.07); border:1px solid var(--glass-b);
+      color:var(--muted); transition:all .2s; user-select:none;
+    }
+    .filter-chip.active { background:rgba(45,212,110,.18); border-color:rgba(45,212,110,.5); color:var(--acc); }
+
+    .prog-grid {
+      display:grid; gap:16px;
+    }
+
+    .prog-card {
+      background:var(--glass); border:1px solid var(--glass-b);
+      border-radius:var(--r); overflow:hidden; transition:border-color .2s;
+    }
+    .prog-card:hover { border-color:rgba(45,212,110,.25); }
+    .prog-card.open { border-color:rgba(45,212,110,.35); }
+
+    .prog-header {
+      padding:20px 22px; cursor:pointer; display:flex; gap:16px; align-items:flex-start;
+      transition:background .15s; user-select:none;
+    }
+    .prog-header:hover { background:var(--glass-h); }
+
+    .prog-icon {
+      font-size:2rem; width:58px; height:58px; flex-shrink:0;
+      background:rgba(45,212,110,.1); border:1px solid rgba(45,212,110,.2);
+      border-radius:14px; display:flex; align-items:center; justify-content:center;
+    }
+    .prog-main { flex:1; min-width:0; }
+    .prog-name { font-size:1.1rem; font-weight:900; margin-bottom:5px; }
+    .prog-tagline { color:var(--muted); font-size:.82rem; line-height:1.55; margin-bottom:10px; }
+    .prog-badges { display:flex; gap:6px; flex-wrap:wrap; }
+    .badge {
+      padding:3px 10px; border-radius:20px; font-size:.7rem; font-weight:700;
+      background:rgba(255,255,255,0.08); border:1px solid var(--glass-b); color:var(--muted);
+    }
+    .badge-green { background:rgba(45,212,110,.12); border-color:rgba(45,212,110,.3); color:var(--acc); }
+    .badge-amber { background:rgba(245,166,35,.12); border-color:rgba(245,166,35,.3); color:#f5a623; }
+    .badge-red   { background:rgba(255,100,100,.12); border-color:rgba(255,100,100,.3); color:#ff9090; }
+
+    .prog-chevron { color:var(--muted); font-size:.8rem; margin-top:4px; transition:transform .25s; flex-shrink:0; }
+    .prog-card.open .prog-chevron { transform:rotate(180deg); }
+
+    .prog-body {
+      max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.4,0,.2,1);
+      border-top:1px solid transparent;
+    }
+    .prog-card.open .prog-body { max-height:3000px; border-top-color:var(--glass-b); }
+    .prog-body-inner { padding:22px; }
+
+    .muscle-overview {
+      display:flex; gap:28px; align-items:flex-start; margin-bottom:22px; flex-wrap:wrap;
+    }
+    .body-pair { display:flex; gap:12px; }
+    .body-figure { text-align:center; }
+    .body-label { color:var(--muted); font-size:.6rem; font-weight:800; text-transform:uppercase; letter-spacing:.8px; margin-bottom:4px; }
+    .muscle-legend { flex:1; min-width:180px; }
+    .muscle-legend-title { font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); margin-bottom:10px; }
+    .muscle-chips { display:flex; flex-wrap:wrap; gap:5px; }
+    .muscle-chip {
+      padding:3px 9px; border-radius:20px; font-size:.7rem; font-weight:700;
+      border:1px solid rgba(255,255,255,0.13); color:var(--muted);
+      background:rgba(255,255,255,0.06);
+    }
+    .muscle-chip.active {
+      background:rgba(45,212,110,.15); border-color:rgba(45,212,110,.4); color:var(--acc);
+    }
+
+    .sec-label {
+      font-size:.65rem; font-weight:800; text-transform:uppercase; letter-spacing:1.2px;
+      color:var(--muted); margin-bottom:10px; display:flex; align-items:center; gap:8px;
+    }
+    .sec-label::after { content:''; flex:1; height:1px; background:var(--glass-b); }
+
+    .day-list { margin-bottom:20px; }
+    .day-item {
+      border-radius:10px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+      margin-bottom:8px; overflow:hidden;
+    }
+    .day-header {
+      display:flex; align-items:center; gap:12px; padding:12px 16px;
+      cursor:pointer; transition:background .15s; user-select:none;
+    }
+    .day-header:hover { background:rgba(255,255,255,0.05); }
+    .day-dot { width:8px; height:8px; border-radius:50%; background:var(--acc); opacity:.5; flex-shrink:0; }
+    .day-name { font-weight:700; font-size:.88rem; flex:1; }
+    .day-count { color:var(--muted); font-size:.72rem; }
+    .day-arrow { color:var(--muted); font-size:.7rem; transition:transform .2s; }
+    .day-item.open .day-arrow { transform:rotate(180deg); }
+    .day-exs {
+      max-height:0; overflow:hidden; transition:max-height .35s ease;
+      border-top:1px solid transparent;
+    }
+    .day-item.open .day-exs { max-height:600px; border-top-color:rgba(255,255,255,0.06); }
+    .ex-row {
+      display:flex; align-items:center; gap:12px; padding:9px 16px;
+      border-bottom:1px solid rgba(255,255,255,0.04); font-size:.83rem;
+    }
+    .ex-row:last-child { border-bottom:none; }
+    .ex-name { flex:1; font-weight:600; }
+    .ex-meta { color:var(--muted); font-size:.75rem; white-space:nowrap; }
+
+    .add-btn {
+      width:100%; padding:13px; border:none; border-radius:10px;
+      font-weight:900; font-size:.95rem; cursor:pointer; transition:all .25s;
+      background:var(--acc); color:#061a0c;
+    }
+    .add-btn:hover { filter:brightness(1.12); transform:translateY(-1px); }
+    .add-btn.added {
+      background:rgba(45,212,110,.15); color:var(--acc);
+      border:1px solid rgba(45,212,110,.4); cursor:default;
+      transform:none; filter:none;
+    }
+
+    #wt-toast {
+      position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+      background:var(--acc); color:#061a0c; font-weight:800; font-size:.85rem;
+      padding:11px 24px; border-radius:10px; z-index:400;
+      opacity:0; transition:opacity .3s; pointer-events:none; white-space:nowrap;
+    }
+
+    @media(max-width:600px) {
+      .muscle-overview { flex-direction:column; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="workout.html" class="back-btn">← Workout Builder</a>
+  <div class="top-title">📋 Programs</div>
+  <div style="width:110px"></div>
+</div>
+
+<div class="page">
+  <div class="hero">
+    <h1>Pre-Built Programs</h1>
+    <p>Choose a program and add it to your workout builder with one tap. All programs include full exercise lists, sets, reps, and muscle targeting.</p>
+  </div>
+
+  <div class="filter-row">
+    <span class="filter-chip active" data-filter="all">All</span>
+    <span class="filter-chip" data-filter="Beginner">Beginner</span>
+    <span class="filter-chip" data-filter="Intermediate">Intermediate</span>
+    <span class="filter-chip" data-filter="Advanced">Advanced</span>
+    <span class="filter-chip" data-filter="3">3 days</span>
+    <span class="filter-chip" data-filter="4">4 days</span>
+    <span class="filter-chip" data-filter="5">5 days</span>
+    <span class="filter-chip" data-filter="6">6 days</span>
+  </div>
+
+  <div class="prog-grid" id="prog-grid"></div>
+</div>
+
+<div id="wt-toast"></div>
+
+<script>
+const LS_R = 'wob_routines';
+
+const MUSCLES = [
+  { id:'chest',      label:'Chest',       col:'#ff6b6b', front:true  },
+  { id:'shoulders',  label:'Shoulders',   col:'#ffa94d', front:true  },
+  { id:'biceps',     label:'Biceps',      col:'#74c0fc', front:true  },
+  { id:'forearms',   label:'Forearms',    col:'#63e6be', front:true  },
+  { id:'abs',        label:'Abs',         col:'#ffd43b', front:true  },
+  { id:'obliques',   label:'Obliques',    col:'#ff9f43', front:true  },
+  { id:'quads',      label:'Quads',       col:'#4dabf7', front:true  },
+  { id:'calves',     label:'Calves',      col:'#69db7c', front:true  },
+  { id:'traps',      label:'Traps',       col:'#da77f2', front:false },
+  { id:'lats',       label:'Lats',        col:'#3bc9db', front:false },
+  { id:'upper-back', label:'Upper Back',  col:'#f783ac', front:false },
+  { id:'lower-back', label:'Lower Back',  col:'#a9e34b', front:false },
+  { id:'triceps',    label:'Triceps',     col:'#b197fc', front:false },
+  { id:'glutes',     label:'Glutes',      col:'#ff9f43', front:false },
+  { id:'hamstrings', label:'Hamstrings',  col:'#4dabf7', front:false },
+];
+
+const PRESETS = [
+  {
+    id:'ppl', icon:'🔄', name:'Push Pull Legs',
+    tagline:'6-day split. Best for intermediates wanting maximum frequency and volume.',
+    difficulty:'Intermediate', freq:'6 days/week', days_per_week:6,
+    description:'Train each muscle twice per week by rotating Push (chest/shoulders/triceps), Pull (back/biceps), and Legs days. High weekly volume drives consistent hypertrophy.',
+    days:[
+      { name:'Push Day A', muscles:['chest','shoulders','triceps'], exercises:[
+        {name:'Bench Press',sets:4,reps:'6-8',weight:0},{name:'Incline Dumbbell Press',sets:3,reps:'10-12',weight:0},
+        {name:'Cable Fly',sets:3,reps:'12-15',weight:0},{name:'Overhead Press',sets:3,reps:'8-10',weight:0},
+        {name:'Lateral Raise',sets:4,reps:'15-20',weight:0},{name:'Tricep Pushdown',sets:3,reps:'12-15',weight:0},
+        {name:'Skull Crusher',sets:3,reps:'10-12',weight:0},
+      ]},
+      { name:'Pull Day A', muscles:['lats','upper-back','traps','biceps'], exercises:[
+        {name:'Deadlift',sets:3,reps:'5',weight:0},{name:'Pull-Up',sets:3,reps:'6-10',weight:0},
+        {name:'Seated Cable Row',sets:3,reps:'10-12',weight:0},{name:'Lat Pulldown',sets:3,reps:'12-15',weight:0},
+        {name:'Face Pull',sets:3,reps:'15-20',weight:0},{name:'Barbell Curl',sets:3,reps:'10-12',weight:0},
+        {name:'Hammer Curl',sets:3,reps:'12-15',weight:0},
+      ]},
+      { name:'Legs Day A', muscles:['quads','hamstrings','glutes','calves'], exercises:[
+        {name:'Squat',sets:4,reps:'6-8',weight:0},{name:'Romanian Deadlift',sets:3,reps:'10-12',weight:0},
+        {name:'Leg Press',sets:3,reps:'12-15',weight:0},{name:'Leg Curl',sets:3,reps:'12-15',weight:0},
+        {name:'Bulgarian Split Squat',sets:3,reps:'10-12',weight:0},{name:'Standing Calf Raise',sets:4,reps:'15-20',weight:0},
+        {name:'Hanging Leg Raise',sets:3,reps:'15',weight:0},
+      ]},
+      { name:'Push Day B', muscles:['chest','shoulders','triceps'], exercises:[
+        {name:'Incline Bench Press',sets:4,reps:'8-10',weight:0},{name:'Dumbbell Bench Press',sets:3,reps:'10-12',weight:0},
+        {name:'Pec Deck',sets:3,reps:'12-15',weight:0},{name:'Dumbbell Shoulder Press',sets:3,reps:'10-12',weight:0},
+        {name:'Cable Lateral Raise',sets:4,reps:'15-20',weight:0},{name:'Overhead Tricep Extension',sets:3,reps:'12-15',weight:0},
+        {name:'Close-Grip Bench Press',sets:3,reps:'10-12',weight:0},
+      ]},
+      { name:'Pull Day B', muscles:['lats','upper-back','traps','biceps','forearms'], exercises:[
+        {name:'Bent Over Barbell Row',sets:4,reps:'8-10',weight:0},{name:'Weighted Pull-Up',sets:3,reps:'6-8',weight:0},
+        {name:'T-Bar Row',sets:3,reps:'10-12',weight:0},{name:'Single Arm Dumbbell Row',sets:3,reps:'10-12',weight:0},
+        {name:'Rear Delt Fly',sets:3,reps:'15-20',weight:0},{name:'Preacher Curl',sets:3,reps:'10-12',weight:0},
+        {name:'Incline Dumbbell Curl',sets:3,reps:'12-15',weight:0},
+      ]},
+      { name:'Legs Day B', muscles:['quads','hamstrings','glutes','calves','abs'], exercises:[
+        {name:'Front Squat',sets:4,reps:'8-10',weight:0},{name:'Hip Thrust',sets:4,reps:'10-12',weight:0},
+        {name:'Leg Extension',sets:3,reps:'15-20',weight:0},{name:'Lying Leg Curl',sets:3,reps:'12-15',weight:0},
+        {name:'Lunge',sets:3,reps:'12-15',weight:0},{name:'Seated Calf Raise',sets:4,reps:'15-20',weight:0},
+        {name:'Hanging Leg Raise',sets:3,reps:'15',weight:0},
+      ]},
+    ]
+  },
+  {
+    id:'upper-lower', icon:'↕️', name:'Upper / Lower',
+    tagline:'4-day split. Great for beginners and intermediates. Easy to fit around life.',
+    difficulty:'Beginner–Intermediate', freq:'4 days/week', days_per_week:4,
+    description:'Alternate upper and lower body training. Each muscle group gets hit twice weekly. The A/B variation keeps the program fresh — strength focus one day, hypertrophy the next.',
+    days:[
+      { name:'Upper A — Strength', muscles:['chest','shoulders','lats','upper-back','triceps','biceps'], exercises:[
+        {name:'Bench Press',sets:4,reps:'5-6',weight:0},{name:'Bent Over Barbell Row',sets:4,reps:'5-6',weight:0},
+        {name:'Overhead Press',sets:3,reps:'6-8',weight:0},{name:'Lat Pulldown',sets:3,reps:'8-10',weight:0},
+        {name:'Dumbbell Curl',sets:3,reps:'10-12',weight:0},{name:'Tricep Pushdown',sets:3,reps:'10-12',weight:0},
+      ]},
+      { name:'Lower A — Strength', muscles:['quads','hamstrings','glutes','calves'], exercises:[
+        {name:'Squat',sets:4,reps:'5-6',weight:0},{name:'Romanian Deadlift',sets:3,reps:'8-10',weight:0},
+        {name:'Leg Press',sets:3,reps:'10-12',weight:0},{name:'Leg Curl',sets:3,reps:'10-12',weight:0},
+        {name:'Standing Calf Raise',sets:4,reps:'12-15',weight:0},
+      ]},
+      { name:'Upper B — Hypertrophy', muscles:['chest','shoulders','lats','upper-back','triceps','biceps'], exercises:[
+        {name:'Incline Dumbbell Press',sets:4,reps:'10-12',weight:0},{name:'Seated Cable Row',sets:4,reps:'10-12',weight:0},
+        {name:'Dumbbell Shoulder Press',sets:3,reps:'10-12',weight:0},{name:'Pull-Up',sets:3,reps:'8-12',weight:0},
+        {name:'Cable Fly',sets:3,reps:'12-15',weight:0},{name:'Face Pull',sets:3,reps:'15-20',weight:0},
+        {name:'Hammer Curl',sets:3,reps:'12-15',weight:0},{name:'Skull Crusher',sets:3,reps:'12-15',weight:0},
+      ]},
+      { name:'Lower B — Hypertrophy', muscles:['quads','hamstrings','glutes','calves','abs'], exercises:[
+        {name:'Front Squat',sets:4,reps:'10-12',weight:0},{name:'Hip Thrust',sets:4,reps:'10-12',weight:0},
+        {name:'Leg Extension',sets:3,reps:'12-15',weight:0},{name:'Lying Leg Curl',sets:3,reps:'12-15',weight:0},
+        {name:'Bulgarian Split Squat',sets:3,reps:'10-12',weight:0},{name:'Seated Calf Raise',sets:4,reps:'15-20',weight:0},
+        {name:'Cable Crunch',sets:3,reps:'15',weight:0},
+      ]},
+    ]
+  },
+  {
+    id:'full-body', icon:'⚡', name:'Full Body 3×',
+    tagline:'3-day split. Best for beginners. Efficient and easy to recover from.',
+    difficulty:'Beginner', freq:'3 days/week', days_per_week:3,
+    description:'Hit every muscle 3× per week with alternating A/B/C workouts. Ideal for building the habit of training and developing movement patterns before adding volume.',
+    days:[
+      { name:'Full Body A', muscles:['chest','lats','shoulders','quads','hamstrings','biceps','triceps'], exercises:[
+        {name:'Squat',sets:3,reps:'5',weight:0},{name:'Bench Press',sets:3,reps:'5',weight:0},
+        {name:'Bent Over Barbell Row',sets:3,reps:'5',weight:0},{name:'Overhead Press',sets:2,reps:'8-10',weight:0},
+        {name:'Romanian Deadlift',sets:2,reps:'8-10',weight:0},{name:'Barbell Curl',sets:2,reps:'10-12',weight:0},
+      ]},
+      { name:'Full Body B', muscles:['chest','lats','shoulders','quads','hamstrings','biceps','triceps'], exercises:[
+        {name:'Deadlift',sets:3,reps:'5',weight:0},{name:'Incline Bench Press',sets:3,reps:'8',weight:0},
+        {name:'Lat Pulldown',sets:3,reps:'8-10',weight:0},{name:'Dumbbell Shoulder Press',sets:2,reps:'10-12',weight:0},
+        {name:'Leg Press',sets:3,reps:'10-12',weight:0},{name:'Tricep Pushdown',sets:2,reps:'12-15',weight:0},
+      ]},
+      { name:'Full Body C', muscles:['chest','lats','shoulders','quads','glutes','biceps','triceps','abs'], exercises:[
+        {name:'Front Squat',sets:3,reps:'8',weight:0},{name:'Dumbbell Bench Press',sets:3,reps:'10-12',weight:0},
+        {name:'Pull-Up',sets:3,reps:'6-10',weight:0},{name:'Hip Thrust',sets:3,reps:'12',weight:0},
+        {name:'Lateral Raise',sets:3,reps:'15',weight:0},{name:'Hammer Curl',sets:2,reps:'12',weight:0},
+        {name:'Skull Crusher',sets:2,reps:'12',weight:0},{name:'Plank',sets:3,reps:'45s',weight:0},
+      ]},
+    ]
+  },
+  {
+    id:'bro-split', icon:'💪', name:'5-Day Bro Split',
+    tagline:'Classic bodybuilder schedule. One muscle group per day, maximum weekly volume.',
+    difficulty:'Intermediate–Advanced', freq:'5 days/week', days_per_week:5,
+    description:'One dedicated day per muscle group allows maximum volume and focus. Classic gym culture program. Works best when you can train consistently 5+ days.',
+    days:[
+      { name:'Chest Day', muscles:['chest','triceps'], exercises:[
+        {name:'Bench Press',sets:4,reps:'6-8',weight:0},{name:'Incline Bench Press',sets:4,reps:'8-10',weight:0},
+        {name:'Decline Bench Press',sets:3,reps:'10-12',weight:0},{name:'Cable Fly',sets:3,reps:'12-15',weight:0},
+        {name:'Dumbbell Fly',sets:3,reps:'12-15',weight:0},{name:'Push-Up',sets:2,reps:'failure',weight:0},
+      ]},
+      { name:'Back Day', muscles:['lats','upper-back','traps','lower-back'], exercises:[
+        {name:'Deadlift',sets:4,reps:'5',weight:0},{name:'Bent Over Barbell Row',sets:4,reps:'8-10',weight:0},
+        {name:'Pull-Up',sets:3,reps:'failure',weight:0},{name:'Lat Pulldown',sets:3,reps:'10-12',weight:0},
+        {name:'Seated Cable Row',sets:3,reps:'12-15',weight:0},{name:'Face Pull',sets:3,reps:'15-20',weight:0},
+      ]},
+      { name:'Shoulders Day', muscles:['shoulders','traps'], exercises:[
+        {name:'Overhead Press',sets:4,reps:'6-8',weight:0},{name:'Dumbbell Shoulder Press',sets:3,reps:'10-12',weight:0},
+        {name:'Lateral Raise',sets:4,reps:'15-20',weight:0},{name:'Front Raise',sets:3,reps:'12-15',weight:0},
+        {name:'Rear Delt Fly',sets:3,reps:'15-20',weight:0},{name:'Upright Row',sets:3,reps:'12-15',weight:0},
+      ]},
+      { name:'Arms Day', muscles:['biceps','triceps','forearms'], exercises:[
+        {name:'Barbell Curl',sets:4,reps:'8-10',weight:0},{name:'Incline Dumbbell Curl',sets:3,reps:'10-12',weight:0},
+        {name:'Preacher Curl',sets:3,reps:'12-15',weight:0},{name:'Hammer Curl',sets:3,reps:'12-15',weight:0},
+        {name:'Skull Crusher',sets:4,reps:'8-10',weight:0},{name:'Tricep Pushdown',sets:3,reps:'12-15',weight:0},
+        {name:'Overhead Tricep Extension',sets:3,reps:'12-15',weight:0},
+      ]},
+      { name:'Legs Day', muscles:['quads','hamstrings','glutes','calves'], exercises:[
+        {name:'Squat',sets:4,reps:'6-8',weight:0},{name:'Romanian Deadlift',sets:3,reps:'10-12',weight:0},
+        {name:'Leg Press',sets:4,reps:'12-15',weight:0},{name:'Leg Curl',sets:3,reps:'12-15',weight:0},
+        {name:'Leg Extension',sets:3,reps:'15-20',weight:0},{name:'Hip Thrust',sets:3,reps:'12-15',weight:0},
+        {name:'Standing Calf Raise',sets:5,reps:'15-20',weight:0},
+      ]},
+    ]
+  },
+  {
+    id:'arnold', icon:'🏆', name:'Arnold Split',
+    tagline:"6-day split (3 days × 2). Arnold's personal program from his prime years.",
+    difficulty:'Advanced', freq:'6 days/week', days_per_week:6,
+    description:"Train 3 days on, 1 day off, repeating the same 3 workouts. Chest & Back are trained together (a technique Arnold popularized for the pump), followed by Shoulders & Arms, then Legs.",
+    days:[
+      { name:'Chest & Back', muscles:['chest','lats','upper-back','traps'], exercises:[
+        {name:'Bench Press',sets:4,reps:'6-10',weight:0},{name:'Bent Over Barbell Row',sets:4,reps:'6-10',weight:0},
+        {name:'Incline Dumbbell Press',sets:3,reps:'10-12',weight:0},{name:'Pull-Up',sets:3,reps:'failure',weight:0},
+        {name:'Cable Fly',sets:3,reps:'12-15',weight:0},{name:'Seated Cable Row',sets:3,reps:'10-12',weight:0},
+        {name:'Dumbbell Pullover',sets:3,reps:'12-15',weight:0},
+      ]},
+      { name:'Shoulders & Arms', muscles:['shoulders','biceps','triceps','forearms'], exercises:[
+        {name:'Overhead Press',sets:4,reps:'6-8',weight:0},{name:'Barbell Curl',sets:4,reps:'8-10',weight:0},
+        {name:'Lateral Raise',sets:4,reps:'12-15',weight:0},{name:'Skull Crusher',sets:3,reps:'10-12',weight:0},
+        {name:'Dumbbell Shoulder Press',sets:3,reps:'10-12',weight:0},{name:'Preacher Curl',sets:3,reps:'10-12',weight:0},
+        {name:'Tricep Pushdown',sets:3,reps:'12-15',weight:0},{name:'Hammer Curl',sets:3,reps:'12-15',weight:0},
+      ]},
+      { name:'Legs (repeat × 2)', muscles:['quads','hamstrings','glutes','calves','abs'], exercises:[
+        {name:'Squat',sets:4,reps:'8-10',weight:0},{name:'Romanian Deadlift',sets:3,reps:'10-12',weight:0},
+        {name:'Leg Press',sets:4,reps:'12-15',weight:0},{name:'Leg Curl',sets:3,reps:'12-15',weight:0},
+        {name:'Standing Calf Raise',sets:5,reps:'15-20',weight:0},{name:'Seated Calf Raise',sets:3,reps:'15-20',weight:0},
+        {name:'Cable Crunch',sets:3,reps:'15',weight:0},{name:'Hanging Leg Raise',sets:3,reps:'15',weight:0},
+      ]},
+    ]
+  },
+  {
+    id:'531', icon:'📈', name:'5/3/1 (Wendler)',
+    tagline:'4-day strength program. Progressive overload built around the big 4 lifts.',
+    difficulty:'Intermediate', freq:'4 days/week', days_per_week:4,
+    description:"Based on Jim Wendler's 5/3/1 method. Each week you work up to a top set on one of the big 4 lifts (Squat, Bench, Deadlift, OHP) using percentage-based loading that automatically progresses each month.",
+    days:[
+      { name:'OHP Day', muscles:['shoulders','triceps','upper-back'], exercises:[
+        {name:'Overhead Press',sets:3,reps:'5/3/1',weight:0},{name:'Dumbbell Shoulder Press',sets:5,reps:'10',weight:0},
+        {name:'Lat Pulldown',sets:5,reps:'10',weight:0},{name:'Tricep Pushdown',sets:5,reps:'10',weight:0},
+        {name:'Face Pull',sets:5,reps:'15',weight:0},{name:'Lateral Raise',sets:5,reps:'15',weight:0},
+      ]},
+      { name:'Deadlift Day', muscles:['lower-back','hamstrings','glutes','lats','traps'], exercises:[
+        {name:'Deadlift',sets:3,reps:'5/3/1',weight:0},{name:'Romanian Deadlift',sets:5,reps:'10',weight:0},
+        {name:'Leg Curl',sets:5,reps:'10',weight:0},{name:'Hanging Leg Raise',sets:5,reps:'15',weight:0},
+        {name:'Farmers Walk',sets:3,reps:'40m',weight:0},
+      ]},
+      { name:'Bench Day', muscles:['chest','shoulders','triceps'], exercises:[
+        {name:'Bench Press',sets:3,reps:'5/3/1',weight:0},{name:'Dumbbell Bench Press',sets:5,reps:'10',weight:0},
+        {name:'Bent Over Barbell Row',sets:5,reps:'10',weight:0},{name:'Tricep Pushdown',sets:5,reps:'10',weight:0},
+        {name:'Barbell Curl',sets:5,reps:'10',weight:0},
+      ]},
+      { name:'Squat Day', muscles:['quads','hamstrings','glutes','calves'], exercises:[
+        {name:'Squat',sets:3,reps:'5/3/1',weight:0},{name:'Leg Press',sets:5,reps:'10',weight:0},
+        {name:'Leg Curl',sets:5,reps:'10',weight:0},{name:'Leg Extension',sets:5,reps:'10',weight:0},
+        {name:'Standing Calf Raise',sets:5,reps:'15',weight:0},{name:'Cable Crunch',sets:5,reps:'15',weight:0},
+      ]},
+    ]
+  },
+  {
+    id:'calisthenics', icon:'🤸', name:'Calisthenics',
+    tagline:'3-day bodyweight program. No equipment needed — train anywhere.',
+    difficulty:'All Levels', freq:'3 days/week', days_per_week:3,
+    description:'Pure bodyweight training. Great for travelers, home gym athletes, or anyone who wants to master their own body. Scale difficulty by adjusting leverage, reps, or adding weight vest.',
+    days:[
+      { name:'Push Day', muscles:['chest','shoulders','triceps'], exercises:[
+        {name:'Push-Up',sets:4,reps:'failure',weight:0},{name:'Weighted Push-Up',sets:3,reps:'10-15',weight:0},
+        {name:'Dips',sets:4,reps:'failure',weight:0},{name:'Pike Push-Up',sets:3,reps:'10-15',weight:0},
+        {name:'Diamond Push-Up',sets:3,reps:'12-15',weight:0},
+      ]},
+      { name:'Pull Day', muscles:['lats','upper-back','biceps'], exercises:[
+        {name:'Pull-Up',sets:5,reps:'failure',weight:0},{name:'Chin-Up',sets:3,reps:'8-12',weight:0},
+        {name:'Hanging Leg Raise',sets:3,reps:'15',weight:0},{name:'Dead Hang',sets:3,reps:'30s',weight:0},
+      ]},
+      { name:'Legs & Core', muscles:['quads','hamstrings','glutes','calves','abs'], exercises:[
+        {name:'Squat',sets:4,reps:'20-30',weight:0},{name:'Bulgarian Split Squat',sets:3,reps:'12-15',weight:0},
+        {name:'Glute Bridge',sets:4,reps:'20',weight:0},{name:'Standing Calf Raise',sets:5,reps:'25-30',weight:0},
+        {name:'Plank',sets:3,reps:'60s',weight:0},{name:'Ab Wheel Rollout',sets:3,reps:'10-15',weight:0},
+        {name:'Dragon Flag',sets:3,reps:'5-8',weight:0},
+      ]},
+    ]
+  },
+];
+
+function uid() { return Math.random().toString(36).slice(2,9); }
+function load(k,d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch { return d; } }
+function persist(k,v) { localStorage.setItem(k, JSON.stringify(v)); }
+
+function showToast(msg) {
+  const t = document.getElementById('wt-toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.style.opacity = '0', 2800);
+}
+
+function diffBadgeClass(d) {
+  if (d === 'Beginner' || d === 'All Levels') return 'badge badge-green';
+  if (d === 'Advanced') return 'badge badge-red';
+  return 'badge badge-amber';
+}
+
+function bodySVG(sel, side, w) {
+  const h = Math.round(w * 2.3), S = new Set(sel);
+  const mf = id => { const m = MUSCLES.find(x => x.id===id); return S.has(id) ? m.col+'cc' : 'rgba(255,255,255,0.06)'; };
+  const ms = id => { const m = MUSCLES.find(x => x.id===id); return S.has(id) ? m.col : 'rgba(255,255,255,0.11)'; };
+  const sw = id => S.has(id) ? '1.5' : '0.5';
+  const glow = id => S.has(id) ? `filter:drop-shadow(0 0 3px ${MUSCLES.find(x=>x.id===id)?.col||'#fff'})` : '';
+  const g = id => `style="${glow(id)}"`;
+
+  if (side === 'front') return `<svg viewBox="0 0 100 230" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="16" r="12" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+  <rect x="45" y="28" width="10" height="8" rx="2" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/>
+  <g ${g('shoulders')}><ellipse cx="33" cy="44" rx="11" ry="8" fill="${mf('shoulders')}" stroke="${ms('shoulders')}" stroke-width="${sw('shoulders')}"/><ellipse cx="67" cy="44" rx="11" ry="8" fill="${mf('shoulders')}" stroke="${ms('shoulders')}" stroke-width="${sw('shoulders')}"/></g>
+  <g ${g('chest')}><path d="M37,38 L50,38 L50,65 L35,62 L33,50 Z" fill="${mf('chest')}" stroke="${ms('chest')}" stroke-width="${sw('chest')}"/><path d="M63,38 L50,38 L50,65 L65,62 L67,50 Z" fill="${mf('chest')}" stroke="${ms('chest')}" stroke-width="${sw('chest')}"/></g>
+  <g ${g('abs')}><rect x="44" y="66" width="6" height="9" rx="2" fill="${mf('abs')}" stroke="${ms('abs')}" stroke-width="${sw('abs')}"/><rect x="52" y="66" width="6" height="9" rx="2" fill="${mf('abs')}" stroke="${ms('abs')}" stroke-width="${sw('abs')}"/><rect x="44" y="77" width="6" height="9" rx="2" fill="${mf('abs')}" stroke="${ms('abs')}" stroke-width="${sw('abs')}"/><rect x="52" y="77" width="6" height="9" rx="2" fill="${mf('abs')}" stroke="${ms('abs')}" stroke-width="${sw('abs')}"/><rect x="44" y="88" width="6" height="8" rx="2" fill="${mf('abs')}" stroke="${ms('abs')}" stroke-width="${sw('abs')}"/><rect x="52" y="88" width="6" height="8" rx="2" fill="${mf('abs')}" stroke="${ms('abs')}" stroke-width="${sw('abs')}"/></g>
+  <g ${g('obliques')}><path d="M35,62 L33,67 L36,98 L44,98 L44,66 Z" fill="${mf('obliques')}" stroke="${ms('obliques')}" stroke-width="${sw('obliques')}"/><path d="M65,62 L67,67 L64,98 L56,98 L56,66 Z" fill="${mf('obliques')}" stroke="${ms('obliques')}" stroke-width="${sw('obliques')}"/></g>
+  <g ${g('biceps')}><path d="M18,48 L24,48 L26,82 L20,82 Z" fill="${mf('biceps')}" stroke="${ms('biceps')}" stroke-width="${sw('biceps')}"/><path d="M76,48 L82,48 L80,82 L74,82 Z" fill="${mf('biceps')}" stroke="${ms('biceps')}" stroke-width="${sw('biceps')}"/></g>
+  <g ${g('forearms')}><path d="M18,83 L25,83 L24,110 L17,108 Z" fill="${mf('forearms')}" stroke="${ms('forearms')}" stroke-width="${sw('forearms')}"/><path d="M75,83 L82,83 L83,108 L76,110 Z" fill="${mf('forearms')}" stroke="${ms('forearms')}" stroke-width="${sw('forearms')}"/></g>
+  <g ${g('quads')}><path d="M34,100 L48,100 L50,155 L32,152 Z" fill="${mf('quads')}" stroke="${ms('quads')}" stroke-width="${sw('quads')}"/><path d="M52,100 L66,100 L68,152 L50,155 Z" fill="${mf('quads')}" stroke="${ms('quads')}" stroke-width="${sw('quads')}"/></g>
+  <g ${g('calves')}><path d="M32,155 L49,155 L48,205 L30,202 Z" fill="${mf('calves')}" stroke="${ms('calves')}" stroke-width="${sw('calves')}"/><path d="M51,155 L68,155 L70,202 L52,205 Z" fill="${mf('calves')}" stroke="${ms('calves')}" stroke-width="${sw('calves')}"/></g>
+</svg>`;
+
+  return `<svg viewBox="0 0 100 230" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="16" r="12" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+  <rect x="45" y="28" width="10" height="8" rx="2" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/>
+  <g ${g('traps')}><path d="M38,30 L50,38 L62,30 L66,42 L50,50 L34,42 Z" fill="${mf('traps')}" stroke="${ms('traps')}" stroke-width="${sw('traps')}"/></g>
+  <g ${g('shoulders')}><ellipse cx="33" cy="48" rx="11" ry="8" fill="${mf('shoulders')}" stroke="${ms('shoulders')}" stroke-width="${sw('shoulders')}"/><ellipse cx="67" cy="48" rx="11" ry="8" fill="${mf('shoulders')}" stroke="${ms('shoulders')}" stroke-width="${sw('shoulders')}"/></g>
+  <g ${g('upper-back')}><path d="M36,50 L64,50 L66,65 L50,70 L34,65 Z" fill="${mf('upper-back')}" stroke="${ms('upper-back')}" stroke-width="${sw('upper-back')}"/></g>
+  <g ${g('lats')}><path d="M24,55 L36,65 L36,95 L26,100 L20,75 Z" fill="${mf('lats')}" stroke="${ms('lats')}" stroke-width="${sw('lats')}"/><path d="M76,55 L64,65 L64,95 L74,100 L80,75 Z" fill="${mf('lats')}" stroke="${ms('lats')}" stroke-width="${sw('lats')}"/></g>
+  <g ${g('lower-back')}><path d="M36,95 L64,95 L65,100 L35,100 Z" fill="${mf('lower-back')}" stroke="${ms('lower-back')}" stroke-width="${sw('lower-back')}"/><rect x="43" y="69" width="14" height="27" rx="3" fill="${mf('lower-back')}" stroke="${ms('lower-back')}" stroke-width="${sw('lower-back')}"/></g>
+  <g ${g('triceps')}><path d="M18,48 L24,48 L26,82 L20,82 Z" fill="${mf('triceps')}" stroke="${ms('triceps')}" stroke-width="${sw('triceps')}"/><path d="M76,48 L82,48 L80,82 L74,82 Z" fill="${mf('triceps')}" stroke="${ms('triceps')}" stroke-width="${sw('triceps')}"/></g>
+  <g ${g('forearms')}><path d="M18,83 L25,83 L24,110 L17,108 Z" fill="${mf('forearms')}" stroke="${ms('forearms')}" stroke-width="${sw('forearms')}"/><path d="M75,83 L82,83 L83,108 L76,110 Z" fill="${mf('forearms')}" stroke="${ms('forearms')}" stroke-width="${sw('forearms')}"/></g>
+  <g ${g('glutes')}><path d="M34,100 L50,100 L51,128 L32,125 Z" fill="${mf('glutes')}" stroke="${ms('glutes')}" stroke-width="${sw('glutes')}"/><path d="M50,100 L66,100 L68,125 L49,128 Z" fill="${mf('glutes')}" stroke="${ms('glutes')}" stroke-width="${sw('glutes')}"/></g>
+  <g ${g('hamstrings')}><path d="M32,127 L50,130 L50,158 L30,155 Z" fill="${mf('hamstrings')}" stroke="${ms('hamstrings')}" stroke-width="${sw('hamstrings')}"/><path d="M50,130 L68,127 L70,155 L50,158 Z" fill="${mf('hamstrings')}" stroke="${ms('hamstrings')}" stroke-width="${sw('hamstrings')}"/></g>
+  <g ${g('calves')}><path d="M30,157 L49,157 L48,205 L28,202 Z" fill="${mf('calves')}" stroke="${ms('calves')}" stroke-width="${sw('calves')}"/><path d="M51,157 L70,157 L72,202 L52,205 Z" fill="${mf('calves')}" stroke="${ms('calves')}" stroke-width="${sw('calves')}"/></g>
+</svg>`;
+}
+
+function isAlreadyAdded(presetId) {
+  const routines = load(LS_R, []);
+  return routines.some(r => r._presetId === presetId);
+}
+
+function addToRoutines(presetId) {
+  const preset = PRESETS.find(p => p.id === presetId);
+  if (!preset) return;
+  const routines = load(LS_R, []);
+  if (routines.some(r => r._presetId === presetId)) {
+    showToast('Already in your routines');
+    return;
+  }
+  const newRoutine = {
+    id: uid(),
+    name: preset.name,
+    _presetId: presetId,
+    days: preset.days.map(d => ({
+      id: uid(),
+      name: d.name,
+      muscles: d.muscles || [],
+      exercises: d.exercises.map(e => ({
+        id: uid(),
+        name: e.name,
+        sets: e.sets,
+        reps: e.reps,
+        weight: e.weight || 0,
+        notes: e.notes || '',
+      }))
+    }))
+  };
+  routines.push(newRoutine);
+  persist(LS_R, routines);
+  showToast(`✓ ${preset.name} added to your routines!`);
+  const btn = document.getElementById('add-btn-' + presetId);
+  if (btn) {
+    btn.textContent = '✓ Added to Routines';
+    btn.classList.add('added');
+    btn.onclick = null;
+  }
+}
+
+function toggleDay(el) {
+  el.closest('.day-item').classList.toggle('open');
+}
+
+function toggleCard(el) {
+  el.closest('.prog-card').classList.toggle('open');
+}
+
+function allMuscles(preset) {
+  const s = new Set();
+  preset.days.forEach(d => (d.muscles || []).forEach(m => s.add(m)));
+  return [...s];
+}
+
+function renderCard(preset) {
+  const muscles = allMuscles(preset);
+  const frontMuscles = muscles.filter(id => MUSCLES.find(m => m.id===id && m.front));
+  const backMuscles  = muscles.filter(id => MUSCLES.find(m => m.id===id && !m.front));
+  const added = isAlreadyAdded(preset.id);
+
+  const daysHtml = preset.days.map((d, i) => `
+    <div class="day-item">
+      <div class="day-header" onclick="toggleDay(this)">
+        <span class="day-dot"></span>
+        <span class="day-name">${d.name}</span>
+        <span class="day-count">${d.exercises.length} exercises</span>
+        <span class="day-arrow">▼</span>
+      </div>
+      <div class="day-exs">
+        ${d.exercises.map(e => `
+          <div class="ex-row">
+            <span class="ex-name">${e.name}</span>
+            <span class="ex-meta">${e.sets} × ${e.reps}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  const muscleChipsHtml = MUSCLES.map(m => {
+    const active = muscles.includes(m.id);
+    return `<span class="muscle-chip${active?' active':''}">${m.label}</span>`;
+  }).join('');
+
+  return `
+    <div class="prog-card" id="prog-${preset.id}" data-difficulty="${preset.difficulty}" data-days="${preset.days_per_week}">
+      <div class="prog-header" onclick="toggleCard(this)">
+        <div class="prog-icon">${preset.icon}</div>
+        <div class="prog-main">
+          <div class="prog-name">${preset.name}</div>
+          <div class="prog-tagline">${preset.tagline}</div>
+          <div class="prog-badges">
+            <span class="${diffBadgeClass(preset.difficulty)}">${preset.difficulty}</span>
+            <span class="badge">${preset.freq}</span>
+            <span class="badge">${preset.days.length} workout days</span>
+          </div>
+        </div>
+        <span class="prog-chevron">▼</span>
+      </div>
+      <div class="prog-body">
+        <div class="prog-body-inner">
+          <p style="color:var(--muted);font-size:.85rem;line-height:1.65;margin-bottom:20px;">${preset.description}</p>
+
+          <div class="sec-label">Muscle Coverage</div>
+          <div class="muscle-overview">
+            <div class="body-pair">
+              <div class="body-figure">
+                <div class="body-label">Front</div>
+                ${bodySVG(frontMuscles, 'front', 88)}
+              </div>
+              <div class="body-figure">
+                <div class="body-label">Back</div>
+                ${bodySVG(backMuscles, 'back', 88)}
+              </div>
+            </div>
+            <div class="muscle-legend">
+              <div class="muscle-legend-title">Muscles Targeted</div>
+              <div class="muscle-chips">${muscleChipsHtml}</div>
+            </div>
+          </div>
+
+          <div class="sec-label" style="margin-top:20px;">Workout Days</div>
+          <div class="day-list">${daysHtml}</div>
+
+          <button
+            class="add-btn${added?' added':''}"
+            id="add-btn-${preset.id}"
+            onclick="${added?'':`addToRoutines('${preset.id}')`}"
+          >${added ? '✓ Added to Routines' : '+ Add to My Routines'}</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function render(filter) {
+  const grid = document.getElementById('prog-grid');
+  const filtered = filter === 'all' ? PRESETS : PRESETS.filter(p => {
+    if (filter === '3') return p.days_per_week === 3;
+    if (filter === '4') return p.days_per_week === 4;
+    if (filter === '5') return p.days_per_week === 5;
+    if (filter === '6') return p.days_per_week === 6;
+    return p.difficulty.includes(filter);
+  });
+  grid.innerHTML = filtered.map(p => renderCard(p)).join('');
+}
+
+document.querySelectorAll('.filter-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    render(chip.dataset.filter);
+  });
+});
+
+render('all');
+</script>
+</body>
+</html>
