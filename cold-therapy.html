@@ -7,413 +7,196 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
-      --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
+      --acc: #2dd46e; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24;
       --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
       --glass-h: rgba(255,255,255,0.12);
       --text: #f0fff4; --muted: rgba(240,255,244,0.55);
-      --r: 14px; --r-sm: 10px;
-      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
-      --amber: #f5a623; --blue: #3ecfff; --rose: #ff6b6b; --purple: #b89eff;
+      --r: 14px; --r-sm: 10px; --amber: #f5a623;
     }
     html { min-height: 100%; scroll-behavior: smooth; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
-      background-size: 400% 400%;
-      animation: gradShift 18s ease infinite;
-      color: var(--text); min-height: 100vh; overflow-x: hidden;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg1)); background-size: 400% 400%; animation: gradShift 18s ease infinite; color: var(--text); min-height: 100vh; overflow-x: hidden; }
     @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-    .top-bar {
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 24px; max-width: 900px; margin: 0 auto;
-      border-bottom: 1px solid var(--glass-b);
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(6,26,12,0.85); backdrop-filter: blur(16px);
-    }
-    .back-btn { color: var(--muted); text-decoration: none; font-size: .88rem; font-weight: 600; transition: color .2s; background: none; border: none; cursor: pointer; white-space: nowrap; }
+    .top-bar { display: flex; align-items: center; gap: 12px; padding: 14px 24px; max-width: 860px; margin: 0 auto; border-bottom: 1px solid var(--glass-b); position: sticky; top: 0; z-index: 100; background: rgba(6,26,12,0.85); backdrop-filter: blur(16px); }
+    .back-btn { color: var(--muted); font-size: .88rem; font-weight: 600; transition: color .2s; background: none; border: none; cursor: pointer; }
     .back-btn:hover { color: var(--acc); }
     .top-title { flex: 1; text-align: center; font-size: 1rem; font-weight: 800; text-shadow: 0 0 20px var(--glow); }
     .top-spacer { width: 60px; }
-    .page { max-width: 900px; margin: 0 auto; padding: clamp(16px,4vw,28px) clamp(12px,3vw,20px) 100px; }
-    .hero { text-align: center; padding: clamp(20px,4vw,32px) 0 clamp(14px,3vw,24px); }
-    .hero-emoji { font-size: clamp(2.5rem,7vw,4rem); display: block; margin-bottom: 10px; filter: drop-shadow(0 0 16px var(--glow)); }
-    .hero-title {
-      font-size: clamp(1.6rem,5vw,2.6rem); font-weight: 900; letter-spacing: -1px; line-height: 1.1;
-      background: linear-gradient(135deg, #fff 30%, var(--acc));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px;
-    }
-    .hero-sub { color: var(--muted); font-size: clamp(.84rem,2vw,.98rem); max-width: 540px; margin: 0 auto; line-height: 1.6; }
-    .filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; padding-top: 4px; }
-    .filter-btn {
-      padding: 7px 14px; border-radius: 20px; border: 1px solid var(--glass-b);
-      background: var(--glass); color: var(--muted); font-size: .78rem; font-weight: 700;
-      cursor: pointer; transition: var(--trans); font-family: inherit; white-space: nowrap;
-    }
-    .filter-btn:hover { border-color: var(--acc); color: var(--text); }
-    .filter-btn.active { background: var(--acc); color: #000; border-color: var(--acc); box-shadow: 0 0 10px var(--glow); }
-    .practice-index { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
-    .index-pill {
-      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
-      padding: 5px 12px; font-size: .75rem; color: var(--muted); cursor: pointer;
-      transition: var(--trans); text-decoration: none; display: inline-block;
-    }
-    .index-pill:hover { border-color: var(--acc); color: var(--acc); }
-    .practice-card {
-      background: var(--glass); border: 1px solid var(--glass-b);
-      border-radius: var(--r); backdrop-filter: blur(12px);
-      margin-bottom: 16px; overflow: hidden;
-      scroll-margin-top: 72px; transition: border-color .2s;
-    }
-    .practice-card.open { border-color: rgba(45,212,110,0.35); }
-    .practice-header {
-      display: flex; align-items: center; gap: 16px;
-      padding: clamp(14px,3vw,20px); cursor: pointer;
-      transition: background .15s; user-select: none;
-    }
-    .practice-header:hover { background: var(--glass-h); }
-    .practice-icon {
-      font-size: clamp(2rem,5vw,2.6rem); flex-shrink: 0;
-      width: clamp(52px,10vw,68px); height: clamp(52px,10vw,68px);
-      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.2);
-      border-radius: 16px; display: flex; align-items: center; justify-content: center;
-    }
-    .practice-meta { flex: 1; min-width: 0; }
-    .practice-name { font-size: clamp(1rem,2.8vw,1.25rem); font-weight: 900; margin-bottom: 3px; }
-    .practice-tagline { color: var(--muted); font-size: .8rem; margin-bottom: 8px; font-style: italic; }
-    .practice-tags { display: flex; gap: 5px; flex-wrap: wrap; }
-    .ptag {
-      font-size: .64rem; font-weight: 700; padding: 3px 9px; border-radius: 20px;
-      text-transform: uppercase; letter-spacing: .5px; white-space: nowrap;
-    }
-    .ptag-recovery    { background: rgba(62,207,255,0.12);  color: var(--blue); }
-    .ptag-mental      { background: rgba(160,120,255,0.15); color: var(--purple); }
-    .ptag-performance { background: rgba(45,212,110,0.15);  color: var(--acc); }
-    .ptag-longevity   { background: rgba(245,166,35,0.15);  color: var(--amber); }
-    .ptag-daily       { background: rgba(255,107,107,0.15); color: var(--rose); }
-    .expand-arrow { color: var(--muted); font-size: .8rem; transition: transform .25s; margin-left: 8px; flex-shrink: 0; }
-    .practice-card.open .expand-arrow { transform: rotate(180deg); }
-    .practice-body {
-      max-height: 0; overflow: hidden;
-      transition: max-height .45s cubic-bezier(.4,0,.2,1);
-      border-top: 1px solid transparent;
-    }
-    .practice-card.open .practice-body { max-height: 1800px; border-top-color: var(--glass-b); }
-    .practice-inner { padding: clamp(14px,3vw,22px); display: flex; flex-direction: column; gap: 18px; }
-    .mech-row { display: flex; gap: 7px; flex-wrap: wrap; }
-    .mech-badge {
-      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.25);
-      border-radius: 20px; padding: 4px 12px;
-      font-size: .72rem; font-weight: 700; color: var(--acc); letter-spacing: .3px;
-    }
-    .sec-lbl {
-      font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.3px;
-      color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
-    }
+    .page { max-width: 860px; margin: 0 auto; padding: clamp(16px,4vw,28px) clamp(12px,3vw,20px) 100px; }
+    .hero { text-align: center; padding: clamp(24px,5vw,40px) 0 clamp(20px,4vw,32px); }
+    .hero-emoji { font-size: clamp(2.8rem,8vw,4.2rem); display: block; margin-bottom: 12px; filter: drop-shadow(0 0 18px var(--glow)); }
+    .hero-title { font-size: clamp(1.7rem,5vw,2.8rem); font-weight: 900; letter-spacing: -1px; line-height: 1.1; background: linear-gradient(135deg, #fff 30%, var(--acc)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; }
+    .hero-sub { color: var(--muted); font-size: clamp(.85rem,2vw,1rem); max-width: 500px; margin: 0 auto; line-height: 1.65; }
+    .card { background: var(--glass); border: 1px solid var(--glass-b); border-radius: var(--r); backdrop-filter: blur(12px); margin-bottom: 12px; overflow: hidden; scroll-margin-top: 72px; transition: border-color .2s; }
+    .card.open { border-color: rgba(45,212,110,0.35); }
+    .card-header { display: flex; align-items: center; gap: 14px; padding: clamp(14px,3vw,20px); cursor: pointer; transition: background .15s; user-select: none; }
+    .card-header:hover { background: var(--glass-h); }
+    .card-icon { font-size: clamp(1.8rem,4vw,2.4rem); flex-shrink: 0; width: clamp(48px,9vw,62px); height: clamp(48px,9vw,62px); background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.2); border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+    .card-meta { flex: 1; min-width: 0; }
+    .card-name { font-size: clamp(.98rem,2.6vw,1.18rem); font-weight: 900; margin-bottom: 3px; }
+    .card-tagline { color: var(--muted); font-size: .8rem; }
+    .expand-arrow { color: var(--muted); font-size: .8rem; transition: transform .25s; flex-shrink: 0; }
+    .card.open .expand-arrow { transform: rotate(180deg); }
+    .card-body { max-height: 0; overflow: hidden; transition: max-height .4s cubic-bezier(.4,0,.2,1); border-top: 1px solid transparent; }
+    .card.open .card-body { max-height: 2000px; border-top-color: var(--glass-b); }
+    .card-inner { padding: clamp(16px,3vw,24px); display: flex; flex-direction: column; gap: 16px; }
+    .points { display: flex; flex-direction: column; gap: 10px; }
+    .point { display: flex; gap: 11px; align-items: flex-start; font-size: .85rem; line-height: 1.6; }
+    .point-dot { width: 20px; height: 20px; border-radius: 50%; background: rgba(45,212,110,0.18); color: var(--acc); font-size: .72rem; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+    .sec-lbl { font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); margin-bottom: 9px; display: flex; align-items: center; gap: 8px; }
     .sec-lbl::after { content:''; flex:1; height:1px; background: var(--glass-b); }
-    .benefit-list { display: flex; flex-direction: column; gap: 8px; }
-    .benefit-item { display: flex; gap: 10px; align-items: flex-start; font-size: .84rem; line-height: 1.55; }
-    .benefit-dot {
-      width: 20px; height: 20px; border-radius: 50%; background: rgba(45,212,110,0.2);
-      color: var(--acc); font-size: .75rem; font-weight: 900;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
-    }
-    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media(max-width:560px) { .two-col { grid-template-columns: 1fr; } }
-    .info-box {
-      background: rgba(255,255,255,0.04); border: 1px solid var(--glass-b);
-      border-radius: var(--r-sm); padding: 14px;
-    }
-    .info-box-text { font-size: .82rem; line-height: 1.65; color: rgba(240,255,244,0.85); }
-    .methods-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
-    .method-pill {
-      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
-      padding: 3px 10px; font-size: .7rem; color: var(--muted);
-    }
-    .tip-box {
-      background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.28);
-      border-radius: var(--r-sm); padding: 13px 15px; font-size: .8rem; line-height: 1.65;
-    }
-    .tip-box .tip-label { color: var(--amber); font-weight: 800; margin-bottom: 4px; font-size: .72rem; text-transform: uppercase; letter-spacing: .8px; }
-    .stack-box {
-      background: rgba(45,212,110,0.07); border: 1px solid rgba(45,212,110,0.22);
-      border-radius: var(--r-sm); padding: 11px 14px; font-size: .8rem; line-height: 1.6;
-    }
-    .stack-box .stack-label { color: var(--acc); font-weight: 800; margin-bottom: 3px; font-size: .72rem; text-transform: uppercase; letter-spacing: .8px; }
-    .back-top {
-      display: block; text-align: center; color: var(--muted); font-size: .76rem;
-      font-weight: 700; cursor: pointer; padding: 6px; transition: color .2s;
-      background: none; border: none; width: 100%; font-family: inherit;
-    }
-    .back-top:hover { color: var(--acc); }
-    .empty-state { text-align: center; color: var(--muted); padding: 48px 20px; font-size: .9rem; }
+    .protocol-box { background: rgba(255,255,255,0.04); border: 1px solid var(--glass-b); border-radius: var(--r-sm); padding: 14px; font-size: .83rem; line-height: 1.65; color: rgba(240,255,244,0.85); }
+    .tip-box { background: rgba(245,166,35,0.07); border: 1px solid rgba(245,166,35,0.25); border-radius: var(--r-sm); padding: 12px 15px; font-size: .81rem; line-height: 1.65; }
+    .tip-label { color: var(--amber); font-weight: 800; font-size: .68rem; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 4px; }
   </style>
   <script src="health-notifications.js" defer></script>
 </head>
 <body>
-
 <div class="top-bar">
   <button class="back-btn" onclick="history.back()">← Back</button>
   <div class="top-title">🧊 Cold Therapy Guide</div>
   <div class="top-spacer"></div>
 </div>
-
 <div class="page">
-
   <div class="hero">
     <span class="hero-emoji">❄️</span>
     <div class="hero-title">Cold Therapy — The Deep Dive</div>
-    <div class="hero-sub">A 250% dopamine spike. Reduced inflammation. Mental resilience. Cold exposure is one of the most studied and least understood practices in modern health — here's exactly how it works and how to do it.</div>
+    <div class="hero-sub">A 250% dopamine spike. Reduced inflammation. Mental resilience. Cold exposure is one of the most studied and least understood practices in modern health — here's exactly how it works.</div>
   </div>
-
-  <div class="filter-bar" id="filterBar">
-    <button class="filter-btn active" onclick="filterPractices('all',this)">All Topics</button>
-    <button class="filter-btn" onclick="filterPractices('recovery',this)">Recovery</button>
-    <button class="filter-btn" onclick="filterPractices('mental',this)">Mental</button>
-    <button class="filter-btn" onclick="filterPractices('performance',this)">Performance</button>
-    <button class="filter-btn" onclick="filterPractices('longevity',this)">Longevity</button>
-    <button class="filter-btn" onclick="filterPractices('daily',this)">Daily Practice</button>
-  </div>
-
-  <div class="practice-index" id="practiceIndex"></div>
-  <div id="practiceList"></div>
-
+  <div id="cardList"></div>
 </div>
-
 <script>
-const TAG_CLASS = {
-  recovery:    'ptag-recovery',
-  mental:      'ptag-mental',
-  performance: 'ptag-performance',
-  longevity:   'ptag-longevity',
-  daily:       'ptag-daily',
-};
-const TAG_LABEL = {
-  recovery:    'Recovery',
-  mental:      'Mental',
-  performance: 'Performance',
-  longevity:   'Longevity',
-  daily:       'Daily Practice',
-};
-
-const PRACTICES = [
+const CARDS = [
   {
     id: 'cold-showers',
     emoji: '🚿',
     name: 'Cold Showers',
     tagline: 'The entry-point protocol — accessible, daily, and surprisingly powerful',
-    categories: ['mental', 'daily'],
-    mechanisms: ['Norepinephrine surge (300%+)', 'Dopamine pathway activation (250%)', 'Cold shock protein induction', 'Vagus nerve stimulation', 'Cortisol awakening response amplification'],
-    benefits: [
-      'A single cold shower raises norepinephrine by 300–500% and dopamine by 250% — the norepinephrine surge is higher than any recreational stimulant and the dopamine elevation is sustained for 2–3 hours without a crash or tolerance development',
-      'A 2023 RCT (n=3,000+, Rethinking Wim Hof) found that ending showers with cold water for 30–90 seconds reduced sick days by 29% over 90 days compared to warm shower controls',
-      'The controlled breathing required to tolerate cold exposure directly trains the HPA (hypothalamic-pituitary-adrenal) axis — the stress response system — reducing reactivity to stressors over time',
-      'Daily cold exposure measurably improves heart rate variability (HRV) over 4–8 weeks — the most widely used objective marker of autonomic nervous system resilience and recovery capacity',
-      'Reduces symptoms of depression in observational and trial data — the mechanism is the dopamine pathway specifically, which distinguishes cold therapy from other mood interventions that act on serotonin',
+    points: [
+      'A single cold shower raises norepinephrine by 300–500% and dopamine by 250%. The dopamine elevation is sustained for 2–3 hours without a crash or tolerance development — higher than any recreational stimulant.',
+      'A 2023 RCT (n=3,000+) found that ending showers with cold for 30–90 seconds reduced sick days by 29% over 90 days compared to warm shower controls.',
+      'The controlled breathing required to tolerate cold directly trains the HPA stress response system — reducing reactivity to non-cold stressors over time.',
+      'Daily cold exposure measurably improves heart rate variability (HRV) over 4–8 weeks — the most widely used objective marker of autonomic nervous system resilience.',
     ],
-    howToPractice: 'End every shower with cold water only. Start with 15–30 seconds and work up over 2 weeks. The cold shock (gasp reflex + rapid breathing) peaks in the first 30–60 seconds — controlled nasal breathing is the key skill. Once breathing is controlled, the discomfort drops substantially. Aim for the coldest tap water your supply produces.',
-    protocol: 'Week 1: 15–30 seconds cold at shower end. Week 2: 60 seconds. Week 3: 90–120 seconds. Week 4+: work up to full cold showers (3+ minutes). Morning preferred for dopamine alignment. Consistency over temperature — daily warm-ending showers with brief cold beats weekly ice baths for dopamine system calibration.',
-    methods: ['End-of-shower cold (beginner entry)', 'Full cold shower (intermediate)', 'Coldest tap temperature available', 'Outdoor cold source (stream, lake) if accessible'],
+    protocol: 'End every shower with cold water only. Start with 15–30 seconds and increase over 2 weeks. The cold shock (gasp reflex + rapid breathing) peaks in the first 30–60 seconds — controlled nasal breathing is the key skill. Once breathing is controlled, discomfort drops substantially. Week 1: 15–30 sec. Week 2: 60 sec. Week 3: 90–120 sec. Week 4+: full cold showers (3+ min). Morning preferred for dopamine alignment.',
     tip: 'The cold shock response (gasping, rapid breathing) is a physiological reflex — not a measure of bravery or weakness. It passes within 30–60 seconds for almost everyone. The practice is learning to control your breathing during that window. Once you can maintain slow nasal breathing through the first 60 seconds, cold exposure becomes a choice rather than an ordeal.',
-    stack: 'Morning sunlight (stack both for a powerful dopamine + circadian morning routine). Breathwork (practice the breathing pattern before attempting cold — it makes the first 60 seconds significantly more manageable). Cold adaptation (daily practice → measurable tolerance in 2 weeks).',
   },
   {
     id: 'ice-baths',
     emoji: '🛁',
     name: 'Ice Baths & Cold Plunge',
     tagline: 'Full immersion — higher magnitude, deeper benefits, bigger commitment',
-    categories: ['recovery', 'mental', 'performance'],
-    mechanisms: ['Full-body norepinephrine & dopamine surge', 'IL-6/CRP inflammation reduction', 'Brown adipose tissue (BAT) activation', 'Cold shock protein RBM3 induction', 'Vagal afferent nerve stimulation'],
-    benefits: [
-      'Full-body cold water immersion produces a significantly larger norepinephrine and dopamine response than cold showers — the greater skin surface area exposure amplifies all physiological signals proportionally',
-      'Reduces delayed onset muscle soreness (DOMS) by 20–30% in meta-analyses of exercise recovery protocols — a consistent, replicated finding across sports science literature',
-      'Activates brown adipose tissue (BAT) — metabolically active fat that generates heat through thermogenesis, burning calories in the process. Regular cold immersion increases BAT mass and activity over time, raising baseline metabolic rate',
-      'Stimulates RBM3 cold shock protein — a neuroprotective molecule that promotes synaptic repair and has shown protective effects against neurodegeneration in preclinical models',
-      '11 minutes of weekly cold water immersion (across 2–4 sessions) is the research-backed minimum effective dose for metabolic and mood benefits (Søberg et al., 2022 — the landmark cold exposure study)',
+    points: [
+      'Full-body cold water immersion produces a significantly larger norepinephrine and dopamine response than cold showers — the greater skin surface area exposure amplifies all physiological signals proportionally.',
+      'Reduces delayed onset muscle soreness (DOMS) by 20–30% in meta-analyses of exercise recovery protocols — a consistent, replicated finding across sports science literature.',
+      'Activates brown adipose tissue (BAT) — metabolically active fat that generates heat through thermogenesis, burning calories. Regular cold immersion increases BAT mass and activity over time, raising baseline metabolic rate.',
+      '11 minutes of weekly cold water immersion (across 2–4 sessions) is the research-backed minimum effective dose for metabolic and mood benefits (Søberg et al., 2022).',
     ],
-    howToPractice: 'Target water temperature: 10–15°C (50–59°F). Submerge to the neck — head out is fine. Enter slowly and calm your breathing before full immersion. Focus on long, slow exhales. 2–3 minutes minimum for measurable benefits; up to 10–15 minutes for experienced practitioners. Never alone — cold water immersion carries real physiological risk.',
-    protocol: 'Temperature: 10–15°C (50–59°F). Duration: 2–10 minutes per session. Frequency: 2–4 sessions/week for minimum effective dose (11 min/week total). Cold tap water (55–65°F / 13–18°C) in a bathtub delivers most benefits without ice. Ice reduces temperature rapidly — target the range, not the ice itself.',
-    methods: ['Cold tap water bath (most accessible)', 'Ice bath tub', 'Cold plunge barrel', 'Cold lake / river / ocean', 'Chest freezer conversion (DIY plunge)', 'Commercial cold plunge (Plunge, Ice Barrel)'],
-    tip: 'You don\'t need ice to get ice bath benefits. Cold tap water in most regions runs at 55–65°F (13–18°C) in winter — squarely in the research-backed range. Professional athletes use ice primarily for rapid temperature drop and deeper cooling, not because ice is required. A bathtub with cold tap water for 10 minutes is the accessible, equivalent protocol.',
-    stack: 'Breathwork (before entry — slows the shock response dramatically). Sauna (contrast therapy — alternating heat/cold amplifies both cardiovascular and recovery effects). Morning sunlight (stack with morning cold for a complete morning protocol).',
+    protocol: 'Target water temperature: 10–15°C (50–59°F). Submerge to the neck — head out is fine. Enter slowly and calm your breathing before full immersion. Focus on long, slow exhales. 2–3 minutes minimum for measurable benefits. Frequency: 2–4 sessions/week for minimum effective dose (11 min/week total). Never alone — cold water immersion carries real physiological risk.',
+    tip: 'You don\'t need ice. Cold tap water in most regions runs at 55–65°F (13–18°C) in winter — squarely in the research-backed range. Professional athletes use ice primarily for rapid temperature drop, not because ice is required. A bathtub with cold tap water for 10 minutes is the accessible, equivalent protocol.',
   },
   {
     id: 'contrast-therapy',
     emoji: '🔥',
     name: 'Contrast Therapy (Hot / Cold)',
     tagline: 'The vascular pump — alternating heat and cold amplifies recovery beyond either alone',
-    categories: ['recovery', 'performance'],
-    mechanisms: ['Forced vascular dilation (heat) → constriction (cold)', 'Lymphatic circulation enhancement', 'Nitric oxide production surge', 'Plasma volume adaptation', 'Endorphin + dopamine synergy'],
-    benefits: [
-      'Alternating heat and cold creates a "vascular pump" — forced cycles of vasodilation (heat) and vasoconstriction (cold) drive blood in and out of tissues, enhancing metabolic waste removal and nutrient delivery more effectively than passive recovery',
-      'Reduces muscle soreness more than cold alone in head-to-head trials — the heat phase drives blood and lymph fluid into tissue, and the cold phase flushes it out, more rapidly clearing lactate, creatine kinase, and inflammatory mediators',
-      'The endorphin release from sauna combined with the dopamine spike from cold produces a uniquely powerful mood elevation in the post-session window — colloquially called the "post-sauna glow," measurable in subjective and objective wellbeing markers',
-      '4+ sauna sessions per week independently reduce all-cause mortality by 35% and cardiovascular mortality by 40% in a 20-year Finnish cohort (Laukkanen et al., 2018) — adding cold exposure amplifies the cardiovascular benefit',
-      'Contrast therapy enhances the growth hormone pulse triggered by sauna — the heat stress triggers GH release, and the cold plunge prevents the gradual rewarming that blunts the peak',
+    points: [
+      'Alternating heat and cold creates a "vascular pump" — forced cycles of vasodilation (heat) and vasoconstriction (cold) drive blood in and out of tissues, enhancing metabolic waste removal and nutrient delivery.',
+      'Reduces muscle soreness more than cold alone in head-to-head trials — the heat phase drives blood and lymph into tissue, and the cold phase flushes it out, rapidly clearing lactate and inflammatory mediators.',
+      '4+ sauna sessions per week independently reduce all-cause mortality by 35% and cardiovascular mortality by 40% in a 20-year Finnish cohort (Laukkanen et al., 2018). Adding cold amplifies the cardiovascular benefit.',
+      'Contrast therapy enhances the growth hormone pulse triggered by sauna — heat stress triggers GH release, and the cold plunge prevents the gradual rewarming that blunts the peak.',
     ],
-    howToPractice: 'Structure: 10–15 minutes sauna/hot (80°C+) → 2–3 minutes cold plunge or cold shower. Repeat 2–4 rounds. End on cold for energy and alertness. End on heat for relaxation and sleep preparation. Minimum 2 rounds for cardiovascular benefit; 3–4 rounds for peak recovery effect.',
-    protocol: '3–4 rounds of: 12–15 min sauna (80–100°C) → 2–3 min cold (<15°C). Hydrate: 500ml water per 20 min of heat. Timing: avoid within 4 hours of bedtime (thermogenic rewarming delays sleep). For strength training recovery: use on rest days or after cardio — cold immediately post-lifting blunts the anabolic signal from exercise-induced inflammation.',
-    methods: ['Sauna + cold plunge (gym/spa)', 'Sauna + cold shower', 'Hot bath + cold shower', 'Hot tub + cold pool', 'Steam room + cold plunge'],
-    tip: 'Cold therapy immediately after strength training suppresses the inflammation that signals muscle adaptation — you\'re muting the growth signal. The research is consistent: use cold exposure for mental health, metabolic benefits, and mood on non-training days or after cardio. Save the contrast therapy for rest days. Zone 2 cardio + contrast therapy is a powerful recovery day protocol.',
-    stack: 'Sauna (the other half of contrast). Breathwork (before cold rounds — especially valuable when transitioning from heat to cold). Omega-3 supplementation (the anti-inflammatory benefits compound).',
+    protocol: '3–4 rounds of: 12–15 min sauna (80–100°C) → 2–3 min cold (<15°C). End on cold for energy and alertness; end on heat for relaxation and sleep preparation. Minimum 2 rounds for cardiovascular benefit; 3–4 for peak recovery. Hydrate: 500ml water per 20 min of heat. Avoid within 4 hours of bedtime — thermogenic rewarming delays sleep.',
+    tip: 'Cold therapy immediately after strength training suppresses the inflammation that signals muscle adaptation — you\'re muting the growth signal. The research is consistent: use cold for mental health, metabolic benefits, and mood on non-training days or after cardio. Save contrast therapy for rest days. Zone 2 cardio + contrast therapy is a powerful recovery day combination.',
   },
   {
     id: 'breathing-cold',
     emoji: '💨',
     name: 'Breathing During Cold Exposure',
     tagline: 'The cold shock response is controlled by your breath — learn this first',
-    categories: ['mental', 'daily'],
-    mechanisms: ['Parasympathetic override via slow exhalation', 'Vagal tone increase', 'CO₂ tolerance training', 'HRV acute improvement', 'Amygdala downregulation via controlled breathing'],
-    benefits: [
-      'The cold shock reflex (gasping, hyperventilation) is an involuntary response to cold water contact — controlled nasal breathing directly overrides this reflex, reducing the subjective stress response by 30–50% within 60 seconds',
-      'Extended exhales during cold exposure activate the vagus nerve and shift the autonomic nervous system toward parasympathetic dominance — the opposite physiological state to the panic response the cold initially triggers',
-      'Practicing controlled breathing under cold stress is a form of real-world stress inoculation — the skill transfers to other acute stressors as the brain learns that the stress response can be voluntarily regulated',
-      'CO₂ tolerance — the ability to delay the breathing urge during a breath hold — improves with regular cold exposure and deliberate breathing practice, directly improving aerobic efficiency and stress resilience',
-      'Heart rate variability (HRV) shows measurable acute improvement during cold exposure when breathing is controlled — the combination of cold + controlled exhalation creates an unusually strong vagal stimulus',
+    points: [
+      'The cold shock reflex (gasping, hyperventilation) is an involuntary response to cold water contact — controlled nasal breathing directly overrides this reflex, reducing the subjective stress response by 30–50% within 60 seconds.',
+      'Extended exhales during cold exposure activate the vagus nerve and shift the autonomic nervous system toward parasympathetic dominance — the opposite physiological state to the panic response cold initially triggers.',
+      'Practicing controlled breathing under cold stress is real-world stress inoculation — the skill transfers to other acute stressors as the brain learns that the stress response can be voluntarily regulated.',
+      'Heart rate variability (HRV) shows measurable acute improvement during cold exposure when breathing is controlled — the combination of cold + controlled exhalation creates an unusually strong vagal stimulus.',
     ],
-    howToPractice: 'Before cold entry: 3–5 rounds of slow box breathing (4-count inhale, 4-count hold, 4-count exhale, 4-count hold) to pre-load the parasympathetic state. During cold: prioritize the exhale — long, slow exhales through the nose. The shock reflex wants you to inhale fast and gasp; the counter-move is a controlled, extended exhale. Once breathing is controlled, the discomfort drops predictably.',
-    protocol: 'Pre-cold: 3 rounds box breathing. During cold: nasal breathing, prioritize 6-count exhales. If overwhelmed: physiological sigh (2 quick nasal inhales + one long exhale) resets the system in under 10 seconds. Goal: by week 3 of daily practice, the shock reflex should be substantially reduced within 20–30 seconds of entry.',
-    methods: ['Box breathing (4-4-4-4)', 'Extended exhale (4-count inhale, 6–8 count exhale)', 'Physiological sigh (double inhale + long exhale) for reset', 'Wim Hof breathing before cold (increases alkalinity, blunts CO₂ response)'],
-    tip: 'Practice box breathing in a neutral environment until it\'s automatic — during showering, while waiting, while walking. The goal is that during cold exposure, the pattern executes without requiring active concentration. Cold shuts down higher cognition fast. You need the breathing pattern available below the level of conscious thought, not as something you have to actively remember to do.',
-    stack: 'Cold showers (daily practice to drill the skill). Ice baths (breathing skill becomes even more critical at full immersion). Breathwork guide (deeper context on the specific patterns).',
+    protocol: 'Pre-cold: 3–5 rounds of slow box breathing (4-count inhale, 4-count hold, 4-count exhale, 4-count hold) to pre-load the parasympathetic state. During cold: prioritize the exhale — long, slow exhales through the nose. The shock reflex wants you to gasp; the counter-move is a controlled, extended exhale. Reset tool: physiological sigh (2 quick nasal inhales + one long exhale) works in under 10 seconds.',
+    tip: 'Practice box breathing in neutral environments until it\'s automatic — during showering, while waiting, while walking. During cold exposure, higher cognition shuts down fast. You need the breathing pattern available below the level of conscious thought, not as something you have to actively remember to do.',
   },
   {
     id: 'cold-timing',
     emoji: '⏱️',
     name: 'Cold Timing & Circadian Integration',
     tagline: 'When you expose matters — morning vs evening changes what cold actually does',
-    categories: ['daily', 'mental'],
-    mechanisms: ['Cortisol awakening response amplification', 'Core temperature cycling interference', 'Thermogenic rewarming → delayed sleep onset', 'Catecholamine circadian alignment'],
-    benefits: [
-      'Morning cold exposure (within 2 hours of waking) aligns with the natural cortisol awakening response — the combination produces a more powerful, longer-lasting energy and focus window than caffeine alone, without a crash',
-      'Evening cold exposure triggers thermogenic rewarming as the body fights to restore core temperature — this rewarming process can elevate core temperature and delay sleep onset by 1–2 hours, even if the cold itself felt relaxing',
-      'The dopamine spike from cold is most beneficial when it occurs in the early part of the circadian day — stacking morning light exposure + cold creates a robust dopamine and cortisol morning state that the brain learns to anticipate',
-      'Afternoon cold (2–4pm) is the second-best window — core temperature is at its daily peak, the cold contrast is sharpest, and the thermogenic rewarming completes before bedtime',
-      'Timing cold after strength training (even in the morning) blunts the post-exercise anabolic signal — the optimal use is pre-workout for mental activation, or post-workout only when recovery (not adaptation) is the priority',
+    points: [
+      'Morning cold exposure (within 2 hours of waking) aligns with the natural cortisol awakening response — the combination produces a more powerful, longer-lasting energy and focus window than caffeine alone, without a crash.',
+      'Evening cold exposure triggers thermogenic rewarming as the body fights to restore core temperature — this rewarming can elevate core temperature and delay sleep onset by 1–2 hours, even if the cold itself felt relaxing.',
+      'The dopamine spike from cold is most beneficial when it occurs in the early part of the circadian day — stacking morning light + cold creates a robust dopamine and cortisol morning state.',
+      'Timing cold after strength training blunts the post-exercise anabolic signal — optimal use is pre-workout for mental activation, or post-workout only when recovery (not adaptation) is the priority.',
     ],
-    howToPractice: 'Best window: 30 minutes to 2 hours after waking. Acceptable: early afternoon (2–4pm). Avoid: within 4 hours of target bedtime. If training: pre-workout cold for activation; post-workout cold only on prioritizing recovery (not strength adaptation days). The morning-cold + morning-light combination is the highest-efficiency daily protocol.',
-    protocol: 'Optimal: within 2 hours of waking. Alternative: 2–4pm for afternoon energy reset. Hard avoidance: within 4 hours of sleep. Morning sequence: wake → outdoor light exposure (10 min) → cold shower (2–3 min) → delay caffeine 90 min. This 3-step morning protocol stacks dopamine, cortisol, and circadian anchoring simultaneously.',
-    methods: ['Morning end-of-shower cold (lowest barrier)', 'Morning cold plunge (highest impact)', 'Afternoon cold shower (energy reset)', 'Avoid: post-dinner cold plunge'],
-    tip: 'The thermogenic rewarming after cold is not relaxation — it\'s your body burning calories to restore core temperature. This process raises core temperature, which is the opposite of what\'s needed for sleep onset. The post-cold shiver and warmth feel good, but they delay sleep onset. Morning cold is free energy; evening cold is borrowed energy repaid from sleep.',
-    stack: 'Morning sunlight (stack within the same morning window). Cold showers (daily accessible practice). Consistent sleep schedule (sets the morning anchor that cold timing depends on).',
+    protocol: 'Best window: 30 minutes to 2 hours after waking. Acceptable: early afternoon (2–4pm). Hard avoidance: within 4 hours of target bedtime. Morning sequence: wake → outdoor light exposure (10 min) → cold shower (2–3 min) → delay caffeine 90 min. This 3-step morning protocol stacks dopamine, cortisol, and circadian anchoring simultaneously.',
+    tip: 'The thermogenic rewarming after cold is not relaxation — it\'s your body burning calories to restore core temperature. This process raises core temperature, which is the opposite of what\'s needed for sleep onset. Morning cold is free energy; evening cold is borrowed energy repaid from sleep.',
   },
   {
     id: 'cold-adaptation',
     emoji: '🧬',
     name: 'Cold Adaptation Over Time',
     tagline: 'What changes physiologically after weeks and months of regular cold exposure',
-    categories: ['longevity', 'mental', 'performance'],
-    mechanisms: ['Brown adipose tissue (BAT) recruitment & expansion', 'Cold shock protein accumulation (RBM3, HSP70)', 'Dopamine receptor density upregulation', 'HPA axis calibration (faster recovery from stressors)', 'Mitochondrial biogenesis in BAT'],
-    benefits: [
-      'Brown adipose tissue (BAT) increases in both mass and metabolic activity with regular cold exposure over 4–8 weeks — adapted individuals burn more calories from BAT thermogenesis at all times, not just during cold exposure',
-      'Cold shock protein RBM3 accumulates with regular exposure — this neuroprotective protein promotes synaptic repair and has shown protective effects against protein aggregation associated with neurodegenerative conditions',
-      'Dopamine receptor sensitivity and density upregulate with regular cold-driven dopamine stimulation — adapted practitioners report higher baseline motivation, drive, and mood independent of cold exposure sessions',
-      'The HPA axis (stress response system) becomes more efficient: the cortisol and norepinephrine response to cold diminishes while its restorative period shortens — meaning stress turns on faster and turns off more completely',
-      'Subjective cold tolerance improves measurably within 14 days of daily practice — the shock reflex diminishes, comfortable range of tolerable temperature widens, and the positive post-exposure state becomes the dominant associated experience',
+    points: [
+      'Brown adipose tissue (BAT) increases in both mass and metabolic activity with regular cold exposure over 4–8 weeks — adapted individuals burn more calories from BAT thermogenesis at all times, not just during exposure.',
+      'Cold shock protein RBM3 accumulates with regular exposure — this neuroprotective protein promotes synaptic repair and has shown protective effects against protein aggregation associated with neurodegenerative conditions.',
+      'Dopamine receptor sensitivity and density upregulate with regular cold-driven stimulation — adapted practitioners report higher baseline motivation, drive, and mood independent of cold exposure sessions.',
+      'Subjective cold tolerance improves measurably within 14 days of daily practice — the shock reflex diminishes, the comfortable temperature range widens, and the positive post-exposure state becomes the dominant experience.',
     ],
-    howToPractice: 'Start with end-of-shower cold (30 seconds). Increase duration by 15–20 seconds per week. After 4 weeks, transition to full cold showers (3+ minutes). After 8 weeks, experiment with cold plunge or ice bath. Prioritize duration over temperature — 5 minutes at 60°F is superior to 1 minute at 40°F for adaptation.',
-    protocol: 'Week 1–2: 30–60 sec cold at shower end. Week 3–4: 90–120 sec. Week 5–6: full cold shower 3 min. Week 7–8: introduce ice bath/plunge (5 min at 60°F). Month 3+: 10–15°C full immersion, 2–4 sessions/week. Consistency drives adaptation — frequency matters more than intensity.',
-    methods: ['Progressive end-of-shower cold', 'Full cold shower progression', 'Cold plunge temperature drop (tap water first)', 'BAT activation tracking (some Oura/Garmin metrics)'],
-    tip: 'Most people quit cold exposure between days 3 and 10 because "it hasn\'t gotten easier." Measurable cold adaptation requires 14 days minimum for the nervous system changes, and 4–6 weeks for BAT and dopamine system effects. At day 14, most practitioners report a noticeable reduction in the shock response. At day 30, what felt like ordeal feels like ritual. The adaptation window is real and predictable.',
-    stack: 'Cold showers (the base daily practice). Ice baths (the target endpoint of the progression). Breathwork (the companion skill that enables all cold exposure).',
+    protocol: 'Week 1–2: 30–60 sec cold at shower end. Week 3–4: 90–120 sec. Week 5–6: full cold shower 3 min. Week 7–8: introduce cold plunge (5 min at 60°F). Month 3+: 10–15°C full immersion, 2–4 sessions/week. Consistency drives adaptation — frequency matters more than intensity. Prioritize duration over temperature.',
+    tip: 'Most people quit cold exposure between days 3 and 10 because "it hasn\'t gotten easier." Measurable cold adaptation requires 14 days minimum for nervous system changes, and 4–6 weeks for BAT and dopamine system effects. At day 14, most practitioners report a noticeable reduction in the shock response. At day 30, what felt like ordeal feels like ritual. The adaptation window is real and predictable.',
   },
   {
     id: 'cold-mental-health',
     emoji: '🧠',
     name: 'Cold Exposure & Mental Health',
     tagline: 'The dopamine pathway — uniquely targeted and unusually powerful',
-    categories: ['mental', 'recovery'],
-    mechanisms: ['Dopamine synthesis increase (250%)', 'Norepinephrine (300–500% surge)', 'Endogenous opioid activation', 'Stress inoculation (HPA recalibration)', 'Mood resilience via repeated autonomic challenge'],
-    benefits: [
-      'The dopamine elevation from cold exposure is 250% above baseline and sustained for 2–3 hours post-exposure — a longer, smoother curve than caffeine, exercise, or any recreational stimulant, without tolerance development or the crash that follows pharmacological dopamine spikes',
-      'A 2022 RCT on cold water swimming found significant reduction in depression and anxiety scores after 6 weeks compared to thermal water controls — the first controlled trial specifically on cold exposure for mental health conditions',
-      'Unlike exercise and morning sunlight (which primarily act on serotonin + dopamine), cold specifically and disproportionately targets the dopamine pathway — making it uniquely relevant for individuals whose primary complaint is low motivation, drive, or anhedonia rather than sadness',
-      'Regular cold exposure builds stress resilience through repeated controlled activation and deactivation of the stress response — the nervous system learns that stress is survivable and time-limited, a cognitive reframe that extends to non-cold stressors',
-      'Post-cold exposure euphoria (30–60 minutes after) involves endogenous opioid release alongside the dopamine spike — contributing to the sense of well-being, pain tolerance increase, and social connection often reported by regular practitioners',
+    points: [
+      'The dopamine elevation from cold is 250% above baseline and sustained for 2–3 hours — a longer, smoother curve than caffeine, exercise, or any recreational stimulant, without tolerance development or a crash.',
+      'A 2022 RCT on cold water swimming found significant reduction in depression and anxiety scores after 6 weeks vs. thermal water controls — the first controlled trial specifically on cold exposure for mental health conditions.',
+      'Unlike exercise and morning sunlight (which primarily act on serotonin + dopamine), cold specifically and disproportionately targets the dopamine pathway — uniquely relevant for low motivation, drive, or anhedonia.',
+      'Regular cold exposure builds stress resilience through repeated controlled activation and deactivation of the stress response — the nervous system learns that stress is survivable and time-limited.',
     ],
-    howToPractice: 'Consistency over intensity — 30 seconds of cold daily for 5 days produces more dopamine system improvement over 4 weeks than one weekly ice bath. The nervous system adapts to regular low-intensity stimulation more robustly than occasional high-intensity spikes. Start with end-of-shower cold and treat it as a non-negotiable daily practice rather than an achievement.',
-    protocol: 'For mental health benefit: daily practice, even 30–60 seconds, is superior to weekly high-intensity sessions. Morning timing aligns the dopamine spike with the natural cortisol awakening response for maximum energy and mood impact. 4–6 weeks to notice reliable subjective improvement in baseline mood and motivation.',
-    methods: ['Daily end-of-shower cold (consistency)', 'Morning cold plunge (intensity)', 'Cold lake/ocean swimming (community + cold combined)', 'Tracking: HRV, mood journaling over 30 days'],
-    tip: 'Cold exposure targets the dopamine pathway specifically — distinct from the serotonin effects of exercise and sunlight. This matters: many people with depression, ADHD-like symptoms, or low motivation have dopamine-pathway dysfunction rather than serotonin deficiency. Cold is a uniquely direct, drug-free dopamine intervention. This doesn\'t replace professional mental health care — it\'s a complementary tool with a specific mechanism that other lifestyle interventions don\'t cover.',
-    stack: 'Morning sunlight (serotonin + circadian, complementing the dopamine from cold). Exercise (serotonin + dopamine + BDNF). L-Theanine (complementary calm focus in the post-cold window).',
+    protocol: 'For mental health benefit: daily practice, even 30–60 seconds, is superior to weekly high-intensity sessions. The nervous system adapts to regular low-intensity stimulation more robustly than occasional spikes. Morning timing aligns the dopamine spike with the natural cortisol awakening response. 4–6 weeks to notice reliable improvement in baseline mood and motivation.',
+    tip: 'Cold exposure targets the dopamine pathway specifically — distinct from the serotonin effects of exercise and sunlight. Many people with low motivation, ADHD-like symptoms, or anhedonia have dopamine-pathway dysfunction rather than serotonin deficiency. Cold is a uniquely direct, drug-free dopamine intervention. This doesn\'t replace professional mental health care — it\'s a complementary tool with a specific mechanism other lifestyle interventions don\'t cover.',
   },
 ];
 
-let activeFilter = 'all';
-
-function tagHtml(cat) {
-  return `<span class="ptag ${TAG_CLASS[cat]||''}">${TAG_LABEL[cat]||cat}</span>`;
-}
-
-function practiceCard(p) {
-  return `<div class="practice-card" id="${p.id}" data-cats="${p.categories.join(' ')}">
-    <div class="practice-header" onclick="toggleCard('${p.id}')">
-      <div class="practice-icon">${p.emoji}</div>
-      <div class="practice-meta">
-        <div class="practice-name">${p.name}</div>
-        <div class="practice-tagline">${p.tagline}</div>
-        <div class="practice-tags">${p.categories.map(tagHtml).join('')}</div>
+const list = document.getElementById('cardList');
+list.innerHTML = CARDS.map(c => `
+  <div class="card" id="${c.id}">
+    <div class="card-header" onclick="toggle('${c.id}')">
+      <div class="card-icon">${c.emoji}</div>
+      <div class="card-meta">
+        <div class="card-name">${c.name}</div>
+        <div class="card-tagline">${c.tagline}</div>
       </div>
       <span class="expand-arrow">▼</span>
     </div>
-    <div class="practice-body">
-      <div class="practice-inner">
-        <div>
-          <div class="sec-lbl">Key Mechanisms</div>
-          <div class="mech-row">${p.mechanisms.map(m=>`<span class="mech-badge">${m}</span>`).join('')}</div>
+    <div class="card-body">
+      <div class="card-inner">
+        <div class="points">
+          ${c.points.map((p,i) => `<div class="point"><div class="point-dot">${i+1}</div><span>${p}</span></div>`).join('')}
         </div>
         <div>
-          <div class="sec-lbl">Evidence-Based Benefits</div>
-          <div class="benefit-list">${p.benefits.map((b,i)=>`<div class="benefit-item"><div class="benefit-dot">${i+1}</div><span>${b}</span></div>`).join('')}</div>
+          <div class="sec-lbl">Protocol</div>
+          <div class="protocol-box">${c.protocol}</div>
         </div>
-        <div class="two-col">
-          <div class="info-box">
-            <div class="sec-lbl">How to Practice</div>
-            <div class="info-box-text">${p.howToPractice}</div>
-          </div>
-          <div class="info-box">
-            <div class="sec-lbl">Protocol</div>
-            <div class="info-box-text">${p.protocol}</div>
-            <div class="methods-row">${p.methods.map(m=>`<span class="method-pill">${m}</span>`).join('')}</div>
-          </div>
+        <div class="tip-box">
+          <div class="tip-label">Pro Tip</div>
+          ${c.tip}
         </div>
-        <div class="tip-box"><div class="tip-label">Pro Tip</div>${p.tip}</div>
-        ${p.stack ? `<div class="stack-box"><div class="stack-label">Stack With</div>${p.stack}</div>` : ''}
-        <button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to top</button>
       </div>
     </div>
-  </div>`;
-}
+  </div>
+`).join('');
 
-function renderAll() {
-  const filtered = activeFilter === 'all' ? PRACTICES : PRACTICES.filter(p => p.categories.includes(activeFilter));
-  document.getElementById('practiceList').innerHTML = filtered.length
-    ? filtered.map(practiceCard).join('')
-    : '<div class="empty-state">No topics match this filter.</div>';
-  document.getElementById('practiceIndex').innerHTML = filtered.map(p =>
-    `<a class="index-pill" href="#${p.id}" onclick="openAndScroll('${p.id}',event)">${p.emoji} ${p.name}</a>`
-  ).join('');
-}
-
-function toggleCard(id) { document.getElementById(id).classList.toggle('open'); }
-
-function openAndScroll(id, e) {
-  e.preventDefault();
-  const card = document.getElementById(id);
-  if (!card) return;
-  if (!card.classList.contains('open')) card.classList.add('open');
-  setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-}
-
-function filterPractices(cat, btn) {
-  activeFilter = cat;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderAll();
-}
-
-renderAll();
+function toggle(id) { document.getElementById(id).classList.toggle('open'); }
 </script>
 </body>
 </html>

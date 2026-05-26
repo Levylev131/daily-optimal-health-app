@@ -7,14 +7,13 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --acc: #2dd46e; --glow: rgba(45,212,110,0.35);
       --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
       --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
       --glass-h: rgba(255,255,255,0.12);
       --text: #f0fff4; --muted: rgba(240,255,244,0.55);
       --r: 14px; --r-sm: 10px;
-      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
-      --amber: #f5a623; --blue: #3ecfff; --rose: #ff6b6b; --purple: #b89eff;
+      --amber: #f5a623;
     }
     html { min-height: 100%; scroll-behavior: smooth; }
     body {
@@ -25,202 +24,85 @@
       color: var(--text); min-height: 100vh; overflow-x: hidden;
     }
     @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-
-    /* TOP BAR */
     .top-bar {
       display: flex; align-items: center; gap: 12px;
-      padding: 14px 24px; max-width: 860px; margin: 0 auto;
+      padding: 14px 24px; max-width: 900px; margin: 0 auto;
       border-bottom: 1px solid var(--glass-b);
       position: sticky; top: 0; z-index: 100;
       background: rgba(6,26,12,0.85); backdrop-filter: blur(16px);
     }
-    .back-btn { color: var(--muted); font-size: .88rem; font-weight: 600; transition: color .2s; background: none; border: none; cursor: pointer; }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: .88rem; font-weight: 600; transition: color .2s; background: none; border: none; cursor: pointer; }
     .back-btn:hover { color: var(--acc); }
     .top-title { flex: 1; text-align: center; font-size: 1rem; font-weight: 800; text-shadow: 0 0 20px var(--glow); }
     .top-spacer { width: 60px; }
-
-    .page { max-width: 860px; margin: 0 auto; padding: clamp(16px,4vw,28px) clamp(12px,3vw,20px) 100px; }
-
-    /* HERO */
-    .hero { text-align: center; padding: clamp(20px,4vw,32px) 0 clamp(16px,3vw,24px); }
-    .hero-emoji { font-size: clamp(2.5rem,7vw,3.6rem); display: block; margin-bottom: 10px; filter: drop-shadow(0 0 16px var(--glow)); }
+    .page { max-width: 900px; margin: 0 auto; padding: clamp(16px,4vw,28px) clamp(12px,3vw,20px) 100px; }
+    .hero { text-align: center; padding: clamp(20px,4vw,32px) 0 clamp(14px,3vw,24px); }
+    .hero-emoji { font-size: clamp(2.5rem,7vw,4rem); display: block; margin-bottom: 10px; filter: drop-shadow(0 0 16px var(--glow)); }
     .hero-title {
-      font-size: clamp(1.5rem,5vw,2.4rem); font-weight: 900; letter-spacing: -1px; line-height: 1.1;
+      font-size: clamp(1.6rem,5vw,2.6rem); font-weight: 900; letter-spacing: -1px; line-height: 1.1;
       background: linear-gradient(135deg, #fff 30%, var(--acc));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px;
     }
-    .hero-sub { color: var(--muted); font-size: clamp(.84rem,2vw,.94rem); max-width: 480px; margin: 0 auto 20px; line-height: 1.6; }
-
-    /* VIEW TOGGLE */
-    .view-toggle {
-      display: flex; gap: 0; border: 1px solid var(--glass-b); border-radius: 30px;
-      overflow: hidden; margin: 0 auto 28px; width: fit-content;
-    }
-    .vtab {
-      padding: 9px 24px; font-size: .82rem; font-weight: 700;
-      background: none; color: var(--muted); border: none;
-      cursor: pointer; font-family: inherit; transition: var(--trans);
-    }
-    .vtab:hover:not(.active) { color: var(--text); background: var(--glass-h); }
-    .vtab.active { background: var(--acc); color: #000; }
-
-    /* ── SIMPLE VIEW ── */
-    .simple-step {
-      display: flex; align-items: center; gap: 16px;
-      padding: clamp(14px,2.5vw,18px); border: 1px solid var(--glass-b);
-      border-radius: var(--r); background: var(--glass);
-      margin-bottom: 10px; cursor: pointer; transition: var(--trans);
-      backdrop-filter: blur(10px);
-    }
-    .simple-step:hover { background: var(--glass-h); border-color: rgba(45,212,110,0.3); }
-
-    .simple-num {
-      flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%;
-      background: rgba(45,212,110,0.12); border: 1px solid rgba(45,212,110,0.28);
-      display: flex; align-items: center; justify-content: center;
-      font-size: .82rem; font-weight: 900; color: var(--acc); letter-spacing: .5px;
-    }
-    .simple-body { flex: 1; min-width: 0; }
-    .simple-name { font-size: clamp(.92rem,2.2vw,1.05rem); font-weight: 900; margin-bottom: 3px; }
-    .simple-action { color: var(--muted); font-size: .82rem; line-height: 1.45; }
-
-    .simple-time {
-      flex-shrink: 0; font-size: .68rem; font-weight: 800; text-transform: uppercase;
-      letter-spacing: .6px; color: var(--acc); opacity: .75;
-      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.2);
-      border-radius: 20px; padding: 4px 10px; white-space: nowrap;
-    }
-    .simple-arrow { color: var(--muted); font-size: .75rem; flex-shrink: 0; }
-
-    .simple-footer {
-      text-align: center; margin-top: 28px; padding-top: 20px;
-      border-top: 1px solid var(--glass-b);
-    }
-    .simple-footer p { color: var(--muted); font-size: .84rem; margin-bottom: 12px; }
-    .detail-btn {
-      display: inline-flex; align-items: center; gap: 7px;
-      background: var(--acc); color: #000; font-weight: 800; font-size: .85rem;
-      padding: 10px 22px; border-radius: 30px; border: none; cursor: pointer;
-      font-family: inherit; transition: var(--trans);
-      box-shadow: 0 0 16px var(--glow);
-    }
-    .detail-btn:hover { transform: translateY(-1px); box-shadow: 0 0 24px var(--glow); }
-
-    /* ── DETAIL VIEW ── */
-    .step-track {
-      display: flex; align-items: center;
-      margin-bottom: 28px; overflow: hidden; border-radius: 30px;
-      border: 1px solid var(--glass-b); background: var(--glass);
-    }
-    .step-dot {
-      flex: 1; text-align: center; padding: 8px 4px;
-      font-size: .65rem; font-weight: 800; color: var(--muted);
-      letter-spacing: .5px; cursor: pointer; transition: var(--trans);
-      border-right: 1px solid var(--glass-b); white-space: nowrap;
-      overflow: hidden; text-overflow: ellipsis;
-    }
-    .step-dot:last-child { border-right: none; }
-    .step-dot:hover { color: var(--text); background: var(--glass-h); }
-    .step-dot.active { color: #000; background: var(--acc); }
-
-    .step-card {
+    .hero-sub { color: var(--muted); font-size: clamp(.84rem,2vw,.98rem); max-width: 540px; margin: 0 auto; line-height: 1.6; }
+    .card {
       background: var(--glass); border: 1px solid var(--glass-b);
       border-radius: var(--r); backdrop-filter: blur(12px);
-      margin-bottom: 12px; overflow: hidden;
-      scroll-margin-top: 72px; transition: border-color .2s;
+      margin-bottom: 14px; overflow: hidden; transition: border-color .2s;
     }
-    .step-card.open { border-color: rgba(45,212,110,0.35); }
-
-    .step-header {
-      display: flex; align-items: center; gap: 14px;
-      padding: clamp(12px,2.5vw,18px); cursor: pointer;
+    .card.open { border-color: rgba(45,212,110,0.35); }
+    .card-header {
+      display: flex; align-items: center; gap: 16px;
+      padding: clamp(14px,3vw,20px); cursor: pointer;
       transition: background .15s; user-select: none;
     }
-    .step-header:hover { background: var(--glass-h); }
-
-    .step-num {
-      flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
-      background: rgba(45,212,110,0.12); border: 1px solid rgba(45,212,110,0.25);
-      display: flex; align-items: center; justify-content: center;
-      font-size: .78rem; font-weight: 900; color: var(--acc); letter-spacing: .5px;
+    .card-header:hover { background: var(--glass-h); }
+    .card-icon {
+      font-size: clamp(1.8rem,5vw,2.4rem); flex-shrink: 0;
+      width: clamp(48px,10vw,62px); height: clamp(48px,10vw,62px);
+      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.2);
+      border-radius: 14px; display: flex; align-items: center; justify-content: center;
     }
-    .step-card.open .step-num { background: var(--acc); color: #000; border-color: var(--acc); }
-    .step-meta { flex: 1; min-width: 0; }
-    .step-name { font-size: clamp(.95rem,2.5vw,1.15rem); font-weight: 900; }
-    .step-tagline { color: var(--muted); font-size: .78rem; margin-top: 2px; }
-    .expand-arrow { color: var(--muted); font-size: .8rem; transition: transform .25s; flex-shrink: 0; }
-    .step-card.open .expand-arrow { transform: rotate(180deg); }
-
-    .step-body {
+    .step-num {
+      font-size: .65rem; font-weight: 900; color: var(--acc);
+      position: absolute; top: 5px; right: 6px; opacity: .7;
+    }
+    .card-icon-wrap { position: relative; }
+    .card-meta { flex: 1; min-width: 0; }
+    .card-name { font-size: clamp(.98rem,2.8vw,1.2rem); font-weight: 900; margin-bottom: 3px; }
+    .card-tagline { color: var(--muted); font-size: .8rem; font-style: italic; }
+    .expand-arrow { color: var(--muted); font-size: .8rem; transition: transform .25s; margin-left: 8px; flex-shrink: 0; }
+    .card.open .expand-arrow { transform: rotate(180deg); }
+    .card-body {
       max-height: 0; overflow: hidden;
-      transition: max-height .4s cubic-bezier(.4,0,.2,1);
+      transition: max-height .45s cubic-bezier(.4,0,.2,1);
       border-top: 1px solid transparent;
     }
-    .step-card.open .step-body { max-height: 1400px; border-top-color: var(--glass-b); }
-    .step-inner { padding: clamp(14px,3vw,20px); display: flex; flex-direction: column; gap: 16px; }
-
-    .mech-row { display: flex; gap: 6px; flex-wrap: wrap; }
-    .mech-badge {
-      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.22);
-      border-radius: 20px; padding: 3px 11px;
-      font-size: .68rem; font-weight: 700; color: var(--acc);
+    .card.open .card-body { max-height: 2000px; border-top-color: var(--glass-b); }
+    .card-inner { padding: clamp(14px,3vw,22px); display: flex; flex-direction: column; gap: 18px; }
+    .points { display: flex; flex-direction: column; gap: 10px; }
+    .point { display: flex; gap: 12px; align-items: flex-start; font-size: .86rem; line-height: 1.6; }
+    .point-dot {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(45,212,110,0.18); color: var(--acc);
+      font-size: .72rem; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
     }
     .sec-lbl {
-      font-size: .65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px;
-      color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+      font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.3px;
+      color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
     }
     .sec-lbl::after { content:''; flex:1; height:1px; background: var(--glass-b); }
-    .benefit-list { display: flex; flex-direction: column; gap: 7px; }
-    .benefit-item { display: flex; gap: 10px; align-items: flex-start; font-size: .83rem; line-height: 1.55; }
-    .benefit-dot {
-      width: 18px; height: 18px; border-radius: 50%; background: rgba(45,212,110,0.18);
-      color: var(--acc); font-size: .7rem; font-weight: 900;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;
-    }
-    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    @media(max-width:540px) { .two-col { grid-template-columns: 1fr; } }
-    .info-box {
+    .protocol-box {
       background: rgba(255,255,255,0.04); border: 1px solid var(--glass-b);
-      border-radius: var(--r-sm); padding: 13px;
-    }
-    .info-box-text { font-size: .81rem; line-height: 1.6; color: rgba(240,255,244,0.85); }
-    .methods-row { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 9px; }
-    .method-pill {
-      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
-      padding: 3px 9px; font-size: .68rem; color: var(--muted);
+      border-radius: var(--r-sm); padding: 14px;
+      font-size: .83rem; line-height: 1.65; color: rgba(240,255,244,0.88);
     }
     .tip-box {
-      background: rgba(245,166,35,0.07); border: 1px solid rgba(245,166,35,0.25);
-      border-radius: var(--r-sm); padding: 12px 14px; font-size: .8rem; line-height: 1.6;
+      background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.28);
+      border-radius: var(--r-sm); padding: 13px 15px; font-size: .82rem; line-height: 1.65;
     }
-    .tip-label { color: var(--amber); font-weight: 800; margin-bottom: 3px; font-size: .68rem; text-transform: uppercase; letter-spacing: .8px; }
-    .stack-box {
-      background: rgba(45,212,110,0.06); border: 1px solid rgba(45,212,110,0.2);
-      border-radius: var(--r-sm); padding: 10px 13px; font-size: .79rem; line-height: 1.55;
-    }
-    .stack-label { color: var(--acc); font-weight: 800; margin-bottom: 3px; font-size: .68rem; text-transform: uppercase; letter-spacing: .8px; }
-    .back-top {
-      display: block; text-align: center; color: var(--muted); font-size: .75rem;
-      font-weight: 700; cursor: pointer; padding: 5px; transition: color .2s;
-      background: none; border: none; width: 100%; font-family: inherit;
-    }
-    .back-top:hover { color: var(--acc); }
-
-    /* NAV ARROWS */
-    .nav-arrows {
-      position: fixed; right: clamp(12px,2vw,22px); top: 50%; transform: translateY(-50%);
-      display: flex; flex-direction: column; gap: 10px; z-index: 200;
-    }
-    .nav-arrow {
-      width: 48px; height: 48px; border-radius: 50%;
-      border: 2.5px solid var(--acc); background: rgba(45,212,110,0.12);
-      color: var(--acc); display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: var(--trans); backdrop-filter: blur(8px);
-      box-shadow: 0 0 12px rgba(45,212,110,0.18);
-    }
-    .nav-arrow:hover { background: var(--acc); color: #000; box-shadow: 0 0 22px var(--glow); transform: scale(1.07); }
-    .nav-arrow.disabled { opacity: 0.2; pointer-events: none; }
-    @media(max-width:600px) { .nav-arrows { display: none; } }
+    .tip-label { color: var(--amber); font-weight: 800; margin-bottom: 4px; font-size: .7rem; text-transform: uppercase; letter-spacing: .8px; }
   </style>
   <script src="health-notifications.js" defer></script>
 </head>
@@ -237,295 +119,136 @@
   <div class="hero">
     <span class="hero-emoji">🦴</span>
     <div class="hero-title">Fix Anterior Pelvic Tilt</div>
-    <div class="hero-sub">A 7-step correction protocol for the most common postural dysfunction in desk workers.</div>
+    <div class="hero-sub">A 7-step correction protocol for the most common postural dysfunction in desk workers. Work through them in order.</div>
   </div>
 
-  <div class="view-toggle">
-    <button class="vtab active" id="tab-simple" onclick="setView('simple')">Overview</button>
-    <button class="vtab" id="tab-detail" onclick="setView('detail')">Full Guide</button>
-  </div>
+  <div id="list"></div>
 
-  <div id="simple-view"></div>
-
-  <div id="detail-view" style="display:none">
-    <div class="step-track" id="stepTrack"></div>
-    <div id="cardList"></div>
-  </div>
-
-</div>
-
-<div class="nav-arrows" id="navArrows" style="display:none">
-  <button class="nav-arrow disabled" id="nav-up" onclick="navStep(-1)" title="Previous step">
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 14L11 8L17 14" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  </button>
-  <button class="nav-arrow" id="nav-down" onclick="navStep(1)" title="Next step">
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 8L11 14L17 8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  </button>
 </div>
 
 <script>
-const STEPS = [
+const CARDS = [
   {
     id: 'understanding',
+    emoji: '🔍',
     name: 'Understand APT',
-    tagline: 'The anatomy and the muscular imbalance behind it',
-    shortAction: 'Do the wall test: stand with heels, back, and head against a wall. If the gap behind your lower back is larger than a flat hand, APT is present.',
-    timeHint: '5 min · once',
-    mechanisms: ['Psoas attachment to lumbar vertebrae (L1–L5)', 'Lower Crossed Syndrome pattern (Janda)', 'Reciprocal inhibition: tight hip flexors → inhibited glutes', 'ASIS rotation → exaggerated lumbar lordosis'],
-    benefits: [
-      'APT is a forward pelvic rotation — the front of the pelvis drops, the lower back arches excessively. The root cause is a muscular imbalance: tight hip flexors + tight lumbar extensors on one side, weak glutes + weak deep abs on the other.',
-      'The psoas directly attaches to the lumbar vertebrae — when shortened from hours of sitting, it physically pulls the spine into the arch. This is why "just sit up straight" doesn\'t work: the muscle tension overrides conscious posture.',
-      'Reciprocal inhibition means tight hip flexors neurologically switch off the glutes. This is why people with APT can\'t feel their glutes fire during exercise — the nervous system has downregulated them, not just weakened them.',
+    tagline: 'The anatomy and muscular imbalance behind it',
+    points: [
+      'APT is a forward pelvic rotation — the front of the pelvis drops, the lower back arches excessively. Root cause: tight hip flexors + tight lumbar extensors on one side, weak glutes + weak deep abs on the other.',
+      'The psoas directly attaches to the lumbar vertebrae (L1–L5). When shortened from hours of sitting, it physically pulls the spine into an arch — which is why "just sit up straight" doesn\'t work.',
+      'Reciprocal inhibition: tight hip flexors neurologically switch off the glutes. People with APT can\'t feel their glutes fire during exercise because the nervous system has downregulated them, not just weakened them.',
+      'APT is estimated to affect 75–85% of desk workers and is so common it\'s frequently mistaken for normal posture.',
     ],
-    howToPractice: 'Self-assess with the wall test: stand with heels, back, and head against a wall. Slide your hand flat behind your lower back. If there\'s more than a hand\'s width of gap, significant APT is present. Also: lie flat on a table, pull one knee to your chest — if the other leg lifts off the table, that hip flexor is tight (Thomas test).',
-    protocol: 'Wall test monthly — aim to reduce gap to hand-flat width over 8–12 weeks. Re-test all 7 steps every 4 weeks.',
-    methods: ['Wall test (lower back gap)', 'Thomas test (hip flexor tightness)', 'Side-profile video standing assessment'],
-    tip: 'APT is estimated to affect 75–85% of desk workers and is so common it\'s frequently mistaken for normal posture. The wall test takes 10 seconds and is the clearest first indicator. Most people are surprised by how much space there is.',
-    stack: 'Start here, then proceed through each step in order. Hip flexor release is the highest-priority next step.',
+    protocol: 'Self-assess with the wall test: stand with heels, back, and head against a wall. Slide your hand flat behind your lower back. More than a hand\'s-width gap = significant APT. Also: lie flat, pull one knee to chest — if the other leg lifts off the table (Thomas test), that hip flexor is tight. Re-test monthly. Aim to reduce the wall gap to hand-flat width over 8–12 weeks.',
+    tip: 'The wall test takes 10 seconds and is the clearest first indicator. Most people are surprised by how much space there is behind their lower back. Do it now before continuing.',
   },
   {
     id: 'hip-flexors',
+    emoji: '🦵',
     name: 'Release Hip Flexors',
-    tagline: 'The primary driver — this is where to start and where to spend the most time',
-    shortAction: 'Couch stretch: 90 seconds each side, twice daily. Squeeze the back glute and tuck the pelvis under to hit the psoas — without the tuck, the stretch misses the main target.',
-    timeHint: '3 min · daily',
-    mechanisms: ['Psoas + iliacus lengthening', 'Sarcomere addition from daily sustained holds', 'Posterior pelvic tilt as psoas tension reduces', 'Glute disinhibition after hip flexor release'],
-    benefits: [
+    tagline: 'The primary driver — this is where to start and spend the most time',
+    points: [
       'The couch stretch is the most effective hip flexor stretch available. It targets the psoas, iliacus, rectus femoris, and TFL simultaneously — but only when you add the posterior pelvic tilt cue (tuck the tailbone). Without the tuck, the stretch bypasses the psoas.',
-      'Daily 90-second holds, not aggressive weekly sessions. Flexibility is gained by teaching the nervous system daily that the range is safe — not by forcing it once a week.',
-      'As the psoas lengthens, it stops pulling the lumbar spine forward. Lumbar arch visibly decreases. Lower back pain often reduces substantially within 2–4 weeks.',
+      'Daily 90-second holds, not aggressive weekly sessions. Flexibility is built by teaching the nervous system daily that the range is safe — not by forcing it once a week.',
+      'As the psoas lengthens, it stops pulling the lumbar spine forward. Lumbar arch visibly decreases, and lower back pain often reduces substantially within 2–4 weeks.',
     ],
-    howToPractice: 'Couch stretch: kneel facing away from a wall. Shin up the wall (knee near floor). Step front foot forward to ~90°. Actively squeeze the back glute and tuck the pelvis under — this is the key move. Hold 90 seconds per side. Discomfort should be felt at the front of the back hip, not the knee.',
-    protocol: '90 seconds per side, twice daily (morning + evening). Minimum 30 days for structural change. If the knee hurts, adjust the shin angle — this should be felt entirely at the front of the hip.',
-    methods: ['Couch stretch (primary)', 'Kneeling hip flexor lunge with pelvic tuck', '90/90 hip stretch', 'Foam roll hip flexors before stretching'],
-    tip: 'Week 1 is uncomfortable. Week 4 is almost comfortable. The discomfort is coming from tissue that has structurally shortened over months of sitting — it\'s not an injury signal. Progress is felt as the front of the hip gradually allowing a deeper lunge position.',
-    stack: 'Do immediately before glute activation work — releasing the inhibition first makes glutes more recruitable in the very next exercise.',
+    protocol: 'Couch stretch: kneel facing away from a wall. Place shin up the wall (knee near floor). Step front foot forward to ~90°. Actively squeeze the back glute and tuck the pelvis under — this is the critical cue. Hold 90 seconds per side. Discomfort should be felt at the front of the back hip, not the knee. Do this morning + evening, daily for minimum 30 days.',
+    tip: 'Week 1 is uncomfortable. Week 4 is almost comfortable. The discomfort is tissue that has structurally shortened over months of sitting — not an injury signal. Progress is felt as the front of the hip gradually allowing a deeper lunge position.',
   },
   {
     id: 'glutes',
+    emoji: '💪',
     name: 'Activate Glutes',
     tagline: 'Reawakening the inhibited antagonist',
-    shortAction: 'Glute bridge: 3×15 reps, squeezing glutes for 1–2 seconds before lifting. The squeeze-first cue overrides the inhibition pattern.',
-    timeHint: '5 min · daily',
-    mechanisms: ['Reciprocal inhibition reversal post-stretch', 'Gluteus maximus posterior pelvic tilt function', 'Gluteus medius pelvic stabilization', 'Motor pattern re-establishment'],
-    benefits: [
-      '"I can\'t feel my glutes" is nearly universal in APT — not because the glutes are weak from disuse, but because the nervous system has actively downregulated them via reciprocal inhibition from the tight hip flexors. Releasing the hip flexors first is the unlock.',
+    points: [
+      '"I can\'t feel my glutes" is nearly universal in APT — not because glutes are weak from disuse, but because the nervous system has actively downregulated them via reciprocal inhibition from tight hip flexors. Releasing hip flexors first is the unlock.',
       'The glute max\'s job is to pull the back of the pelvis down — the exact movement needed to correct anterior tilt. Strengthening it is the active correction to the hip flexor\'s passive pull.',
       'Activation drills before compound movements re-establish the neural connection, making glute contribution to squats and deadlifts immediately larger.',
     ],
-    howToPractice: 'Glute bridge: lie on back, feet flat. Squeeze the glutes first — then drive hips up. Hold 2 seconds at the top. The squeeze-first cue is critical: it overrides the inhibition pattern. If you feel this mostly in your hamstrings, shift feet slightly closer to your body.',
-    protocol: 'Daily activation (takes 5 min): glute bridge 3×15 (2-sec hold), clamshell 3×15 each side. Progress to: hip thrusts, Bulgarian split squat, Romanian deadlift — all with the squeeze-first cue before each rep.',
-    methods: ['Glute bridge (bilateral)', 'Single-leg glute bridge', 'Clamshell (glute medius)', 'Banded hip abduction walk', 'Hip thrust (loaded progression)'],
-    tip: 'The cue that unlocks glute activation: "squeeze first, then move." Before any hip extension — bridge, thrust, squat — contract the glutes consciously for 1–2 seconds before the movement starts. People who can\'t feel their glutes during squats almost universally skip this pre-activation.',
-    stack: 'Do immediately after hip flexor release. The disinhibition window post-stretch is real — glutes are more recruitable right after. Hip flexors + glute activation is the core daily pair.',
+    protocol: 'Glute bridge: lie on back, feet flat. Squeeze the glutes first — then drive hips up. Hold 2 seconds at the top. The squeeze-first cue is critical: it overrides the inhibition pattern. If you feel it mostly in your hamstrings, move feet slightly closer to your body. Daily: glute bridge 3×15 (2-sec hold), clamshell 3×15 each side. Progress to: hip thrusts, Bulgarian split squat, Romanian deadlift.',
+    tip: 'The cue that unlocks glute activation: "squeeze first, then move." Before any hip extension — bridge, thrust, squat — contract the glutes consciously for 1–2 seconds before the movement starts. People who can\'t feel their glutes during squats almost universally skip this pre-activation step.',
   },
   {
     id: 'core',
+    emoji: '🧱',
     name: 'Stabilize Core',
     tagline: 'Deep stabilizers — not crunches',
-    shortAction: 'Dead bug: 3×8 per side, lower back pressed flat to the floor the entire time. Any arch means the deep core has switched off — reset and reduce range.',
-    timeHint: '5 min · daily',
-    mechanisms: ['Transverse abdominis (TVA) intra-abdominal pressure', 'Posterior pelvic tilt maintenance under load', 'Multifidus co-contraction', 'Diaphragm-pelvic floor pressure canister'],
-    benefits: [
+    points: [
       'The muscles that resist APT under load are not the rectus abdominis (six-pack) — they\'re the transverse abdominis (TVA) and pelvic floor. Crunches don\'t train this. The TVA creates intra-abdominal pressure that stabilizes the lumbar spine without movement.',
-      'The dead bug is the foundational APT core exercise: it trains the TVA to maintain posterior pelvic tilt while limbs move — the exact demand of walking, running, and lifting. If the lower back arches off the floor during a dead bug rep, the TVA has disengaged.',
-      'Core stability for APT means holding neutral spine under increasing load, not flexing harder. The goal is a stable, unmoving pelvis while everything around it moves.',
+      'The dead bug is the foundational APT core exercise: it trains the TVA to maintain posterior pelvic tilt while limbs move — the exact demand of walking, running, and lifting.',
+      'Core stability for APT means holding neutral spine under increasing load, not flexing harder. A stable, unmoving pelvis while everything around it moves.',
     ],
-    howToPractice: 'Dead bug: lie on back, press lower back firmly to the floor. Extend one arm and the opposite leg slowly while keeping the lower back contact. Any lower back lift = stop and reset. Reduce range until you can maintain contact for the full rep. This is the test and the fix simultaneously.',
-    protocol: 'Dead bug 3×8 per side (3 sec down, pause, 3 sec back). McGill curl-up 3×10. Side plank 3×20–30 sec each side. Bird dog 3×10 per side with 3-sec holds. Daily or 5x/week.',
-    methods: ['Dead bug (TVA — primary)', 'McGill curl-up', 'Side plank', 'Bird dog', 'Hollow body hold (advanced)', 'Pallof press (anti-rotation)'],
-    tip: 'During every dead bug rep: the moment the lower back arches and loses floor contact, the TVA has switched off and the pelvis has anteriorly tilted — you\'ve recreated APT under load. Shorten the limb range until you can maintain the floor contact for the full rep.',
-    stack: 'Train glutes and core in the same session — they work together to stabilize the pelvis. The dead bug + glute bridge superset is the most efficient daily APT pair.',
+    protocol: 'Dead bug: lie on back, press lower back firmly to floor. Extend one arm and the opposite leg slowly while keeping lower back contact. Any lower back lift = stop and reset. Reduce range until you can maintain contact for the full rep. Daily or 5x/week: dead bug 3×8 per side (3 sec down, pause, 3 sec back), McGill curl-up 3×10, side plank 3×20–30 sec each side, bird dog 3×10 per side with 3-sec holds.',
+    tip: 'During every dead bug rep: the moment the lower back arches off the floor, the TVA has switched off and the pelvis has anteriorly tilted — you\'ve recreated APT under load. Shorten the limb range until you can maintain full floor contact throughout.',
   },
   {
     id: 'hamstrings',
+    emoji: '🏋️',
     name: 'Strengthen Hamstrings',
     tagline: 'The posterior chain pull that assists pelvic correction',
-    shortAction: 'Romanian deadlift: 3×10, twice per week. Hinge at the hip until you feel a deep hamstring stretch, then drive hips forward. Lower back stays neutral throughout.',
-    timeHint: '10 min · 2×/week',
-    mechanisms: ['Hamstring attachment to ischial tuberosity (posterior pelvic tilt contributor)', 'Eccentric loading → fascicle length increase', '"Tight but weak" neurogenic tightness mechanism'],
-    benefits: [
+    points: [
       'Hamstrings attach to the sitting bones — when they contract, they pull the back of the pelvis downward, contributing to posterior pelvic tilt. Strengthening them adds another opposing force to the anterior tilt.',
       'Most people with APT perceive tight hamstrings and avoid hamstring work. This tightness is usually neurogenic — the nervous system guarding a weak muscle — not structural shortness. The fix is loading, not more stretching.',
-      'Nordic curls increase hamstring fascicle length (genuine structural lengthening) more effectively than static stretching, while also building the eccentric strength that prevents hamstring strains.',
+      'Nordic curls increase hamstring fascicle length (genuine structural lengthening) more effectively than static stretching, while also building eccentric strength that prevents strains.',
     ],
-    howToPractice: 'Romanian deadlift: stand hip-width, soft knees. Hinge at the hip — push the hips back, not down. Lower until you feel a deep hamstring stretch (typically mid-shin). Pause, then drive hips forward. Lower back stays neutral throughout — no rounding, no excessive arching.',
-    protocol: 'Romanian deadlift 3×10, twice weekly. Nordic curl negatives 3×5 (lower as slowly as possible — assisted return is fine). Lying hamstring stretch 30–60 sec after each set while the tissue is warm.',
-    methods: ['Romanian deadlift (primary)', 'Nordic curl (eccentric)', 'Single-leg RDL', 'Prone leg curl (isolation)', 'Lying hamstring stretch (post-exercise)'],
-    tip: 'Repeatedly stretching a neurogenically tight hamstring brings temporary relief but no lasting change — the underlying weakness remains. Progressive loading (RDLs, Nordics) resolves both the tightness and the weakness at once. It is both the diagnosis and the treatment.',
-    stack: 'Train with glutes in the same session — they\'re functional partners for hip extension and posterior pelvic tilt. Core stability during RDLs is a bonus training effect.',
+    protocol: 'Romanian deadlift: stand hip-width, soft knees. Hinge at the hip — push hips back, not down. Lower until you feel a deep hamstring stretch (typically mid-shin). Pause, then drive hips forward. Lower back stays neutral throughout — no rounding, no excessive arching. Schedule: RDL 3×10 twice weekly. Nordic curl negatives 3×5 (lower as slowly as possible). Lying hamstring stretch 30–60 sec after each set while tissue is warm.',
+    tip: 'Repeatedly stretching a neurogenically tight hamstring brings temporary relief but no lasting change — the underlying weakness remains. Progressive loading (RDLs, Nordics) resolves both the tightness and the weakness simultaneously. It is both the diagnosis and the treatment.',
   },
   {
     id: 'lumbar',
+    emoji: '🔄',
     name: 'Release Lumbar Tension',
-    tagline: 'Decompressing the overworked lower back muscles that maintain the arch',
-    shortAction: 'Child\'s pose: 2 minutes, twice daily. Breathe into the lower back and let it round on each exhale. Works within minutes because it mechanically decompresses the facet joints.',
-    timeHint: '4 min · daily',
-    mechanisms: ['Lumbar erector spinae chronic overactivation', 'Facet joint decompression via flexion', 'QL lateral tension release', 'Lumbar lordosis passive reduction'],
-    benefits: [
+    tagline: 'Decompressing the overworked lower back muscles that hold the arch',
+    points: [
       'In APT, the lumbar erectors are chronically holding the spine in extension against gravity — they accumulate significant tension and are a major source of lower back stiffness and pain.',
       'Lumbar flexion stretches (child\'s pose, knees-to-chest) decompress the facet joints — these small vertebral joints become compressed under constant extension load and respond immediately to flexion.',
-      'Child\'s pose for 2 minutes provides fast lower back pain relief because the mechanism is mechanical decompression, not healing. It works within minutes.',
+      'Child\'s pose for 2 minutes provides fast lower back pain relief because the mechanism is mechanical decompression — it works within minutes.',
     ],
-    howToPractice: 'Child\'s pose: from kneeling, sit back toward heels, arms extended forward. Breathe into the lower back — on each exhale, let the lower back round and release further. Hold 2–3 minutes. Cat-cow: on all fours, alternate full lumbar flexion and extension slowly, 10 cycles.',
-    protocol: 'Morning + evening: child\'s pose (2 min), knees-to-chest rock (60 sec). Before core work: cat-cow (10 slow cycles). QL rolling: 60 seconds each side (between the bottom rib and hip bone).',
-    methods: ['Child\'s pose (2–3 min)', 'Knees-to-chest rock', 'Cat-cow', 'Seated forward fold', 'QL foam rolling / tennis ball', 'Supine twist'],
-    tip: 'Do lumbar release before core and glute work, not after. A hypertonic lumbar erector resists the range of motion needed for dead bugs and hip thrusts. Release first → train second.',
-    stack: 'Pair with hip flexor release — both are the "tight" half of the APT imbalance. Morning sequence: lumbar release → hip flexor stretch → glute activation.',
+    protocol: 'Morning + evening: child\'s pose (2 min) + knees-to-chest rock (60 sec). Child\'s pose: from kneeling, sit back toward heels, arms extended forward. Breathe into the lower back — on each exhale, let the lower back round and release further. Before core work: cat-cow (10 slow cycles). QL rolling: 60 seconds each side (between the bottom rib and hip bone). Do lumbar release before core and glute work — a hypertonic lumbar erector resists the range of motion needed for dead bugs and hip thrusts.',
+    tip: 'Do lumbar release before core and glute work, not after. Release first → train second. Morning sequence: lumbar release → hip flexor stretch → glute activation.',
   },
   {
     id: 'habits',
+    emoji: '⏰',
     name: 'Fix Daily Habits',
     tagline: 'The correction only sticks if the daily patterns change too',
-    shortAction: 'Stand up every 45–60 min. Practice 20 neutral pelvis reps per hour while standing: slightly tuck the pelvis, then release 20% of the tuck — that\'s neutral.',
-    timeHint: 'ongoing',
-    mechanisms: ['Postural motor pattern re-grooving via repetition', 'Continuous hip flexor loading from sitting', 'Neutral pelvis cueing under standing load', 'Rib flare co-correction'],
-    benefits: [
+    points: [
       'All the exercises in this guide will not permanently fix APT if you return to 8+ hours of sitting daily — sitting continuously re-loads the hip flexors into their shortened position, undoing the stretching work.',
       'Neutral pelvis is a skill, not a shape. It requires hundreds of daily conscious repetitions to become automatic. 20 reps per hour × 8 hours = 160 reps/day — at that volume, it starts to become the default within weeks.',
-      'Rib flare (lower ribs flaring outward) almost always co-occurs with APT. The fix is an exhale cue: as you exhale, let the ribs drop down and in. Neutral pelvis + closed ribs is the complete standing posture.',
+      'Rib flare (lower ribs flaring outward) almost always co-occurs with APT. Fix: on each exhale, let the ribs drop down and in. Neutral pelvis + closed ribs is the complete standing posture.',
     ],
-    howToPractice: 'Neutral pelvis cue — practice this 20× per day: slightly tuck the pelvis (squeeze glutes, tailbone under), then release 20% of that tuck. That release position is neutral. Do it while standing in line, waiting for the kettle, at your desk. The rep count is the practice.',
-    protocol: 'Break sitting every 45–60 min with 3–5 min standing or walking. Neutral pelvis reps: 20 per hour standing. Gait focus: consciously extend the hip fully at the back of each stride for 5 min during daily walks. Rib check: 10 exhale-and-close reps per hour.',
-    methods: ['Sit timer / break reminder (every 45–60 min)', 'Standing desk or converter', 'Neutral pelvis reps (20×/hour)', 'Hip extension gait focus during walks', 'Exhale rib-close cue', 'Lumbar roll for car and chair'],
+    protocol: 'Break sitting every 45–60 min with 3–5 min standing or walking. Neutral pelvis cue — practice 20× per hour: slightly tuck the pelvis (squeeze glutes, tailbone under), then release 20% of that tuck. That release position is neutral. Gait focus: consciously extend the hip fully at the back of each stride during daily walks. Rib check: 10 exhale-and-close reps per hour. Use a sit timer or phone reminder to break up sitting.',
     tip: 'The neutral pelvis reps are the most important part of this whole guide. All the stretching and strengthening creates the available range — the daily reps determine which position the body defaults to. There is no shortcut to the rep count.',
-    stack: 'Everything. This step ties the system together. Hip flexors re-shorten from sitting daily — the stretch work must be daily to outpace the sitting load.',
   },
 ];
 
-/* ── RENDER SIMPLE VIEW ── */
-function renderSimple() {
-  document.getElementById('simple-view').innerHTML =
-    STEPS.map((s, i) => `
-      <div class="simple-step" onclick="openDetail('${s.id}')">
-        <div class="simple-num">${String(i + 1).padStart(2, '0')}</div>
-        <div class="simple-body">
-          <div class="simple-name">${s.name}</div>
-          <div class="simple-action">${s.shortAction}</div>
-        </div>
-        <div class="simple-time">${s.timeHint}</div>
-        <span class="simple-arrow">›</span>
+const list = document.getElementById('list');
+list.innerHTML = CARDS.map((c, i) => `
+  <div class="card" id="${c.id}">
+    <div class="card-header" onclick="toggle('${c.id}')">
+      <div class="card-icon-wrap">
+        <div class="card-icon">${c.emoji}</div>
+        <span class="step-num">${i+1}</span>
       </div>
-    `).join('') +
-    `<div class="simple-footer">
-      <p>Tap any step to see the full protocol, exercises, and mechanisms.</p>
-      <button class="detail-btn" onclick="setView('detail')">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Open Full Guide
-      </button>
-    </div>`;
-}
-
-/* ── RENDER DETAIL VIEW ── */
-function renderCards() {
-  const track = document.getElementById('stepTrack');
-  const list = document.getElementById('cardList');
-
-  track.innerHTML = STEPS.map((s, i) =>
-    `<div class="step-dot" id="dot-${s.id}" onclick="jumpTo('${s.id}')">${i + 1}</div>`
-  ).join('');
-
-  list.innerHTML = STEPS.map((s, i) => `
-    <div class="step-card" id="${s.id}">
-      <div class="step-header" onclick="toggleCard('${s.id}')">
-        <div class="step-num">${String(i + 1).padStart(2, '0')}</div>
-        <div class="step-meta">
-          <div class="step-name">${s.name}</div>
-          <div class="step-tagline">${s.tagline}</div>
-        </div>
-        <span class="expand-arrow">▼</span>
+      <div class="card-meta">
+        <div class="card-name">${c.name}</div>
+        <div class="card-tagline">${c.tagline}</div>
       </div>
-      <div class="step-body">
-        <div class="step-inner">
-          <div>
-            <div class="sec-lbl">Mechanisms</div>
-            <div class="mech-row">${s.mechanisms.map(m => `<span class="mech-badge">${m}</span>`).join('')}</div>
-          </div>
-          <div>
-            <div class="sec-lbl">Why It Matters</div>
-            <div class="benefit-list">${s.benefits.map((b, j) => `<div class="benefit-item"><div class="benefit-dot">${j + 1}</div><span>${b}</span></div>`).join('')}</div>
-          </div>
-          <div class="two-col">
-            <div class="info-box">
-              <div class="sec-lbl">How to Do It</div>
-              <div class="info-box-text">${s.howToPractice}</div>
-            </div>
-            <div class="info-box">
-              <div class="sec-lbl">Protocol</div>
-              <div class="info-box-text">${s.protocol}</div>
-              <div class="methods-row">${s.methods.map(m => `<span class="method-pill">${m}</span>`).join('')}</div>
-            </div>
-          </div>
-          <div class="tip-box"><div class="tip-label">Pro Tip</div>${s.tip}</div>
-          ${s.stack ? `<div class="stack-box"><div class="stack-label">Stack With</div>${s.stack}</div>` : ''}
-          <button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to top</button>
+      <span class="expand-arrow">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="card-inner">
+        <div class="points">
+          ${c.points.map((p,j) => `<div class="point"><div class="point-dot">${j+1}</div><span>${p}</span></div>`).join('')}
         </div>
+        <div><div class="sec-lbl">Protocol</div><div class="protocol-box">${c.protocol}</div></div>
+        <div class="tip-box"><div class="tip-label">Pro Tip</div>${c.tip}</div>
       </div>
     </div>
-  `).join('');
-}
+  </div>
+`).join('');
 
-/* ── VIEW SWITCHER ── */
-function setView(v) {
-  const isDetail = v === 'detail';
-  document.getElementById('simple-view').style.display = isDetail ? 'none' : 'block';
-  document.getElementById('detail-view').style.display = isDetail ? 'block' : 'none';
-  document.getElementById('navArrows').style.display = isDetail ? 'flex' : 'none';
-  document.getElementById('tab-simple').classList.toggle('active', !isDetail);
-  document.getElementById('tab-detail').classList.toggle('active', isDetail);
-  if (isDetail) { currentStep = -1; updateArrows(); }
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-/* clicking a simple step opens detail view at that card */
-function openDetail(id) {
-  setView('detail');
-  setTimeout(() => {
-    const idx = STEPS.findIndex(s => s.id === id);
-    currentStep = idx;
-    jumpTo(id);
-    updateArrows();
-  }, 80);
-}
-
-/* ── DETAIL NAV ── */
-function toggleCard(id) {
-  const card = document.getElementById(id);
-  const isOpen = card.classList.toggle('open');
-  const dot = document.getElementById('dot-' + id);
-  if (dot) dot.classList.toggle('active', isOpen);
-}
-
-function jumpTo(id) {
-  const card = document.getElementById(id);
-  if (!card) return;
-  if (!card.classList.contains('open')) {
-    card.classList.add('open');
-    const dot = document.getElementById('dot-' + id);
-    if (dot) dot.classList.add('active');
-  }
-  setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-}
-
-let currentStep = -1;
-
-function updateArrows() {
-  document.getElementById('nav-up').classList.toggle('disabled', currentStep <= 0);
-  document.getElementById('nav-down').classList.toggle('disabled', currentStep >= STEPS.length - 1);
-}
-
-function navStep(dir) {
-  const next = currentStep + dir;
-  if (next < 0 || next >= STEPS.length) return;
-  currentStep = next;
-  jumpTo(STEPS[currentStep].id);
-  updateArrows();
-}
-
-/* ── INIT ── */
-renderSimple();
-renderCards();
-updateArrows();
+function toggle(id) { document.getElementById(id).classList.toggle('open'); }
 </script>
 </body>
 </html>

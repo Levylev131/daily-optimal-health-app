@@ -7,14 +7,13 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --acc: #2dd46e; --acc2: #1a8a50; --glow: rgba(45,212,110,0.35);
+      --acc: #2dd46e; --glow: rgba(45,212,110,0.35);
       --bg1: #061a0c; --bg2: #0d4a24; --bg3: #061a0c;
       --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
       --glass-h: rgba(255,255,255,0.12);
       --text: #f0fff4; --muted: rgba(240,255,244,0.55);
       --r: 14px; --r-sm: 10px;
-      --trans: all 0.28s cubic-bezier(.4,0,.2,1);
-      --amber: #f5a623; --blue: #3ecfff; --rose: #ff6b6b; --purple: #b89eff;
+      --amber: #f5a623;
     }
     html { min-height: 100%; scroll-behavior: smooth; }
     body {
@@ -32,7 +31,7 @@
       position: sticky; top: 0; z-index: 100;
       background: rgba(6,26,12,0.85); backdrop-filter: blur(16px);
     }
-    .back-btn { color: var(--muted); text-decoration: none; font-size: .88rem; font-weight: 600; transition: color .2s; background: none; border: none; cursor: pointer; white-space: nowrap; }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: .88rem; font-weight: 600; transition: color .2s; background: none; border: none; cursor: pointer; }
     .back-btn:hover { color: var(--acc); }
     .top-title { flex: 1; text-align: center; font-size: 1rem; font-weight: 800; text-shadow: 0 0 20px var(--glow); }
     .top-spacer { width: 60px; }
@@ -45,109 +44,60 @@
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px;
     }
     .hero-sub { color: var(--muted); font-size: clamp(.84rem,2vw,.98rem); max-width: 540px; margin: 0 auto; line-height: 1.6; }
-    .filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; padding-top: 4px; }
-    .filter-btn {
-      padding: 7px 14px; border-radius: 20px; border: 1px solid var(--glass-b);
-      background: var(--glass); color: var(--muted); font-size: .78rem; font-weight: 700;
-      cursor: pointer; transition: var(--trans); font-family: inherit; white-space: nowrap;
-    }
-    .filter-btn:hover { border-color: var(--acc); color: var(--text); }
-    .filter-btn.active { background: var(--acc); color: #000; border-color: var(--acc); box-shadow: 0 0 10px var(--glow); }
-    .practice-index { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
-    .index-pill {
-      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
-      padding: 5px 12px; font-size: .75rem; color: var(--muted); cursor: pointer;
-      transition: var(--trans); text-decoration: none; display: inline-block;
-    }
-    .index-pill:hover { border-color: var(--acc); color: var(--acc); }
-    .practice-card {
+    .card {
       background: var(--glass); border: 1px solid var(--glass-b);
       border-radius: var(--r); backdrop-filter: blur(12px);
-      margin-bottom: 16px; overflow: hidden;
-      scroll-margin-top: 72px; transition: border-color .2s;
+      margin-bottom: 14px; overflow: hidden; transition: border-color .2s;
     }
-    .practice-card.open { border-color: rgba(45,212,110,0.35); }
-    .practice-header {
+    .card.open { border-color: rgba(45,212,110,0.35); }
+    .card-header {
       display: flex; align-items: center; gap: 16px;
       padding: clamp(14px,3vw,20px); cursor: pointer;
       transition: background .15s; user-select: none;
     }
-    .practice-header:hover { background: var(--glass-h); }
-    .practice-icon {
-      font-size: clamp(2rem,5vw,2.6rem); flex-shrink: 0;
-      width: clamp(52px,10vw,68px); height: clamp(52px,10vw,68px);
+    .card-header:hover { background: var(--glass-h); }
+    .card-icon {
+      font-size: clamp(1.8rem,5vw,2.4rem); flex-shrink: 0;
+      width: clamp(48px,10vw,62px); height: clamp(48px,10vw,62px);
       background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.2);
-      border-radius: 16px; display: flex; align-items: center; justify-content: center;
+      border-radius: 14px; display: flex; align-items: center; justify-content: center;
     }
-    .practice-meta { flex: 1; min-width: 0; }
-    .practice-name { font-size: clamp(1rem,2.8vw,1.25rem); font-weight: 900; margin-bottom: 3px; }
-    .practice-tagline { color: var(--muted); font-size: .8rem; margin-bottom: 8px; font-style: italic; }
-    .practice-tags { display: flex; gap: 5px; flex-wrap: wrap; }
-    .ptag {
-      font-size: .64rem; font-weight: 700; padding: 3px 9px; border-radius: 20px;
-      text-transform: uppercase; letter-spacing: .5px; white-space: nowrap;
-    }
-    .ptag-protocol  { background: rgba(45,212,110,0.15);  color: var(--acc); }
-    .ptag-metabolic { background: rgba(62,207,255,0.12);  color: var(--blue); }
-    .ptag-longevity { background: rgba(245,166,35,0.15);  color: var(--amber); }
-    .ptag-mental    { background: rgba(160,120,255,0.15); color: var(--purple); }
-    .ptag-beginner  { background: rgba(255,107,107,0.15); color: var(--rose); }
+    .card-meta { flex: 1; min-width: 0; }
+    .card-name { font-size: clamp(.98rem,2.8vw,1.2rem); font-weight: 900; margin-bottom: 3px; }
+    .card-tagline { color: var(--muted); font-size: .8rem; font-style: italic; }
     .expand-arrow { color: var(--muted); font-size: .8rem; transition: transform .25s; margin-left: 8px; flex-shrink: 0; }
-    .practice-card.open .expand-arrow { transform: rotate(180deg); }
-    .practice-body {
+    .card.open .expand-arrow { transform: rotate(180deg); }
+    .card-body {
       max-height: 0; overflow: hidden;
       transition: max-height .45s cubic-bezier(.4,0,.2,1);
       border-top: 1px solid transparent;
     }
-    .practice-card.open .practice-body { max-height: 1800px; border-top-color: var(--glass-b); }
-    .practice-inner { padding: clamp(14px,3vw,22px); display: flex; flex-direction: column; gap: 18px; }
-    .mech-row { display: flex; gap: 7px; flex-wrap: wrap; }
-    .mech-badge {
-      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.25);
-      border-radius: 20px; padding: 4px 12px;
-      font-size: .72rem; font-weight: 700; color: var(--acc); letter-spacing: .3px;
+    .card.open .card-body { max-height: 2000px; border-top-color: var(--glass-b); }
+    .card-inner { padding: clamp(14px,3vw,22px); display: flex; flex-direction: column; gap: 18px; }
+    .points { display: flex; flex-direction: column; gap: 10px; }
+    .point { display: flex; gap: 12px; align-items: flex-start; font-size: .86rem; line-height: 1.6; }
+    .point-dot {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(45,212,110,0.18); color: var(--acc);
+      font-size: .72rem; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
     }
     .sec-lbl {
       font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.3px;
       color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
     }
     .sec-lbl::after { content:''; flex:1; height:1px; background: var(--glass-b); }
-    .benefit-list { display: flex; flex-direction: column; gap: 8px; }
-    .benefit-item { display: flex; gap: 10px; align-items: flex-start; font-size: .84rem; line-height: 1.55; }
-    .benefit-dot {
-      width: 20px; height: 20px; border-radius: 50%; background: rgba(45,212,110,0.2);
-      color: var(--acc); font-size: .75rem; font-weight: 900;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
-    }
-    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media(max-width:560px) { .two-col { grid-template-columns: 1fr; } }
-    .info-box {
+    .protocol-box {
       background: rgba(255,255,255,0.04); border: 1px solid var(--glass-b);
       border-radius: var(--r-sm); padding: 14px;
-    }
-    .info-box-text { font-size: .82rem; line-height: 1.65; color: rgba(240,255,244,0.85); }
-    .methods-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
-    .method-pill {
-      background: var(--glass); border: 1px solid var(--glass-b); border-radius: 20px;
-      padding: 3px 10px; font-size: .7rem; color: var(--muted);
+      font-size: .83rem; line-height: 1.65; color: rgba(240,255,244,0.88);
     }
     .tip-box {
       background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.28);
-      border-radius: var(--r-sm); padding: 13px 15px; font-size: .8rem; line-height: 1.65;
+      border-radius: var(--r-sm); padding: 13px 15px; font-size: .82rem; line-height: 1.65;
     }
-    .tip-box .tip-label { color: var(--amber); font-weight: 800; margin-bottom: 4px; font-size: .72rem; text-transform: uppercase; letter-spacing: .8px; }
-    .stack-box {
-      background: rgba(45,212,110,0.07); border: 1px solid rgba(45,212,110,0.22);
-      border-radius: var(--r-sm); padding: 11px 14px; font-size: .8rem; line-height: 1.6;
-    }
-    .stack-box .stack-label { color: var(--acc); font-weight: 800; margin-bottom: 3px; font-size: .72rem; text-transform: uppercase; letter-spacing: .8px; }
-    .back-top {
-      display: block; text-align: center; color: var(--muted); font-size: .76rem;
-      font-weight: 700; cursor: pointer; padding: 6px; transition: color .2s;
-      background: none; border: none; width: 100%; font-family: inherit;
-    }
-    .back-top:hover { color: var(--acc); }
-    .empty-state { text-align: center; color: var(--muted); padding: 48px 20px; font-size: .9rem; }
+    .tip-label { color: var(--amber); font-weight: 800; margin-bottom: 4px; font-size: .7rem; text-transform: uppercase; letter-spacing: .8px; }
   </style>
   <script src="health-notifications.js" defer></script>
 </head>
@@ -164,276 +114,153 @@
   <div class="hero">
     <span class="hero-emoji">🔥</span>
     <div class="hero-title">The Complete Fasting Guide</div>
-    <div class="hero-sub">Intermittent fasting, extended fasts, autophagy, metabolic switching, and cognitive performance in the fasted state. Every protocol explained with the mechanism behind why it works.</div>
+    <div class="hero-sub">Every protocol from 16:8 to extended fasts — with the mechanism behind why each one works.</div>
   </div>
 
-  <div class="filter-bar" id="filterBar">
-    <button class="filter-btn active" onclick="filterPractices('all',this)">All Topics</button>
-    <button class="filter-btn" onclick="filterPractices('protocol',this)">Protocol</button>
-    <button class="filter-btn" onclick="filterPractices('metabolic',this)">Metabolic</button>
-    <button class="filter-btn" onclick="filterPractices('longevity',this)">Longevity</button>
-    <button class="filter-btn" onclick="filterPractices('mental',this)">Mental</button>
-    <button class="filter-btn" onclick="filterPractices('beginner',this)">Beginner</button>
-  </div>
-
-  <div class="practice-index" id="practiceIndex"></div>
-  <div id="practiceList"></div>
+  <div id="list"></div>
 
 </div>
 
 <script>
-const TAG_CLASS = {
-  protocol:  'ptag-protocol',
-  metabolic: 'ptag-metabolic',
-  longevity: 'ptag-longevity',
-  mental:    'ptag-mental',
-  beginner:  'ptag-beginner',
-};
-const TAG_LABEL = {
-  protocol:  'Protocol',
-  metabolic: 'Metabolic',
-  longevity: 'Longevity',
-  mental:    'Mental',
-  beginner:  'Beginner Friendly',
-};
-
-const PRACTICES = [
+const CARDS = [
   {
     id: 'sixteen-eight',
     emoji: '⏱️',
     name: '16:8 Intermittent Fasting',
-    tagline: 'The entry-level protocol — the most studied and most sustainable form of IF',
-    categories: ['protocol', 'metabolic', 'beginner'],
-    mechanisms: ['Insulin reduction during fasting window', 'Glycogen depletion at 12–16 hours', 'Metabolic flexibility training', 'Circadian feeding window alignment', 'mTOR suppression between meals'],
-    benefits: [
-      'Reduces daily insulin levels by 20–30% — lower insulin is the primary driver of improved insulin sensitivity, reduced fat storage signaling, and better glucose regulation seen with IF protocols',
-      'A 16-hour fast depletes hepatic glycogen and begins transitioning the body toward fat oxidation — this glycogen-depletion event is the metabolic stimulus that improves insulin sensitivity independent of weight loss',
-      'Reduces overall caloric intake by 10–20% in most people without requiring calorie counting — simply having an eating window naturally limits total intake by eliminating nighttime eating and compressed snacking',
-      'Time-restricted eating aligned with circadian biology (eating earlier in the day) produces superior metabolic outcomes compared to the same caloric intake spread across a longer window — insulin sensitivity is highest in the morning and lowest in the evening',
-      'Meta-analyses of IF vs. continuous caloric restriction show equivalent weight and metabolic outcomes — IF works as a sustainable caloric restriction strategy with better psychological adherence for many people',
+    tagline: 'The most studied and most sustainable IF protocol',
+    points: [
+      'A 16-hour fast reduces daily insulin levels by 20–30% — lower insulin is the primary driver of improved fat oxidation and glucose regulation.',
+      'At 12–16 hours, hepatic glycogen depletes and the body transitions toward fat oxidation — this metabolic shift improves insulin sensitivity independent of weight loss.',
+      'Most people naturally eat 10–20% fewer calories in an 8-hour window without counting anything — just having a window eliminates nighttime eating.',
+      'Circadian research shows eating earlier in the day (8am–4pm) produces better metabolic outcomes than the same 16:8 window shifted later — insulin sensitivity is highest in the morning.',
     ],
-    howToPractice: 'Choose an 8-hour eating window and commit to it 7 days a week. The most common schedule is 12pm–8pm (skip breakfast). The most circadian-optimal schedule is 8am–4pm (skip dinner — harder socially but metabolically superior). Black coffee, plain tea, and water are allowed during the fasting window — none of them break the fast in a meaningful metabolic sense.',
-    protocol: '16-hour fast, 8-hour eating window. Ideal: 8am–4pm (best circadian alignment). Common: 12pm–8pm (easiest social compliance). First 1–2 weeks: hunger during the fast window is normal and subsides within 14 days as ghrelin adapts to the new schedule. Electrolytes (sodium especially) may reduce symptoms during adaptation.',
-    methods: ['12pm–8pm window (most common)', '10am–6pm window (moderate)', '8am–4pm window (circadian optimal)', 'Zero app (fasting timer)', 'Life Fasting Tracker app'],
-    tip: 'The 12pm–8pm window is culturally popular because it lets you skip breakfast and keep dinner. But metabolic research consistently shows that eating earlier in the day (8am–4pm) produces better insulin sensitivity, blood glucose, and triglyceride outcomes with the same fasting duration. The same 16:8 ratio produces different results depending on whether the eating window is in the morning or evening.',
-    stack: 'Autophagy (fasting window initiates autophagic activity at 14–16 hours — stack with zone 2 cardio in the fasted state for amplification). Metabolic switching (16:8 is the training ground for metabolic flexibility). Fasting tracker page (log your windows and track consistency).',
+    protocol: '16-hour fast, 8-hour eating window daily. Most common: 12pm–8pm (easiest socially). Circadian optimal: 8am–4pm (better insulin response). Black coffee, plain tea, and water are allowed and don\'t break the fast. First 1–2 weeks: hunger during the fast is normal and adapts within 14 days.',
+    tip: 'The 12pm–8pm window is popular because it skips breakfast and keeps dinner. But eating earlier (8am–4pm) consistently produces better insulin sensitivity and triglyceride outcomes with the same 16:8 ratio — the same fast duration, different results depending on time of day.',
   },
   {
     id: 'omad',
     emoji: '🍽️',
-    name: 'OMAD (One Meal a Day)',
-    tagline: 'Maximum fasting window — aggressive caloric compression with significant cognitive benefits',
-    categories: ['protocol', 'metabolic'],
-    mechanisms: ['Maximum daily insulin suppression', 'Autophagy extension (18–22+ hours)', 'Peak norepinephrine in fasted state', 'Ghrelin habituation', 'Maximum BDNF elevation from fasting'],
-    benefits: [
-      'OMAD creates an 18–23 hour daily fasting window — significantly extending autophagy, BDNF elevation, and fat oxidation beyond the 16-hour window of standard IF',
-      'Practitioners consistently report dramatically elevated cognitive clarity in the fasted state — this is real and measurable: ketones produce more ATP per oxygen molecule than glucose and EEG studies show distinct brain state changes in ketosis',
-      'Maximum insulin suppression across the day means the longest daily window of fat mobilization, AMPK activation, and mTOR suppression — overlapping multiple longevity-associated pathways simultaneously',
-      'Dramatically simplifies daily decision-making around food — the "what to eat" decision happens once per day; cognitive bandwidth spent on food choices throughout the day is entirely freed up during the fasting period',
-      'Ghrelin (the hunger hormone) adapts to OMAD within 2–3 weeks — the hunger waves at habitual meal times cease as ghrelin secretion patterns shift to the single eating window',
+    name: 'OMAD — One Meal a Day',
+    tagline: 'Maximum fasting window with significant cognitive and metabolic benefits',
+    points: [
+      'OMAD creates an 18–23 hour daily fasting window — significantly extending autophagy, BDNF elevation, and fat oxidation beyond standard 16:8.',
+      'Maximum daily insulin suppression means the longest window of fat mobilization and mTOR suppression — overlapping multiple longevity pathways simultaneously.',
+      'Practitioners report dramatically elevated cognitive clarity in the fasted state — ketones produce more ATP per oxygen molecule than glucose, and EEG studies show measurable brain state changes in ketosis.',
+      'Ghrelin (the hunger hormone) adapts to OMAD within 2–3 weeks — hunger at old meal times disappears as ghrelin patterns shift to the single eating window.',
     ],
-    howToPractice: 'Start by extending 16:8 to 18:6, then 20:4, before attempting true OMAD. The single meal should include your full daily protein target (at minimum 0.7g per lb bodyweight), vegetables, healthy fats, and complex carbs — it must be nutritionally complete. Timing: 4–6pm is most socially compatible and allows the meal to serve as both lunch and dinner socially.',
-    protocol: 'Build up to OMAD from 16:8 → 18:6 → 20:4 → OMAD over 4–6 weeks. Meal composition: protein (140–200g for most people), vegetables, fats, carbs. Avoid OMAD as a permanent daily practice if training for strength or muscle gain — protein synthesis requires multiple daily feedings for optimal anabolic signaling. Use 1–3 days/week for maximum fasting benefits without compromising muscle.',
-    methods: ['Dinner OMAD (4–7pm)', 'Lunch OMAD (1–3pm)', 'Occasional 1–2 days per week (sustainable)', 'Full daily OMAD (only if protein is non-negotiable at the meal)'],
-    tip: 'OMAD is unsustainable as a strict permanent protocol for most active people. Use it as a tool 1–2 days per week — perhaps on rest days or lower-activity days — to access the extended autophagy and cognitive clarity benefits without compromising protein synthesis and muscle retention on training days. Treat OMAD as a periodic mode, not a daily identity.',
-    stack: '16:8 (build from this). Autophagy (maximally triggered in OMAD window). Supplement Guide (magnesium, electrolytes important during extended fasted states).',
+    protocol: 'Build gradually: 16:8 → 18:6 → 20:4 → OMAD over 4–6 weeks. Single meal must hit full daily protein (minimum 0.7g/lb bodyweight), vegetables, fats, and carbs. Best timing: 4–6pm (socially compatible). For muscle building, limit to 1–3 days/week on rest days — multiple protein feedings per day are optimal for muscle protein synthesis.',
+    tip: 'OMAD is unsustainable as a strict daily protocol for active people. Use it as a tool 1–2 days per week — on rest days or lower-activity days — to access extended autophagy and cognitive benefits without compromising muscle retention. Treat OMAD as a periodic mode, not a daily identity.',
   },
   {
     id: 'five-two',
     emoji: '📅',
     name: '5:2 Fasting',
-    tagline: 'Two restricted days per week — equivalent metabolic benefits with better social compliance',
-    categories: ['protocol', 'longevity', 'beginner'],
-    mechanisms: ['Periodic caloric restriction signaling', 'Insulin sensitivity reset on fast days', 'AMPK activation on restricted days', 'IGF-1 reduction (fast days)', 'Normal eating → compliance advantage'],
-    benefits: [
-      'Two low-calorie days per week (500–600 kcal) produces metabolic outcomes — insulin sensitivity, weight, triglycerides — equivalent to daily caloric restriction in head-to-head comparisons, with significantly better long-term adherence',
-      'IGF-1 (insulin-like growth factor 1) drops significantly on fast days — IGF-1 is a growth factor linked to aging rate and cancer risk; periodic reduction through fasting is one mechanism by which IF produces longevity benefits',
-      'The "you can always have it tomorrow" psychological mechanism makes 5:2 the most adherent IF protocol for people who struggle with daily restriction — the deprivation feeling that kills most diets is absent because tomorrow is always a normal day',
-      'Normal eating days require zero calorie counting or restriction — the entirety of the protocol\'s work happens on 2 non-consecutive days, making the protocol cognitively simple',
-      'Shows superiority over continuous caloric restriction for preserving lean muscle mass in some studies — the periodic re-feeding on normal days may prevent the metabolic adaptation that drives muscle loss during continuous restriction',
+    tagline: 'Two restricted days per week — equivalent metabolic benefits with the best adherence',
+    points: [
+      'Two low-calorie days per week (500–600 kcal) produces metabolic outcomes — insulin sensitivity, weight, triglycerides — equivalent to daily caloric restriction, with significantly better long-term adherence in head-to-head trials.',
+      'IGF-1 drops significantly on fast days — IGF-1 is linked to aging rate and cancer risk; periodic reduction through fasting is a key longevity mechanism of IF.',
+      'The "you can always have it tomorrow" psychological mechanism makes 5:2 the most adherent IF protocol — the permanent deprivation feeling that kills most diets is replaced by a delay narrative.',
+      'Normal eating days require zero calorie counting — all of the protocol\'s work happens on 2 non-consecutive days, making it cognitively simple.',
     ],
-    howToPractice: 'Choose 2 non-consecutive fast days (e.g., Monday + Thursday). On fast days: 500 calories for women, 600 for men. Spread across 1–2 small protein-focused meals. High-volume, low-calorie options: eggs, white fish, Greek yogurt, cottage cheese, leafy greens, broth. On normal days: eat normally to hunger — no restriction required.',
-    protocol: 'Fast days: 500–600 kcal, non-consecutive. Normal days: unrestricted. Fast day meal structure: 2 meals of ~250–300 kcal each, protein-focused. Hydration on fast days: 2+ liters water, electrolytes, black coffee/tea allowed. Best fast day foods: egg whites (17 cal each), white fish, non-starchy vegetables.',
-    methods: ['Monday + Thursday (most common pairing)', 'Tuesday + Friday', 'Single 24-hour fast (dinner to dinner)', '500 kcal as 2 small meals', '500 kcal as one dinner'],
-    tip: 'The psychological insight behind 5:2 is its most underrated advantage: you never have to refuse food permanently — you just defer it to tomorrow. This transforms the deprivation narrative ("I can\'t have that") into a delay narrative ("I\'ll have that tomorrow") — a difference that the research on dietary adherence consistently shows is psychologically sustainable where permanent restriction fails.',
-    stack: 'Autophagy (fast days trigger meaningful autophagic activity — especially effective when combined with light exercise). 16:8 (can run 16:8 on non-fast days for additional metabolic benefit without significant additional restriction).',
+    protocol: 'Choose 2 non-consecutive fast days (e.g., Monday + Thursday). Fast days: 500 kcal for women, 600 for men — split into 1–2 protein-focused meals. Best fast day foods: eggs, white fish, Greek yogurt, cottage cheese, leafy greens, broth. Normal days: eat to hunger with no restriction.',
+    tip: 'The psychological insight behind 5:2: you never permanently refuse food — you just defer it to tomorrow. This transforms "I can\'t have that" into "I\'ll have that tomorrow" — a difference that research on dietary adherence consistently shows is sustainable where permanent restriction fails.',
   },
   {
     id: 'extended-fasting',
     emoji: '⏳',
     name: 'Extended Fasting (24h+)',
-    tagline: 'Deep metabolic reset — peak autophagy, stem cell activation, and maximum fat adaptation',
-    categories: ['protocol', 'longevity', 'metabolic'],
-    mechanisms: ['Peak autophagic flux (24–48 hours)', 'Stem cell self-renewal activation (36h+)', 'Complete hepatic glycogen depletion → deep ketosis', 'IGF-1 and mTOR nadir', 'BDNF spike from extended fast'],
-    benefits: [
-      'Autophagy peaks at 24–48 hours of fasting — the 24+ hour range triggers significantly more autophagic flux (cellular waste clearance) than daily IF can achieve, representing a qualitatively different metabolic event',
-      'Stem cell regeneration increases dramatically after 36 hours of fasting — hematopoietic (blood and immune) stem cells begin self-renewal in this window, a mechanism observed in cancer patients whose immune systems regenerate after chemotherapy-combined fasting',
-      'IGF-1 reaches its nadir during extended fasting — this hormonal reset is one mechanism by which caloric restriction extends lifespan in animal models, and the effect is most pronounced during multi-day rather than daily fasting',
-      'BDNF (brain-derived neurotrophic factor) spikes measurably during extended fasting, independently of exercise — a neuroprotective and neuroplasticity signal that likely contributes to the cognitive clarity reports from experienced fasters',
-      'The transition from glycolytic to ketogenic metabolism during a 24h+ fast is a fundamental metabolic reset — the body\'s glucose management machinery is "rested" and re-sensitizes to insulin during this period',
+    tagline: 'Deep metabolic reset — peak autophagy, stem cell activation, maximum fat adaptation',
+    points: [
+      'Autophagy peaks at 24–48 hours — the 24h+ range triggers significantly more cellular waste clearance than daily IF can achieve, representing a qualitatively different metabolic event.',
+      'Stem cell regeneration increases dramatically after 36 hours — hematopoietic stem cells begin self-renewal, a mechanism observed in patients whose immune systems regenerated after fasting-combined chemotherapy.',
+      'IGF-1 reaches its nadir during extended fasting — this hormonal reset is one mechanism by which caloric restriction extends lifespan in animal models.',
+      'BDNF spikes measurably during extended fasting independently of exercise — a neuroprotective signal that likely contributes to the cognitive clarity experienced by long-term fasters.',
     ],
-    howToPractice: 'Most accessible format: dinner-to-dinner (24 hours). Eat dinner at 7pm, skip the next day entirely, eat dinner the following evening. Electrolytes are essential: sodium, potassium, and magnesium — the kidneys excrete sodium rapidly when insulin drops, and deficiency drives most fasting side effects. Bone broth provides electrolytes with minimal calories. Light activity (walking) is beneficial; intense exercise is not.',
-    protocol: '24h: dinner-to-dinner (most accessible). 36h: dinner → full next day skipped → breakfast the day after. Once monthly for most people. Electrolytes: 2–3g extra sodium, 1g potassium, 300mg magnesium per day of extended fasting. Break any fast longer than 24h gradually: bone broth → small protein meal → normal eating over 1–2 hours.',
-    methods: ['Dinner-to-dinner (24h)', '36-hour water fast', 'Weekly 24h fast (one day per week)', 'Bone broth fast (electrolytes during)', 'Supervised 48h+ extended fast'],
-    tip: 'The hunger experience during extended fasting follows a consistent and counterintuitive pattern: it peaks at conditioned meal times (a Pavlovian response, not true hunger) and then subsides within 20 minutes. By hour 24, most people report hunger is significantly less than at hour 12. The body has found its fuel source (fat + ketones) and the urgency signal dissipates. Knowing this pattern in advance makes the first experience dramatically more manageable.',
-    stack: 'Autophagy (the mechanism is maximally engaged during extended fasting). Metabolic switching (extended fasting is the fastest route to deep ketosis and fat adaptation). Fasting tracker page (log your extended fasts and track the pattern).',
+    protocol: 'Most accessible: dinner-to-dinner (24h). Eat dinner at 7pm, skip the next full day, eat dinner the following evening. Electrolytes are essential: 2–3g extra sodium, 1g potassium, 300mg magnesium per day fasted. Bone broth provides electrolytes with minimal calories. Break any 24h+ fast gradually: bone broth → small protein meal → normal eating over 1–2 hours. Frequency: once monthly for most people.',
+    tip: 'Hunger during extended fasting follows a counterintuitive pattern: it peaks at conditioned meal times (a Pavlovian response, not true hunger) and subsides within 20 minutes. By hour 24, most people report significantly less hunger than at hour 12 — the body has found its fuel source (fat + ketones) and the urgency signal dissipates. Knowing this in advance makes the first extended fast dramatically more manageable.',
   },
   {
     id: 'autophagy',
     emoji: '♻️',
     name: 'Autophagy — Cellular Self-Cleaning',
-    tagline: '2016 Nobel Prize in Medicine — understanding the cellular waste disposal system activated by fasting',
-    categories: ['longevity', 'metabolic'],
-    mechanisms: ['mTOR suppression → ULK1/2 activation', 'Lysosomal degradation of damaged proteins', 'Mitophagy (damaged mitochondria clearance)', 'Protein aggregate clearance (amyloid, tau)', 'ATG gene expression cascade'],
-    benefits: [
-      'Yoshinori Ohsumi was awarded the 2016 Nobel Prize in Medicine for discovering autophagy mechanisms — the process by which cells degrade and recycle damaged proteins, organelles, and waste that accumulates with normal cellular aging',
-      'Autophagy clears the same toxic protein aggregates (beta-amyloid, tau) that accumulate in Alzheimer\'s disease — dysregulated autophagy is mechanistically linked to Alzheimer\'s, Parkinson\'s, and other neurodegenerative conditions',
-      'Mitophagy (selective autophagy of damaged mitochondria) removes dysfunctional mitochondria from the cell — the accumulation of damaged mitochondria is a central driver of the fatigue, muscle weakness, and metabolic decline of aging',
-      'Cancer cells upregulate mTOR (autophagy\'s inhibitor) to bypass normal cellular waste control — fasting-induced autophagy is a mechanism by which caloric restriction reduces cancer incidence in animal models',
-      'Zone 2 cardio strongly induces autophagy even without fasting — a fasted zone 2 session combines mTOR suppression (fasting) with AMPK activation (exercise) for a maximally autophagic stimulus',
+    tagline: '2016 Nobel Prize in Medicine — the cellular waste disposal system activated by fasting',
+    points: [
+      'Autophagy is the process by which cells degrade and recycle damaged proteins, organelles, and waste. Yoshinori Ohsumi won the 2016 Nobel Prize in Medicine for discovering its mechanisms.',
+      'Autophagy clears the same toxic protein aggregates (beta-amyloid, tau) that accumulate in Alzheimer\'s disease — dysregulated autophagy is mechanistically linked to neurodegeneration.',
+      'Mitophagy (selective autophagy of damaged mitochondria) removes dysfunctional mitochondria — their accumulation is a central driver of the fatigue and metabolic decline of aging.',
+      'Zone 2 cardio strongly induces autophagy even without fasting — a fasted zone 2 session combines mTOR suppression (fasting) with AMPK activation (exercise) for a maximally autophagic stimulus.',
     ],
-    howToPractice: 'Autophagy begins at approximately 14–16 hours of fasting in humans, with significant flux at 24–48 hours. You cannot feel autophagy occurring — it\'s a molecular process. Maximize it by: extending your fasting window past 16 hours when practical, performing zone 2 cardio in the fasted state, limiting protein within 2–3 hours of sleep (protein activates mTOR, switching off autophagy), and reducing processed food intake (inflammatory foods disrupt autophagic signaling).',
-    protocol: 'Daily IF (16h+): initiates autophagy regularly. Monthly 24h+ fast: peak autophagic flux. Fasted zone 2 cardio (30–45 min, AM): AMPK + mTOR suppression synergy. Protein: consume at meals, not spread throughout the day — the between-meal gaps allow autophagic cycles to complete.',
-    methods: ['16h+ daily fasting window', 'Monthly 24–36h extended fast', 'Fasted zone 2 cardio (AM, 30–45 min)', 'Caloric restriction (independent of fasting)', 'Spermidine-rich foods (wheat germ, soybeans — autophagy inducer)'],
-    tip: 'Combining fasted-state zone 2 cardio with a daily 16:8 window creates a remarkably powerful autophagy protocol within a normal day. The mechanism: exercise activates AMPK (the cellular energy sensor), which suppresses mTOR; fasting already suppresses mTOR through insulin reduction. The two signals converge on the same autophagy-activating pathway. A 40-minute morning walk in the fasted state is one of the highest-leverage longevity practices accessible to any healthy adult.',
-    stack: '16:8 fasting (the daily autophagy activation framework). Extended fasting (peak autophagic flux). Exercise — particularly zone 2 cardio (independent autophagy inducer that multiplies with fasting).',
+    protocol: 'Autophagy begins at ~14–16 hours of fasting in humans, with significant flux at 24–48 hours. Daily autophagy routine: 16h+ fasting window + fasted zone 2 cardio (30–45 min AM). For deeper autophagy: monthly 24–36h extended fast. Consume protein at meals rather than spread throughout the day — the between-meal gaps allow autophagic cycles to complete.',
+    tip: 'Combining fasted zone 2 cardio with daily 16:8 creates a powerful autophagy protocol within a normal day. Exercise activates AMPK (the cellular energy sensor), which suppresses mTOR; fasting already suppresses mTOR through insulin reduction. Both signals converge on the same pathway. A 40-minute morning walk in the fasted state is one of the highest-leverage longevity practices accessible to any healthy adult.',
   },
   {
     id: 'metabolic-switching',
     emoji: '⚡',
     name: 'Metabolic Switching & Fat Adaptation',
-    tagline: 'Training the body to run on both fuel sources — the hallmark of metabolic health',
-    categories: ['metabolic', 'mental'],
-    mechanisms: ['Glucose-ketone metabolic switch', 'Hepatic glycogen depletion timeline', 'Beta-oxidation enzyme upregulation', 'GLUT4 transporter density increase', 'Ketone body production (BHB, AcAc)'],
-    benefits: [
-      'Metabolic flexibility — the ability to efficiently burn either glucose or fat depending on availability — is one of the strongest independent predictors of long-term metabolic health and one of the clearest markers that distinguishes metabolically healthy from unhealthy individuals',
-      'Most modern adults on high-carbohydrate, continuous feeding patterns are metabolically inflexible — they can only run on glucose, causing energy crashes when blood sugar dips and an inability to access fat stores during the fasting state',
-      'The metabolic switch from glucose to ketone metabolism occurs at approximately 12–16 hours of fasting — ketones then become the primary brain fuel; keto-adapted individuals maintain cognitive performance during this transition that causes brain fog in unadapted individuals',
-      'Full fat adaptation — stable, efficient fat oxidation without cognitive impairment — takes 3–4 weeks of consistent IF or ketogenic eating; most people quit in week 1–2 during the adaptation window before the benefits materialize',
-      'Fat-adapted athletes show superior endurance performance and reduced perceived exertion at moderate intensities — they draw on a vastly larger fuel reservoir (fat stores = 50,000–150,000 kcal) compared to glycogen (1,500–2,000 kcal)',
+    tagline: 'Training the body to run efficiently on both fuel sources',
+    points: [
+      'Metabolic flexibility — efficiently burning either glucose or fat — is one of the strongest independent predictors of long-term metabolic health.',
+      'Most modern adults on continuous high-carbohydrate feeding are metabolically inflexible: they can only run on glucose, causing energy crashes and an inability to access fat stores during fasting.',
+      'The metabolic switch to ketone metabolism occurs at 12–16 hours of fasting. Fat-adapted individuals maintain cognitive performance during this transition; unadapted individuals experience brain fog.',
+      'Full fat adaptation takes 3–4 weeks of consistent IF. Most people quit in week 1–2 during the adaptation window before the benefits materialize — they pay the cost without the reward.',
     ],
-    howToPractice: 'The simplest path to metabolic flexibility is consistent 16:8 IF — it trains the switch every day without dietary restriction on macros. The daily glycogen partial-depletion over weeks builds beta-oxidation enzyme capacity and mitochondrial fat-burning machinery. Zone 2 cardio in the fasted state accelerates adaptation. Avoid snacking between meals to allow full insulin clearance between eating windows.',
-    protocol: '3–4 weeks of consistent 16:8 fasting is the minimum to develop meaningful fat adaptation. Signs of adaptation: reduced hunger during the fast window, mental clarity in the fasted state, stable energy without the 2-3pm crash, reduced dependence on frequent meals. Electrolytes (sodium especially) during the first 2 weeks prevent the "keto flu" symptoms that are entirely electrolyte-driven, not metabolic.',
-    methods: ['Daily 16:8 IF (primary adaptation protocol)', 'Fasted zone 2 cardio (accelerates adaptation)', 'Reduced snacking between meals', 'MCT oil (immediate ketone precursor, optional)', 'Ketone meters (track adaptation progress)'],
-    tip: 'The "keto flu" — brain fog, fatigue, irritability, and headaches in the first 1–2 weeks of IF or ketogenic eating — is caused almost entirely by sodium and electrolyte loss, not the metabolic transition. When insulin drops, the kidneys begin excreting sodium rapidly. Add 2–3g of extra sodium per day (salted water, broth, salt food more) during adaptation. Most "keto flu" symptoms vanish within 24 hours of addressing the sodium deficit.',
-    stack: '16:8 fasting (the daily training protocol). Extended fasting (deepens fat adaptation rapidly). Zone 2 cardio (the most effective exercise modality for fat adaptation when done in the fasted state).',
+    protocol: 'Consistent 16:8 IF trains the metabolic switch every day. Signs of adaptation (expect by week 3–4): reduced hunger during the fast window, mental clarity in the fasted state, stable energy without the 2–3pm crash. Electrolytes (especially sodium: 2–3g extra/day) during the first 2 weeks prevent adaptation symptoms. Fasted zone 2 cardio accelerates fat adaptation.',
+    tip: 'The "keto flu" — brain fog, fatigue, headaches in the first 1–2 weeks of IF — is caused almost entirely by sodium and electrolyte loss, not the metabolic transition itself. When insulin drops, the kidneys excrete sodium rapidly. Add 2–3g of extra sodium per day (salted water, broth, salt food more) during adaptation. Most symptoms vanish within 24 hours of addressing the sodium deficit.',
   },
   {
     id: 'fasting-cognition',
     emoji: '🧠',
     name: 'Fasting & Cognitive Performance',
-    tagline: 'Why the fasted brain performs differently — and how to access fasted clarity reliably',
-    categories: ['mental', 'metabolic'],
-    mechanisms: ['Ketone brain fuel (28% more ATP per O₂)', 'BDNF elevation during fasting', 'Norepinephrine increase in fasted state', 'Ghrelin-mediated hippocampal neuroplasticity', 'Adenosine clearance acceleration in ketosis'],
-    benefits: [
-      'Ketones (beta-hydroxybutyrate, acetoacetate) produce 28% more ATP per unit of oxygen than glucose — the brain operating on ketones is running a more fuel-efficient engine, which may underlie the subjective experience of "fasted clarity"',
-      'BDNF (brain-derived neurotrophic factor) spikes during fasting independently of exercise — BDNF promotes neuroplasticity, long-term potentiation, and mood; it\'s the molecular mechanism by which both exercise and fasting improve cognitive function',
-      'Norepinephrine increases in the fasted state as part of the mild sympathetic activation that mobilizes fat stores — this low-level NE elevation produces a natural, mild alertness and focus enhancement without the anxiety or crash of caffeine',
-      'Ghrelin (the hunger hormone that rises during fasting) paradoxically improves hippocampal memory formation and neuroplasticity — hunger signals the brain to be sharper to find food, a mechanism that evolved to keep cognition high when food is scarce',
-      'EEG studies show measurably different brain states in ketosis compared to glycolytic states — changes in alpha and theta wave activity consistent with focused attention and meditative states, validating the subjective reports of fasted clarity',
+    tagline: 'Why the fasted brain performs differently — and how to access it reliably',
+    points: [
+      'Ketones produce 28% more ATP per unit of oxygen than glucose — the brain on ketones is running a more fuel-efficient engine, which likely underlies the subjective experience of fasted clarity.',
+      'BDNF spikes during fasting independently of exercise — BDNF promotes neuroplasticity and mood; it\'s the molecular mechanism by which both exercise and fasting improve cognitive function.',
+      'Norepinephrine increases in the fasted state as part of the sympathetic activation that mobilizes fat — this NE elevation produces natural mild alertness and focus without caffeine\'s anxiety or crash.',
+      'Ghrelin (the hunger hormone) paradoxically improves hippocampal memory formation and neuroplasticity — hunger signals the brain to be sharper, a mechanism that evolved when food was scarce.',
     ],
-    howToPractice: 'The fasted cognitive benefit is most reliable at 16–20 hours into a fast, after full adaptation (3–4 weeks of consistent IF). Before adaptation: expect cognitive fog at 14–18 hours as the brain transitions fuel sources. After adaptation: the fog window disappears and the fasted state becomes reliably clear. Use the fasted morning window for deep focus work that requires sustained attention.',
-    protocol: 'Schedule cognitively demanding work in the fasted AM window (hours 14–20 of the fast). Black coffee + L-theanine in the fasted state is the evidence-backed focus stack for this period. Avoid breaking the fast with high-glycemic foods — an insulin spike terminates the fasted cognitive state. Break with protein + fat first.',
-    methods: ['Fasted deep work sessions (morning)', 'Black coffee + L-theanine during fast', 'Extended 20h fast for creative/insight work', 'Ketone monitoring (blood ketone meter)'],
-    tip: 'The fasted clarity experience that long-term practitioners report is not placebo — it requires 3–4 weeks of consistent fasting to develop, which is why most people who try IF for one week don\'t experience it. The adaptation window involves building beta-oxidation enzymes, ketone transport proteins, and neuronal machinery for using ketones. Quit at week 2 and you\'ve paid the cost (adaptation discomfort) without receiving the benefit (fasted clarity). The 4-week mark is the inflection point.',
-    stack: 'Metabolic switching (fat adaptation is the prerequisite for fasted cognitive benefit). 16:8 fasting (the daily framework). L-Theanine supplement (complements fasted focus without breaking the fast).',
+    protocol: 'Fasted cognitive benefit is most reliable at 16–20 hours into a fast, after adaptation (3–4 weeks of consistent IF). Before adaptation: expect fog at 14–18 hours. After adaptation: the fog window disappears and the fasted state becomes reliably clear. Schedule cognitively demanding work in the fasted AM window. Black coffee + L-theanine is the evidence-backed focus stack during this period. Break with protein + fat first, not high-glycemic foods.',
+    tip: 'The fasted clarity that long-term practitioners describe is real, but it requires 3–4 weeks of consistent fasting to develop. The adaptation involves building beta-oxidation enzymes, ketone transport proteins, and neuronal machinery for using ketones as fuel. Quit at week 2 and you\'ve paid the adaptation cost without receiving the clarity benefit. The 4-week mark is the inflection point.',
   },
   {
     id: 'breaking-fast',
     emoji: '🥗',
     name: 'Breaking the Fast — Optimal Refeeding',
-    tagline: 'What you eat first matters more than you think — especially after extended fasts',
-    categories: ['protocol', 'metabolic', 'beginner'],
-    mechanisms: ['Insulin re-sensitization window post-fast', 'mTOR re-activation via amino acid sensing', 'Gastric acid & digestive enzyme re-activation', 'Refeeding syndrome prevention (extended fasts)', 'Post-prandial glucose response after fasting'],
-    benefits: [
-      'Breaking a fast with high-glycemic foods produces a sharper insulin spike than the same foods eaten in a non-fasted context — the insulin-sensitized post-fast state makes glucose management more responsive, amplifying both good and bad refeed choices',
-      'Breaking with protein first blunts the post-fast insulin spike by slowing gastric emptying and stimulating glucagon — a more gradual re-entry into the fed metabolic state',
-      'For extended fasts (24h+), the gut\'s digestive enzyme activity and gastric acid production partially downregulate — breaking with large, complex meals can cause GI distress, bloating, and cramping that is entirely avoided by gradual refeeding',
-      'Refeeding syndrome — the dangerous electrolyte shift when food is reintroduced after prolonged fasting (72h+) — is a real clinical risk driven by rapid insulin release driving phosphate, potassium, and magnesium into cells; bone broth and slow refeeding prevent it',
-      'The quality of the first meal after a fast sets the metabolic tone for insulin sensitivity for the rest of the eating window — a protein-first, fiber-first opening meal maintains the insulin-sensitized state longer into the fed period',
+    tagline: 'What you eat first matters more the longer the fast',
+    points: [
+      'Breaking a fast with high-glycemic foods produces a sharper insulin spike than the same foods eaten in a non-fasted state — the insulin-sensitized post-fast state amplifies both good and bad refeed choices.',
+      'Breaking with protein first blunts the post-fast insulin spike by slowing gastric emptying and stimulating glucagon — a more gradual re-entry into the fed state.',
+      'For 24h+ fasts, gut digestive enzyme activity partially downregulates — breaking with large complex meals causes GI distress that is entirely avoided by gradual refeeding.',
+      'The first meal after a fast sets the metabolic tone for the rest of the eating window — a protein-first, fiber-first opening meal maintains the insulin-sensitized state longer.',
     ],
-    howToPractice: 'For daily 16:8: break with a proper protein + vegetable meal — the optimization noise around "breaking the fast" is largely irrelevant for daily IF. For 24h fasts: bone broth first (electrolytes + minimal GI load), then 30–60 minutes later a normal protein meal. For 48h+ fasts: multiple small servings over 2–4 hours before eating normally.',
-    protocol: 'Daily 16:8 break: any nutritionally complete meal. 24h break: bone broth → protein meal 30 min later. 48h+ break: 250ml bone broth → wait 30 min → small protein meal (eggs, chicken) → wait 1 hour → normal meal. Always break extended fasts with protein + vegetables before carbohydrates.',
-    methods: ['Bone broth (extended fasts — electrolyte + gut primer)', 'Eggs + vegetables (protein-first break)', 'Cottage cheese or Greek yogurt', 'Lean protein + leafy greens', 'Avoid: bread, fruit, rice as first break food after extended fasts'],
-    tip: 'For daily 16:8, the "how to break a fast" optimization discourse is largely irrelevant — eating a donut vs. a steak as your first meal after a 16-hour fast has minimal impact on the day\'s outcomes. Where refeeding optimization matters is extended fasts (24h+) when gut sensitivity is elevated and electrolyte management is a real concern. Don\'t overcomplicate daily IF refeeding — just eat a reasonable meal.',
-    stack: '16:8 fasting (this is the end of every daily fast). Extended fasting (refeeding protocol is critical here). Supplement Guide (electrolytes — magnesium, sodium — are particularly important around extended fasting refeeding).',
+    protocol: 'Daily 16:8 break: any nutritionally complete meal — optimization here is minimal. 24h break: bone broth first (electrolytes + gut primer), then a normal protein meal 30 min later. 48h+ break: 250ml bone broth → wait 30 min → small protein meal (eggs, chicken) → wait 1 hour → normal meal. Always break extended fasts with protein + vegetables before carbohydrates.',
+    tip: 'For daily 16:8, the "how to break a fast" optimization discourse is largely noise — eating a donut vs. a steak as your first meal after a 16-hour fast has minimal impact on the day\'s outcomes. Refeeding optimization matters for extended fasts (24h+) when gut sensitivity is elevated and electrolyte management is a real concern. Don\'t overcomplicate daily IF refeeding.',
   },
 ];
 
-let activeFilter = 'all';
-
-function tagHtml(cat) {
-  return `<span class="ptag ${TAG_CLASS[cat]||''}">${TAG_LABEL[cat]||cat}</span>`;
-}
-
-function practiceCard(p) {
-  return `<div class="practice-card" id="${p.id}" data-cats="${p.categories.join(' ')}">
-    <div class="practice-header" onclick="toggleCard('${p.id}')">
-      <div class="practice-icon">${p.emoji}</div>
-      <div class="practice-meta">
-        <div class="practice-name">${p.name}</div>
-        <div class="practice-tagline">${p.tagline}</div>
-        <div class="practice-tags">${p.categories.map(tagHtml).join('')}</div>
+const list = document.getElementById('list');
+list.innerHTML = CARDS.map(c => `
+  <div class="card" id="${c.id}">
+    <div class="card-header" onclick="toggle('${c.id}')">
+      <div class="card-icon">${c.emoji}</div>
+      <div class="card-meta">
+        <div class="card-name">${c.name}</div>
+        <div class="card-tagline">${c.tagline}</div>
       </div>
       <span class="expand-arrow">▼</span>
     </div>
-    <div class="practice-body">
-      <div class="practice-inner">
-        <div>
-          <div class="sec-lbl">Key Mechanisms</div>
-          <div class="mech-row">${p.mechanisms.map(m=>`<span class="mech-badge">${m}</span>`).join('')}</div>
+    <div class="card-body">
+      <div class="card-inner">
+        <div class="points">
+          ${c.points.map((p,i) => `<div class="point"><div class="point-dot">${i+1}</div><span>${p}</span></div>`).join('')}
         </div>
-        <div>
-          <div class="sec-lbl">Evidence-Based Benefits</div>
-          <div class="benefit-list">${p.benefits.map((b,i)=>`<div class="benefit-item"><div class="benefit-dot">${i+1}</div><span>${b}</span></div>`).join('')}</div>
-        </div>
-        <div class="two-col">
-          <div class="info-box">
-            <div class="sec-lbl">How to Practice</div>
-            <div class="info-box-text">${p.howToPractice}</div>
-          </div>
-          <div class="info-box">
-            <div class="sec-lbl">Protocol</div>
-            <div class="info-box-text">${p.protocol}</div>
-            <div class="methods-row">${p.methods.map(m=>`<span class="method-pill">${m}</span>`).join('')}</div>
-          </div>
-        </div>
-        <div class="tip-box"><div class="tip-label">Pro Tip</div>${p.tip}</div>
-        ${p.stack ? `<div class="stack-box"><div class="stack-label">Stack With</div>${p.stack}</div>` : ''}
-        <button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to top</button>
+        <div><div class="sec-lbl">Protocol</div><div class="protocol-box">${c.protocol}</div></div>
+        <div class="tip-box"><div class="tip-label">Pro Tip</div>${c.tip}</div>
       </div>
     </div>
-  </div>`;
-}
+  </div>
+`).join('');
 
-function renderAll() {
-  const filtered = activeFilter === 'all' ? PRACTICES : PRACTICES.filter(p => p.categories.includes(activeFilter));
-  document.getElementById('practiceList').innerHTML = filtered.length
-    ? filtered.map(practiceCard).join('')
-    : '<div class="empty-state">No topics match this filter.</div>';
-  document.getElementById('practiceIndex').innerHTML = filtered.map(p =>
-    `<a class="index-pill" href="#${p.id}" onclick="openAndScroll('${p.id}',event)">${p.emoji} ${p.name}</a>`
-  ).join('');
-}
-
-function toggleCard(id) { document.getElementById(id).classList.toggle('open'); }
-
-function openAndScroll(id, e) {
-  e.preventDefault();
-  const card = document.getElementById(id);
-  if (!card) return;
-  if (!card.classList.contains('open')) card.classList.add('open');
-  setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-}
-
-function filterPractices(cat, btn) {
-  activeFilter = cat;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderAll();
-}
-
-renderAll();
+function toggle(id) { document.getElementById(id).classList.toggle('open'); }
 </script>
 </body>
 </html>

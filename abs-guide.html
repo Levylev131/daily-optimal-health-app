@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Six-Pack & Belly Fat Guide — Daily Optimal Health</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --acc: #2dd46e; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --r: 14px; --r-sm: 10px;
+      --amber: #f5a623;
+    }
+    html { min-height: 100%; scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg1));
+      background-size: 400% 400%;
+      animation: gradShift 18s ease infinite;
+      color: var(--text); min-height: 100vh; overflow-x: hidden;
+    }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+    .top-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 24px; max-width: 860px; margin: 0 auto;
+      border-bottom: 1px solid var(--glass-b);
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(6,26,12,0.85); backdrop-filter: blur(16px);
+    }
+    .back-btn { color: var(--muted); font-size: .88rem; font-weight: 600; transition: color .2s; background: none; border: none; cursor: pointer; }
+    .back-btn:hover { color: var(--acc); }
+    .top-title { flex: 1; text-align: center; font-size: 1rem; font-weight: 800; text-shadow: 0 0 20px var(--glow); }
+    .top-spacer { width: 60px; }
+
+    .page { max-width: 860px; margin: 0 auto; padding: clamp(16px,4vw,28px) clamp(12px,3vw,20px) 100px; }
+
+    .hero { text-align: center; padding: clamp(24px,5vw,40px) 0 clamp(20px,4vw,32px); }
+    .hero-emoji { font-size: clamp(2.8rem,8vw,4.2rem); display: block; margin-bottom: 12px; filter: drop-shadow(0 0 18px var(--glow)); }
+    .hero-title {
+      font-size: clamp(1.7rem,5vw,2.8rem); font-weight: 900; letter-spacing: -1px; line-height: 1.1;
+      background: linear-gradient(135deg, #fff 30%, var(--acc));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      margin-bottom: 10px;
+    }
+    .hero-sub { color: var(--muted); font-size: clamp(.85rem,2vw,1rem); max-width: 500px; margin: 0 auto; line-height: 1.65; }
+
+    .card {
+      background: var(--glass); border: 1px solid var(--glass-b);
+      border-radius: var(--r); backdrop-filter: blur(12px);
+      margin-bottom: 12px; overflow: hidden;
+      scroll-margin-top: 72px; transition: border-color .2s;
+    }
+    .card.open { border-color: rgba(45,212,110,0.35); }
+
+    .card-header {
+      display: flex; align-items: center; gap: 14px;
+      padding: clamp(14px,3vw,20px); cursor: pointer;
+      transition: background .15s; user-select: none;
+    }
+    .card-header:hover { background: var(--glass-h); }
+
+    .card-icon {
+      font-size: clamp(1.8rem,4vw,2.4rem); flex-shrink: 0;
+      width: clamp(48px,9vw,62px); height: clamp(48px,9vw,62px);
+      background: rgba(45,212,110,0.1); border: 1px solid rgba(45,212,110,0.2);
+      border-radius: 14px; display: flex; align-items: center; justify-content: center;
+    }
+    .card-meta { flex: 1; min-width: 0; }
+    .card-name { font-size: clamp(.98rem,2.6vw,1.18rem); font-weight: 900; margin-bottom: 3px; }
+    .card-tagline { color: var(--muted); font-size: .8rem; }
+    .expand-arrow { color: var(--muted); font-size: .8rem; transition: transform .25s; flex-shrink: 0; }
+    .card.open .expand-arrow { transform: rotate(180deg); }
+
+    .card-body {
+      max-height: 0; overflow: hidden;
+      transition: max-height .4s cubic-bezier(.4,0,.2,1);
+      border-top: 1px solid transparent;
+    }
+    .card.open .card-body { max-height: 2000px; border-top-color: var(--glass-b); }
+
+    .card-inner { padding: clamp(16px,3vw,24px); display: flex; flex-direction: column; gap: 16px; }
+
+    .points { display: flex; flex-direction: column; gap: 10px; }
+    .point { display: flex; gap: 11px; align-items: flex-start; font-size: .85rem; line-height: 1.6; }
+    .point-dot {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(45,212,110,0.18); color: var(--acc);
+      font-size: .72rem; font-weight: 900;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;
+    }
+
+    .sec-lbl {
+      font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px;
+      color: var(--muted); margin-bottom: 9px; display: flex; align-items: center; gap: 8px;
+    }
+    .sec-lbl::after { content:''; flex:1; height:1px; background: var(--glass-b); }
+
+    .protocol-box {
+      background: rgba(255,255,255,0.04); border: 1px solid var(--glass-b);
+      border-radius: var(--r-sm); padding: 14px;
+      font-size: .83rem; line-height: 1.65; color: rgba(240,255,244,0.85);
+    }
+
+    .tip-box {
+      background: rgba(245,166,35,0.07); border: 1px solid rgba(245,166,35,0.25);
+      border-radius: var(--r-sm); padding: 12px 15px;
+      font-size: .81rem; line-height: 1.65;
+    }
+    .tip-label { color: var(--amber); font-weight: 800; font-size: .68rem; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 4px; }
+  </style>
+  <script src="health-notifications.js" defer></script>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="history.back()">← Back</button>
+  <div class="top-title">🔥 Abs & Belly Fat</div>
+  <div class="top-spacer"></div>
+</div>
+
+<div class="page">
+
+  <div class="hero">
+    <span class="hero-emoji">🔥</span>
+    <div class="hero-title">Six-Pack Abs & Belly Fat</div>
+    <div class="hero-sub">The complete system — caloric deficit, upper and lower ab training, deep core, cardio, cortisol, protein, and sleep. Everything works together or nothing works.</div>
+  </div>
+
+  <div id="cardList"></div>
+
+</div>
+
+<script>
+const CARDS = [
+  {
+    id: 'caloric-deficit',
+    emoji: '⚖️',
+    name: 'Caloric Deficit — The Only Driver',
+    tagline: 'You cannot spot-reduce belly fat. Fat loss is a numbers problem before anything else.',
+    points: [
+      'Fat is stored as triglycerides in adipocytes and can only be released when the body needs more energy than food provides. Every method that works does so by creating a caloric deficit — directly or indirectly. This is the singular gateway.',
+      'Target 300–500 calories below your TDEE (bodyweight in lbs × 15 for moderate activity). Aggressive deficits (700+ cal/day) cause disproportionate muscle loss, making abs harder to see even as fat decreases.',
+      'Belly fat — especially visceral fat around the organs — is the last place most people lose it. Expect 12–20 weeks of consistency, not weeks. There are no shortcuts that change this biology.',
+      'Most people underestimate their caloric intake by 20–40%. Tracking with a food scale for even 2–3 weeks builds accurate portion intuition that persists long after you stop counting.',
+    ],
+    protocol: 'Set daily calorie target: bodyweight (lbs) × 15, then subtract 300–500. Weigh yourself 3× per week and use the weekly average as your trend — daily weight fluctuates 2–4 lbs from water and food. If weight stalls for 2+ weeks, subtract another 100–150 cal or add 20 min walking.',
+    tip: 'The reason people fail at fat loss is almost never effort — it\'s miscounting. A single tablespoon of olive oil (120 cal) disappears untracked daily. If progress stalls and you\'re "eating clean," the deficit isn\'t there. Trust the weekly average weight, not the feeling.',
+  },
+  {
+    id: 'upper-abs',
+    emoji: '💪',
+    name: 'Upper Abs — Build the Top 4',
+    tagline: 'Abs are a muscle. Train them with progressive overload like any other muscle.',
+    points: [
+      'The six-pack is created by tendinous intersections across the rectus abdominis — a single muscle. Upper abs are trained by loading spinal flexion: ribs toward pelvis. The range is short (about 30°) — quality of contraction matters more than range.',
+      'Cable crunches are 50–80% more effective than floor crunches for rectus abdominis activation. Most people plateau after 6–8 weeks of bodyweight crunches because the stimulus stops increasing — progressive overload is required, just like any other muscle.',
+      'A 3-second eccentric (slow lowering) doubles time under tension per set without adding sets or reps. The eccentric phase generates the strongest hypertrophy signal — most people rush through it and lose half the stimulus.',
+    ],
+    protocol: '3–4 sets × 10–15 reps, 2–3× per week. Rest 60–90 sec between sets. Add weight whenever you hit 15 reps with full control. Primary: cable crunch. Secondary: weighted decline crunch. Advanced: ab wheel rollout.',
+    tip: 'The most common mistake: hinging at the hip instead of flexing the spine. Cue: bring your sternum toward your belt buckle — not your forehead to your knees. If you feel it mostly in your hip flexors, you\'re doing a sit-up, not a crunch.',
+  },
+  {
+    id: 'lower-abs',
+    emoji: '⬇️',
+    name: 'Lower Abs — The Hard Zone',
+    tagline: 'Lower abs need a different movement pattern — and are the last to become visible.',
+    points: [
+      'Lower abs are the inferior portion of the same rectus abdominis. The movement direction is opposite to upper abs: instead of ribs toward pelvis, it\'s pelvis toward ribs — bringing the legs/knees up while the lower back stays flat.',
+      'Hip flexors take over in leg raises the moment the lower back arches off the floor. The key cue: press the lower back flat before lifting and maintain that contact throughout. Any arch = lower abs have disengaged. Reduce range until you can hold it.',
+      'Hanging leg raises produce the highest lower ab activation because the hanging position creates a longer moment arm, requiring hard posterior pelvic tilt against gravity through the full range.',
+      'Lower abs are covered by the most stubborn subcutaneous belly fat — typically the last place it disappears. Training builds thickness; the caloric deficit is what reveals them.',
+    ],
+    protocol: 'Hanging leg raise: 3 × 8–12 (3-sec lowering). Reverse crunch: 3 × 12–15. 2–3× per week. If you can\'t hang, use a captain\'s chair. Progress to: weighted hanging leg raise, dragon flag.',
+    tip: 'Test your lower ab activation: lie flat, press your lower back to the floor, then slowly raise straight legs to 45°. Most people\'s lower back immediately peels up — that\'s hip flexors compensating. Keep the back flat at all costs. Shortened range with back flat beats full range with back arched every time.',
+  },
+  {
+    id: 'tva',
+    emoji: '🎯',
+    name: 'TVA & Deep Core — The Waist Layer',
+    tagline: 'The muscle that compresses the waist — invisible but what makes abs look tight.',
+    points: [
+      'The transverse abdominis (TVA) wraps horizontally like a corset around the torso. Its contraction compresses the waist inward. A weak TVA creates the "belly push-out" look even at low body fat — crunches and leg raises don\'t train it.',
+      'Stomach vacuums are the primary TVA exercise. Done consistently (3–4× per week), they can visibly reduce resting waist circumference in 4–6 weeks by building the TVA\'s resting tone — the equivalent of training any other muscle to hold a higher baseline.',
+      'TVA also stabilizes the lumbar spine by creating internal pressure — which is why ab bracing (not sucking in) during compound lifts like squats and deadlifts reduces injury risk.',
+    ],
+    protocol: 'Stomach vacuum: exhale completely, pull the belly button toward the spine, hold 20–30 sec. 3 sets, 3–4× per week. Best done in the morning fasted. Dead bug: lie flat, press lower back to floor, extend opposite arm and leg while maintaining back contact. 3 × 8 per side.',
+    tip: 'The stomach vacuum is the forgotten exercise of modern fitness — popularized by Arnold-era bodybuilders, abandoned as gyms filled with machines. Its mechanism is direct: training the TVA to hold higher baseline tone. Unlike visible muscles, you can\'t see it working, so people skip it. The payoff is a narrower waist at the same body fat — something no amount of crunches provides.',
+  },
+  {
+    id: 'cardio',
+    emoji: '🏃',
+    name: 'Cardio Strategy for Belly Fat',
+    tagline: 'HIIT vs Zone 2 — what the evidence actually says.',
+    points: [
+      'There is no spot reduction. Belly fat does not respond to core exercises more than bicep curls. All cardio contributes to the caloric deficit that drives systemic fat loss — cardio is a deficit tool, not a targeting tool.',
+      'HIIT (20 min, 3×/week) produces comparable fat loss to LISS (45 min, 5×/week) in meta-analyses. HIIT is more time-efficient; Zone 2 cardio has lower recovery cost. Both work — choose based on lifestyle fit.',
+      'EPOC from HIIT extends the metabolic rate for 12–36 hours post-session. A 20-minute HIIT session can generate 30–40% more total caloric burn when the post-session effect is included.',
+    ],
+    protocol: 'HIIT: 20 sec max effort / 40 sec rest × 10–15 rounds, 2–3× per week. Zone 2: 30–45 min at conversational pace (can hold a full sentence), 3–5× per week. Do HIIT after lifting, not before — it pre-fatigues the muscles needed for strength work.',
+    tip: 'The most wasted cardio: 40 minutes at medium effort on a treadmill — too easy for HIIT stimulus, too hard to be Zone 2. Either go hard (intervals) or go easy (true Zone 2, 60–70% max HR). Walking or sprinting. The middle zone burns the most recovery without the results.',
+  },
+  {
+    id: 'cortisol',
+    emoji: '😤',
+    name: 'Cortisol & Visceral Belly Fat',
+    tagline: 'Stress physically stores fat in the belly. Managing cortisol is a real fat loss tool.',
+    points: [
+      'Cortisol directly promotes visceral fat storage — the fat around organs behind the ab wall. Visceral adipocytes have 4× more cortisol receptors than subcutaneous fat cells, making the belly the body\'s preferred cortisol-driven storage depot.',
+      'Chronic elevated cortisol impairs fat loss even within a caloric deficit: it increases appetite for sugar and fat, promotes muscle catabolism, and disrupts sleep — which further elevates cortisol the next day in a self-reinforcing loop.',
+      'Overtraining spikes chronic cortisol. 4–5 training sessions per week is typically the sweet spot; above that, recovery becomes the limiting factor and fat loss can stall or reverse.',
+    ],
+    protocol: 'Sleep 7–9 hours (the biggest single cortisol lever). Caffeine cutoff at 12pm. Cap training at 4–5 sessions/week. 10 min of breathwork or meditation daily. Optional: Ashwagandha KSM-66 300–600mg with food — reduces cortisol by ~20–30% in RCTs.',
+    tip: 'Most people try to out-train stress — they add more cardio when fat loss stalls, which adds more cortisol, which stores more belly fat. If you\'ve been in a deficit for 8+ weeks, training 5–6× per week, and belly fat won\'t move: the problem is cortisol and sleep, not the deficit. Add recovery, not volume.',
+  },
+  {
+    id: 'protein',
+    emoji: '🥩',
+    name: 'Protein — Keep the Muscle',
+    tagline: 'High protein is what separates losing fat from getting smaller but still soft.',
+    points: [
+      'In a caloric deficit, the body will catabolize muscle for energy unless two conditions are met: adequate protein (0.7–1g per pound of bodyweight) and resistance training. Losing muscle while dieting shrinks the waist but flattens the abs — visible abs require both low body fat and developed muscle underneath.',
+      'Protein has a thermic effect of 25–30%: 100 calories of protein costs 25–30 calories to digest. Carbs cost 5–10%, fat costs 2–3%. High-protein diets burn ~80–100 extra calories per day through this mechanism alone.',
+      'Protein suppresses hunger more powerfully than carbs or fat via GLP-1 and PYY signaling — high-protein meals sustain satiety 2–3× longer at equivalent calories, making the deficit significantly easier to maintain.',
+    ],
+    protocol: '0.7–1g protein per pound of bodyweight daily. For a 180lb person: 126–180g/day. Protein at every meal. Top sources: chicken breast, Greek yogurt, cottage cheese, egg whites, salmon, whey isolate (post-workout), casein (before bed).',
+    tip: 'Build every meal around the protein source first, then add everything else. If you plan protein last, you hit 60g/day. If you plan it first, you hit 160g/day. Same effort, radically different result. Greek yogurt + eggs for breakfast puts you 60–80g in before 9am.',
+  },
+  {
+    id: 'sleep',
+    emoji: '😴',
+    name: 'Sleep & Fat Loss',
+    tagline: 'One night of poor sleep increases appetite by ~22% the next day.',
+    points: [
+      'A single night of 4-hour sleep increases ghrelin (hunger hormone) by 28% and reduces leptin (satiety hormone) by 18% — resulting in a 22–24% average increase in caloric intake the following day in controlled studies. Poor sleep actively destroys the caloric deficit.',
+      'Sleep-deprived subjects in a caloric deficit lose significantly less fat and significantly more muscle than adequately-rested subjects on identical calorie protocols. Sleep determines what the deficit takes from — fat or muscle.',
+      'Growth hormone — which drives fat mobilization and muscle repair — is secreted primarily during deep sleep in the first half of the night. Fragmented or short sleep cuts GH release, slowing fat oxidation between training sessions.',
+    ],
+    protocol: '7.5–9 hours nightly. Fixed wake time 7 days a week. No food within 2–3 hours of sleep. No hard training within 3 hours of sleep. Cool dark room (65–67°F). Magnesium glycinate 200–400mg before bed. See the Sleep Guide for the full system.',
+    tip: 'An extra hour of sleep can do more for fat loss than an extra hour of cardio — by keeping ghrelin and leptin regulated, protecting GH secretion, and making the caloric deficit easier to maintain. People trying hard to lose fat often sleep less (more time to train, stress from dieting). This directly fights the goal.',
+  },
+  {
+    id: 'progressive-overload',
+    emoji: '📈',
+    name: 'Progressive Overload — Track Your Ab Training',
+    tagline: 'Visible abs at 14% body fat vs 8% is a muscle development question.',
+    points: [
+      'Abs are skeletal muscle with the same hypertrophic potential as any other muscle group. Adding weight to ab exercises builds thickness that makes abs visible at higher body fat. Two people at the same body fat can look dramatically different based on ab muscle development.',
+      'Most people plateau after 6–8 weeks of bodyweight ab training because the stimulus stops increasing. Progressive overload means systematically increasing difficulty — more weight on cable crunches, harder leg raise variations, greater ab wheel range.',
+      'Most people\'s abs don\'t change for years of training because they never track it. If you write down what you bench press, write down what you cable crunch. Same principle applies.',
+    ],
+    protocol: 'Dedicated ab session (15–20 min): cable crunch (upper) → hanging leg raise (lower) → stomach vacuum (TVA). 3–4 sets each. Add weight or difficulty when you hit 15 clean reps for all sets. 3× per week.',
+    tip: 'Track your ab training the same way you track any lift. Cable crunch weight, reps, sets — written down. If you\'re not progressing the load or difficulty every 2 weeks, you\'re not getting stronger. And if you\'re not getting stronger, you\'re not building the muscle that fat loss will eventually reveal.',
+  },
+];
+
+const list = document.getElementById('cardList');
+list.innerHTML = CARDS.map(c => `
+  <div class="card" id="${c.id}">
+    <div class="card-header" onclick="toggle('${c.id}')">
+      <div class="card-icon">${c.emoji}</div>
+      <div class="card-meta">
+        <div class="card-name">${c.name}</div>
+        <div class="card-tagline">${c.tagline}</div>
+      </div>
+      <span class="expand-arrow">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="card-inner">
+        <div class="points">
+          ${c.points.map((p,i) => `<div class="point"><div class="point-dot">${i+1}</div><span>${p}</span></div>`).join('')}
+        </div>
+        <div>
+          <div class="sec-lbl">Protocol</div>
+          <div class="protocol-box">${c.protocol}</div>
+        </div>
+        <div class="tip-box">
+          <div class="tip-label">Pro Tip</div>
+          ${c.tip}
+        </div>
+      </div>
+    </div>
+  </div>
+`).join('');
+
+function toggle(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+</script>
+</body>
+</html>

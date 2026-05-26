@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workout Builder — Daily Optimal Health</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --acc: #2dd46e; --glow: rgba(45,212,110,0.35);
+      --bg1: #061a0c; --bg2: #0d4a24;
+      --glass: rgba(255,255,255,0.07); --glass-b: rgba(255,255,255,0.13);
+      --glass-h: rgba(255,255,255,0.12);
+      --text: #f0fff4; --muted: rgba(240,255,244,0.55);
+      --r: 14px; --r-sm: 10px; --amber: #f5a623;
+    }
+    html { min-height: 100%; scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg1));
+      background-size: 400% 400%; animation: gradShift 18s ease infinite;
+      color: var(--text); min-height: 100vh; overflow-x: hidden;
+    }
+    @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+    .top-bar {
+      display:flex; align-items:center; gap:12px;
+      padding:14px 24px; max-width:920px; margin:0 auto;
+      border-bottom:1px solid var(--glass-b);
+      position:sticky; top:0; z-index:100;
+      background:rgba(6,26,12,0.9); backdrop-filter:blur(16px);
+    }
+    .back-btn { color:var(--muted); font-size:.88rem; font-weight:600; background:none; border:none; cursor:pointer; transition:color .2s; }
+    .back-btn:hover { color:var(--acc); }
+    .top-title { flex:1; text-align:center; font-size:1rem; font-weight:800; text-shadow:0 0 20px var(--glow); }
+
+    .tabs {
+      display:flex; max-width:920px; margin:0 auto;
+      border-bottom:1px solid var(--glass-b);
+      background:rgba(6,26,12,0.8); position:sticky; top:53px; z-index:99;
+    }
+    .tab-btn {
+      flex:1; padding:13px 0; font-size:.88rem; font-weight:700;
+      background:none; border:none; cursor:pointer; color:var(--muted);
+      border-bottom:2px solid transparent; transition:all .2s;
+    }
+    .tab-btn.active { color:var(--acc); border-bottom-color:var(--acc); }
+    .tab-btn:hover:not(.active) { color:var(--text); }
+
+    .page { max-width:920px; margin:0 auto; padding:clamp(16px,4vw,28px) clamp(12px,3vw,20px) 120px; }
+    .view { display:none; }
+    .view.active { display:block; }
+
+    .card {
+      background:var(--glass); border:1px solid var(--glass-b);
+      border-radius:var(--r); backdrop-filter:blur(12px); margin-bottom:12px; overflow:hidden;
+    }
+    .card.open { border-color:rgba(45,212,110,.3); }
+    .card-header {
+      display:flex; align-items:center; gap:12px;
+      padding:16px 18px; cursor:pointer; transition:background .15s; user-select:none;
+    }
+    .card-header:hover { background:var(--glass-h); }
+    .card-body { max-height:0; overflow:hidden; transition:max-height .4s cubic-bezier(.4,0,.2,1); border-top:1px solid transparent; }
+    .card.open .card-body { max-height:4000px; border-top-color:var(--glass-b); }
+    .expand-arrow { color:var(--muted); font-size:.8rem; transition:transform .25s; margin-left:auto; flex-shrink:0; }
+    .card.open .expand-arrow { transform:rotate(180deg); }
+
+    .btn { padding:9px 18px; border-radius:8px; border:none; cursor:pointer; font-size:.85rem; font-weight:700; transition:all .2s; }
+    .btn-primary { background:var(--acc); color:#061a0c; }
+    .btn-primary:hover { filter:brightness(1.1); }
+    .btn-ghost { background:rgba(255,255,255,0.07); border:1px solid var(--glass-b); color:var(--text); }
+    .btn-ghost:hover { background:var(--glass-h); }
+    .btn-danger { background:rgba(255,77,77,0.15); border:1px solid rgba(255,77,77,.3); color:#ff7070; }
+    .btn-danger:hover { background:rgba(255,77,77,.25); }
+    .btn-sm { padding:5px 12px; font-size:.78rem; }
+
+    .input {
+      background:rgba(255,255,255,0.06); border:1px solid var(--glass-b);
+      border-radius:8px; padding:9px 13px; color:var(--text);
+      font-size:.88rem; width:100%; outline:none; transition:border .2s;
+    }
+    .input:focus { border-color:var(--acc); }
+    .input::placeholder { color:var(--muted); }
+    label { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); display:block; margin-bottom:5px; }
+
+    .sec-lbl {
+      font-size:.66rem; font-weight:800; text-transform:uppercase; letter-spacing:1.2px;
+      color:var(--muted); margin-bottom:9px; display:flex; align-items:center; gap:8px;
+    }
+    .sec-lbl::after { content:''; flex:1; height:1px; background:var(--glass-b); }
+
+    .row { display:flex; align-items:center; gap:10px; }
+    .flex1 { flex:1; }
+    .mt8 { margin-top:8px; } .mt16 { margin-top:16px; } .mb8 { margin-bottom:8px; } .mb16 { margin-bottom:16px; }
+
+    /* BUILDER */
+    .builder-layout { display:flex; gap:16px; align-items:flex-start; }
+    .sidebar { width:210px; flex-shrink:0; }
+    .main-panel { flex:1; min-width:0; }
+    @media(max-width:600px){ .builder-layout{flex-direction:column} .sidebar{width:100%} }
+
+    .routine-item {
+      padding:11px 13px; border-radius:10px; cursor:pointer; margin-bottom:6px;
+      background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+      display:flex; align-items:center; gap:8px; transition:all .2s;
+    }
+    .routine-item.sel { background:rgba(45,212,110,.15); border-color:rgba(45,212,110,.4); }
+    .routine-item-name { flex:1; font-weight:700; font-size:.88rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .routine-item-meta { color:var(--muted); font-size:.72rem; flex-shrink:0; }
+
+    /* ICON BUTTONS */
+    .icon-btn { background:none; border:none; cursor:pointer; padding:3px 5px; font-size:.82rem; color:var(--muted); transition:color .15s; flex-shrink:0; }
+    .icon-btn:hover { color:var(--acc); }
+    .icon-btn.del:hover { color:#ff7070; }
+
+    /* MUSCLE CHIPS */
+    .muscle-chips { display:flex; flex-wrap:wrap; gap:6px; }
+    .muscle-chip {
+      padding:4px 10px; border-radius:20px; font-size:.73rem; font-weight:700;
+      cursor:pointer; background:rgba(255,255,255,0.07); border:1px solid var(--glass-b);
+      color:var(--muted); transition:all .2s; user-select:none;
+    }
+    .muscle-chip.sel { background:rgba(45,212,110,.18); border-color:rgba(45,212,110,.5); color:var(--acc); }
+
+    /* EXERCISE ROW */
+    .ex-row {
+      display:flex; align-items:center; gap:10px; padding:11px 16px;
+      border-bottom:1px solid rgba(255,255,255,0.05);
+    }
+    .ex-row:last-child { border-bottom:none; }
+    .ex-name { font-weight:700; font-size:.9rem; flex:1; }
+    .ex-meta { color:var(--muted); font-size:.75rem; }
+
+    /* SESSION */
+    .session-ex { background:var(--glass); border:1px solid var(--glass-b); border-radius:var(--r); margin-bottom:12px; overflow:hidden; }
+    .session-ex-header { padding:13px 17px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--glass-b); }
+    .session-ex-name { font-weight:900; font-size:.95rem; flex:1; }
+    .session-ex-target { color:var(--muted); font-size:.75rem; }
+    .set-row { display:flex; align-items:center; gap:10px; padding:9px 17px; border-bottom:1px solid rgba(255,255,255,0.04); }
+    .set-row:last-child { border-bottom:none; }
+    .set-num { color:var(--muted); font-size:.75rem; font-weight:800; width:28px; flex-shrink:0; }
+    .set-input {
+      background:rgba(255,255,255,0.06); border:1px solid var(--glass-b);
+      border-radius:8px; padding:7px 8px; color:var(--text);
+      font-size:.85rem; width:68px; text-align:center; outline:none; transition:border .2s;
+    }
+    .set-input:focus { border-color:var(--acc); }
+    .set-sep { color:var(--muted); font-size:.78rem; }
+    .set-check {
+      width:28px; height:28px; border-radius:50%; border:2px solid var(--glass-b);
+      background:none; cursor:pointer; display:flex; align-items:center; justify-content:center;
+      transition:all .2s; flex-shrink:0; margin-left:auto; font-size:.8rem;
+    }
+    .set-check.done { background:var(--acc); border-color:var(--acc); color:#061a0c; font-weight:900; }
+
+    /* TIMER BAR */
+    .timer-bar {
+      background:rgba(6,26,12,0.95); backdrop-filter:blur(16px);
+      border-top:1px solid var(--glass-b); padding:10px 20px;
+      display:none; align-items:center; gap:14px;
+      position:fixed; bottom:0; left:0; right:0; z-index:200;
+    }
+    .timer-display { font-size:1.35rem; font-weight:900; letter-spacing:2px; color:var(--acc); }
+    .timer-label { color:var(--muted); font-size:.65rem; font-weight:800; text-transform:uppercase; letter-spacing:.8px; margin-bottom:1px; }
+    .timer-divider { width:1px; height:36px; background:var(--glass-b); flex-shrink:0; }
+
+    /* REST TIMER */
+    .rest-display { font-size:1.35rem; font-weight:900; letter-spacing:2px; color:var(--acc); transition:color .2s; }
+    .rest-display.urgent { color:#ff7070; animation:restPulse .7s ease infinite; }
+    .rest-display.done-flash { color:var(--acc); }
+    @keyframes restPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    .rest-dur-btn {
+      padding:4px 8px; border-radius:6px; font-size:.7rem; font-weight:700;
+      background:rgba(255,255,255,0.06); border:1px solid var(--glass-b);
+      color:var(--muted); cursor:pointer; transition:all .15s;
+    }
+    .rest-dur-btn.sel { background:rgba(45,212,110,.2); border-color:rgba(45,212,110,.4); color:var(--acc); }
+    .rest-dur-btn:hover:not(.sel) { color:var(--text); border-color:rgba(255,255,255,.25); }
+
+    /* EXERCISE SUGGESTIONS */
+    .suggest-wrap { position:relative; }
+    .suggest-list {
+      position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:700;
+      background:#0b2616; border:1px solid rgba(45,212,110,.25);
+      border-radius:9px; list-style:none;
+      max-height:190px; overflow-y:auto;
+      box-shadow:0 10px 32px rgba(0,0,0,0.6);
+      display:none;
+    }
+    .suggest-item {
+      padding:9px 13px; font-size:.85rem; cursor:pointer;
+      border-bottom:1px solid rgba(255,255,255,0.04); transition:background .1s;
+    }
+    .suggest-item:last-child { border-bottom:none; }
+    .suggest-item:hover { background:rgba(45,212,110,.1); color:var(--acc); }
+
+    /* HISTORY */
+    .hist-date-label { color:var(--muted); font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.8px; margin:20px 0 8px; }
+    .hist-item { background:var(--glass); border:1px solid var(--glass-b); border-radius:var(--r); padding:15px 17px; margin-bottom:8px; }
+    .hist-title { font-weight:900; font-size:.95rem; margin-bottom:3px; }
+    .hist-meta { color:var(--muted); font-size:.75rem; margin-bottom:10px; }
+    .hist-chips { display:flex; flex-wrap:wrap; gap:6px; }
+    .hist-chip {
+      background:rgba(45,212,110,.1); border:1px solid rgba(45,212,110,.2);
+      border-radius:6px; padding:3px 8px; font-size:.72rem; color:var(--acc);
+    }
+
+    /* EMPTY */
+    .empty { text-align:center; padding:48px 24px; color:var(--muted); }
+    .empty-icon { font-size:3rem; margin-bottom:12px; display:block; }
+    .empty-text { font-size:.88rem; line-height:1.65; }
+
+    /* MODAL */
+    .modal-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);
+      z-index:500; display:none; align-items:center; justify-content:center; padding:20px;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal {
+      background:#0b2616; border:1px solid var(--glass-b); border-radius:var(--r);
+      padding:24px; width:100%; max-width:500px; max-height:90vh; overflow-y:auto;
+    }
+    .modal-title { font-size:1.1rem; font-weight:900; margin-bottom:18px; }
+    .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:18px; }
+    .form-group { display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
+    .form-group:last-child { margin-bottom:0; }
+    .form-row { display:flex; gap:10px; }
+    .form-row .form-group { flex:1; }
+
+    /* BODY SVG */
+    .body-wrap { display:flex; gap:14px; flex-wrap:wrap; }
+    .body-figure { text-align:center; }
+    .body-label { color:var(--muted); font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:.8px; margin-bottom:4px; }
+    .muscle-region { cursor:pointer; }
+    .muscle-region:hover > * { opacity:.85; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="history.back()">← Back</button>
+  <div class="top-title">🏋️ Workout Builder</div>
+  <div style="width:60px"></div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" id="tab-builder" onclick="switchTab('builder')">📋 Build</button>
+  <button class="tab-btn" id="tab-train" onclick="switchTab('train')">⚡ Train</button>
+  <button class="tab-btn" id="tab-history" onclick="switchTab('history')">📊 History</button>
+</div>
+
+<div class="page">
+  <div id="view-builder" class="view active"></div>
+  <div id="view-train" class="view"></div>
+  <div id="view-history" class="view"></div>
+</div>
+
+<!-- Modals -->
+<div id="modal-routine" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-title" id="modal-routine-title">New Routine</div>
+    <div class="form-group">
+      <label>Routine Name</label>
+      <input class="input" id="input-routine-name" placeholder="e.g. Push Pull Legs">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-routine')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRoutine()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-day" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-title" id="modal-day-title">New Training Day</div>
+    <div class="form-group">
+      <label>Day Name</label>
+      <input class="input" id="input-day-name" placeholder="e.g. Push Day, Chest & Tris">
+    </div>
+    <div class="sec-lbl" style="margin-top:16px">Target Muscle Groups</div>
+    <div class="body-wrap mb16" id="modal-body-wrap"></div>
+    <div class="muscle-chips" id="modal-muscle-chips"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-day')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveDay()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-exercise" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-title" id="modal-ex-title">Add Exercise</div>
+    <div class="form-group">
+      <label>Exercise Name</label>
+      <div class="suggest-wrap">
+        <input class="input" id="input-ex-name" placeholder="e.g. Bench Press"
+          oninput="showSuggest(this.value)"
+          onblur="setTimeout(hideSuggest, 150)"
+          autocomplete="off">
+        <ul class="suggest-list" id="ex-suggest"></ul>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Sets</label>
+        <input class="input" id="input-ex-sets" type="number" min="1" max="20" placeholder="3">
+      </div>
+      <div class="form-group">
+        <label>Reps</label>
+        <input class="input" id="input-ex-reps" placeholder="8-12">
+      </div>
+      <div class="form-group">
+        <label>Weight (lbs)</label>
+        <input class="input" id="input-ex-weight" type="number" min="0" placeholder="0">
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:4px">
+      <label>Notes (optional)</label>
+      <input class="input" id="input-ex-notes" placeholder="e.g. 2s eccentric, squeeze at top">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-exercise')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveExercise()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Timer Bar -->
+<div id="timer-bar" class="timer-bar">
+  <!-- Session clock -->
+  <div>
+    <div class="timer-label">Session</div>
+    <div class="timer-display" id="timer-display">00:00</div>
+  </div>
+
+  <!-- Rest countdown (hidden until set is checked) -->
+  <div id="rest-block" style="display:none">
+    <div class="timer-divider" style="margin-right:14px;display:inline-block;vertical-align:middle"></div>
+  </div>
+  <div id="rest-main" style="display:none">
+    <div class="timer-label" id="rest-label">Rest</div>
+    <div class="rest-display" id="rest-display">1:30</div>
+  </div>
+
+  <div style="flex:1"></div>
+
+  <!-- Rest duration selector + skip -->
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+    <div style="display:flex;gap:4px" id="rest-dur-btns"></div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button id="skip-rest-btn" class="btn btn-ghost btn-sm" onclick="skipRest()" style="display:none">Skip Rest</button>
+      <button class="btn btn-danger btn-sm" onclick="finishSession()">Finish ✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const LS_R = 'wob_routines';
+const LS_S = 'wob_sessions';
+
+const MUSCLES = [
+  { id:'chest',      label:'Chest',       col:'#ff6b6b', front:true  },
+  { id:'shoulders',  label:'Shoulders',   col:'#ffa94d', front:true  },
+  { id:'biceps',     label:'Biceps',      col:'#74c0fc', front:true  },
+  { id:'forearms',   label:'Forearms',    col:'#63e6be', front:true  },
+  { id:'abs',        label:'Abs',         col:'#ffd43b', front:true  },
+  { id:'obliques',   label:'Obliques',    col:'#ff9f43', front:true  },
+  { id:'quads',      label:'Quads',       col:'#4dabf7', front:true  },
+  { id:'calves',     label:'Calves',      col:'#69db7c', front:true  },
+  { id:'traps',      label:'Traps',       col:'#da77f2', front:false },
+  { id:'lats',       label:'Lats',        col:'#3bc9db', front:false },
+  { id:'upper-back', label:'Upper Back',  col:'#f783ac', front:false },
+  { id:'lower-back', label:'Lower Back',  col:'#a9e34b', front:false },
+  { id:'triceps',    label:'Triceps',     col:'#b197fc', front:false },
+  { id:'glutes',     label:'Glutes',      col:'#ff9f43', front:false },
+  { id:'hamstrings', label:'Hamstrings',  col:'#4dabf7', front:false },
+];
+
+const EXERCISE_LIB = [
+  // Chest
+  'Bench Press','Incline Bench Press','Decline Bench Press',
+  'Dumbbell Bench Press','Incline Dumbbell Press','Decline Dumbbell Press',
+  'Dumbbell Fly','Incline Dumbbell Fly','Cable Fly','Pec Deck','Push-Up','Weighted Push-Up','Dips',
+  // Shoulders
+  'Overhead Press','Dumbbell Shoulder Press','Arnold Press',
+  'Lateral Raise','Cable Lateral Raise','Front Raise','Face Pull','Upright Row',
+  'Rear Delt Fly','Machine Shoulder Press',
+  // Back
+  'Pull-Up','Chin-Up','Weighted Pull-Up','Lat Pulldown',
+  'Seated Cable Row','Bent Over Barbell Row','Bent Over Dumbbell Row',
+  'T-Bar Row','Single Arm Dumbbell Row','Chest-Supported Row','Rack Pull',
+  'Deadlift','Sumo Deadlift','Good Morning',
+  // Biceps
+  'Barbell Curl','Dumbbell Curl','Hammer Curl','Preacher Curl',
+  'Cable Curl','Concentration Curl','Incline Dumbbell Curl','Spider Curl',
+  // Triceps
+  'Tricep Pushdown','Skull Crusher','Close-Grip Bench Press',
+  'Overhead Tricep Extension','Cable Overhead Extension','Tricep Kickback',
+  // Legs
+  'Squat','Front Squat','Hack Squat','Leg Press',
+  'Romanian Deadlift','Stiff-Leg Deadlift',
+  'Leg Curl','Lying Leg Curl','Seated Leg Curl',
+  'Leg Extension','Bulgarian Split Squat','Lunge','Walking Lunge',
+  'Step-Up','Box Squat','Goblet Squat',
+  // Glutes
+  'Hip Thrust','Barbell Hip Thrust','Glute Bridge','Cable Kickback','Donkey Kick',
+  // Abs
+  'Cable Crunch','Hanging Leg Raise','Plank','Ab Wheel Rollout',
+  'Russian Twist','Bicycle Crunch','Dragon Flag','Dead Bug',
+  'Reverse Crunch','Stomach Vacuum','Decline Crunch',
+  // Calves
+  'Standing Calf Raise','Seated Calf Raise','Donkey Calf Raise','Leg Press Calf Raise',
+  // Power / Compound
+  'Power Clean','Push Press','Dumbbell Snatch','Box Jump',
+  'Farmers Walk','Sled Push','Battle Rope','Kettlebell Swing',
+];
+
+function uid() { return Math.random().toString(36).slice(2,9); }
+function load(k,d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch { return d; } }
+function persist(k,v) { localStorage.setItem(k, JSON.stringify(v)); }
+
+let routines = load(LS_R, []);
+let sessions = load(LS_S, []);
+
+// ── REST TIMER ────────────────────────────────────────────────────────────────
+const REST_OPTS = [
+  { d:60,  label:'1m'  },
+  { d:90,  label:'90s' },
+  { d:120, label:'2m'  },
+  { d:180, label:'3m'  },
+];
+let restDur   = 90;
+let restSecs  = 0;
+let restTimer = null;
+
+function initRestBtns() {
+  const wrap = document.getElementById('rest-dur-btns');
+  REST_OPTS.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'rest-dur-btn' + (o.d === restDur ? ' sel' : '');
+    b.dataset.d = o.d;
+    b.textContent = o.label;
+    b.onclick = () => setRestDur(o.d);
+    wrap.appendChild(b);
+  });
+}
+
+function setRestDur(d) {
+  restDur = d;
+  document.querySelectorAll('.rest-dur-btn').forEach(b =>
+    b.classList.toggle('sel', +b.dataset.d === d)
+  );
+  if (restTimer) { restSecs = d; updateRestDisplay(); }
+}
+
+function startRest() {
+  clearInterval(restTimer);
+  restSecs = restDur;
+  document.getElementById('rest-main').style.display = '';
+  document.getElementById('skip-rest-btn').style.display = '';
+  document.getElementById('rest-label').textContent = 'Rest';
+  updateRestDisplay();
+  restTimer = setInterval(() => {
+    restSecs--;
+    if (restSecs <= 0) {
+      clearInterval(restTimer); restTimer = null;
+      restSecs = 0;
+      updateRestDisplay();
+      playPing();
+      document.getElementById('rest-label').textContent = 'Rest Done ✓';
+      document.getElementById('rest-display').className = 'rest-display done-flash';
+      document.getElementById('skip-rest-btn').style.display = 'none';
+      setTimeout(() => {
+        document.getElementById('rest-main').style.display = 'none';
+        document.getElementById('rest-label').textContent = 'Rest';
+      }, 2500);
+    } else {
+      updateRestDisplay();
+    }
+  }, 1000);
+}
+
+function updateRestDisplay() {
+  const el = document.getElementById('rest-display');
+  const m = Math.floor(restSecs / 60);
+  const s = restSecs % 60;
+  el.textContent = m + ':' + String(s).padStart(2, '0');
+  el.className = 'rest-display' + (restSecs > 0 && restSecs <= 10 ? ' urgent' : '');
+}
+
+function skipRest() {
+  clearInterval(restTimer); restTimer = null;
+  document.getElementById('rest-main').style.display = 'none';
+  document.getElementById('skip-rest-btn').style.display = 'none';
+  document.getElementById('rest-label').textContent = 'Rest';
+}
+
+function playPing() {
+  try {
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.3].forEach(t => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.connect(g); g.connect(ac.destination);
+      o.frequency.value = 880;
+      g.gain.setValueAtTime(0.3, ac.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + t + 0.4);
+      o.start(ac.currentTime + t);
+      o.stop(ac.currentTime + t + 0.4);
+    });
+  } catch(e) {}
+}
+
+// ── SVG BODY ──────────────────────────────────────────────────────────────────
+function bodySVG(sel=[], side='front', clickable=false, w=100) {
+  const h = Math.round(w * 2.3);
+  const S = new Set(sel);
+  const mfill   = id => { const m=MUSCLES.find(x=>x.id===id); return S.has(id) ? m.col+'cc' : 'rgba(255,255,255,0.07)'; };
+  const mstroke = id => { const m=MUSCLES.find(x=>x.id===id); return S.has(id) ? m.col : 'rgba(255,255,255,0.13)'; };
+  const msw     = id => S.has(id) ? '1.5' : '0.6';
+  const glow    = id => S.has(id) ? `filter:drop-shadow(0 0 3px ${MUSCLES.find(x=>x.id===id)?.col||'#fff'})` : '';
+  const mc      = id => clickable ? `onclick="muscleClick('${id}')" style="cursor:pointer;${glow(id)}"` : `style="${glow(id)}"`;
+
+  if (side === 'front') return `
+<svg viewBox="0 0 100 230" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="16" r="12" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+  <rect x="45" y="28" width="10" height="8" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+  <g ${mc('shoulders')}>
+    <ellipse cx="33" cy="44" rx="11" ry="8" fill="${mfill('shoulders')}" stroke="${mstroke('shoulders')}" stroke-width="${msw('shoulders')}"/>
+    <ellipse cx="67" cy="44" rx="11" ry="8" fill="${mfill('shoulders')}" stroke="${mstroke('shoulders')}" stroke-width="${msw('shoulders')}"/>
+  </g>
+  <g ${mc('chest')}>
+    <path d="M37,38 L50,38 L50,65 L35,62 L33,50 Z" fill="${mfill('chest')}" stroke="${mstroke('chest')}" stroke-width="${msw('chest')}"/>
+    <path d="M63,38 L50,38 L50,65 L65,62 L67,50 Z" fill="${mfill('chest')}" stroke="${mstroke('chest')}" stroke-width="${msw('chest')}"/>
+  </g>
+  <g ${mc('abs')}>
+    <rect x="44" y="66" width="6" height="9" rx="2" fill="${mfill('abs')}" stroke="${mstroke('abs')}" stroke-width="${msw('abs')}"/>
+    <rect x="52" y="66" width="6" height="9" rx="2" fill="${mfill('abs')}" stroke="${mstroke('abs')}" stroke-width="${msw('abs')}"/>
+    <rect x="44" y="77" width="6" height="9" rx="2" fill="${mfill('abs')}" stroke="${mstroke('abs')}" stroke-width="${msw('abs')}"/>
+    <rect x="52" y="77" width="6" height="9" rx="2" fill="${mfill('abs')}" stroke="${mstroke('abs')}" stroke-width="${msw('abs')}"/>
+    <rect x="44" y="88" width="6" height="8" rx="2" fill="${mfill('abs')}" stroke="${mstroke('abs')}" stroke-width="${msw('abs')}"/>
+    <rect x="52" y="88" width="6" height="8" rx="2" fill="${mfill('abs')}" stroke="${mstroke('abs')}" stroke-width="${msw('abs')}"/>
+  </g>
+  <g ${mc('obliques')}>
+    <path d="M35,62 L33,67 L36,98 L44,98 L44,66 Z" fill="${mfill('obliques')}" stroke="${mstroke('obliques')}" stroke-width="${msw('obliques')}"/>
+    <path d="M65,62 L67,67 L64,98 L56,98 L56,66 Z" fill="${mfill('obliques')}" stroke="${mstroke('obliques')}" stroke-width="${msw('obliques')}"/>
+  </g>
+  <g ${mc('biceps')}>
+    <path d="M18,48 L24,48 L26,82 L20,82 Z" rx="3" fill="${mfill('biceps')}" stroke="${mstroke('biceps')}" stroke-width="${msw('biceps')}"/>
+    <path d="M76,48 L82,48 L80,82 L74,82 Z" rx="3" fill="${mfill('biceps')}" stroke="${mstroke('biceps')}" stroke-width="${msw('biceps')}"/>
+  </g>
+  <g ${mc('forearms')}>
+    <path d="M18,83 L25,83 L24,110 L17,108 Z" fill="${mfill('forearms')}" stroke="${mstroke('forearms')}" stroke-width="${msw('forearms')}"/>
+    <path d="M75,83 L82,83 L83,108 L76,110 Z" fill="${mfill('forearms')}" stroke="${mstroke('forearms')}" stroke-width="${msw('forearms')}"/>
+  </g>
+  <g ${mc('quads')}>
+    <path d="M34,100 L48,100 L50,155 L32,152 Z" fill="${mfill('quads')}" stroke="${mstroke('quads')}" stroke-width="${msw('quads')}"/>
+    <path d="M52,100 L66,100 L68,152 L50,155 Z" fill="${mfill('quads')}" stroke="${mstroke('quads')}" stroke-width="${msw('quads')}"/>
+  </g>
+  <g ${mc('calves')}>
+    <path d="M32,155 L49,155 L48,205 L30,202 Z" fill="${mfill('calves')}" stroke="${mstroke('calves')}" stroke-width="${msw('calves')}"/>
+    <path d="M51,155 L68,155 L70,202 L52,205 Z" fill="${mfill('calves')}" stroke="${mstroke('calves')}" stroke-width="${msw('calves')}"/>
+  </g>
+</svg>`;
+
+  return `
+<svg viewBox="0 0 100 230" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="16" r="12" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+  <rect x="45" y="28" width="10" height="8" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+  <g ${mc('traps')}>
+    <path d="M38,30 L50,38 L62,30 L66,42 L50,50 L34,42 Z" fill="${mfill('traps')}" stroke="${mstroke('traps')}" stroke-width="${msw('traps')}"/>
+  </g>
+  <g ${mc('shoulders')}>
+    <ellipse cx="33" cy="48" rx="11" ry="8" fill="${mfill('shoulders')}" stroke="${mstroke('shoulders')}" stroke-width="${msw('shoulders')}"/>
+    <ellipse cx="67" cy="48" rx="11" ry="8" fill="${mfill('shoulders')}" stroke="${mstroke('shoulders')}" stroke-width="${msw('shoulders')}"/>
+  </g>
+  <g ${mc('upper-back')}>
+    <path d="M36,50 L64,50 L66,65 L50,70 L34,65 Z" fill="${mfill('upper-back')}" stroke="${mstroke('upper-back')}" stroke-width="${msw('upper-back')}"/>
+  </g>
+  <g ${mc('lats')}>
+    <path d="M24,55 L36,65 L36,95 L26,100 L20,75 Z" fill="${mfill('lats')}" stroke="${mstroke('lats')}" stroke-width="${msw('lats')}"/>
+    <path d="M76,55 L64,65 L64,95 L74,100 L80,75 Z" fill="${mfill('lats')}" stroke="${mstroke('lats')}" stroke-width="${msw('lats')}"/>
+  </g>
+  <g ${mc('lower-back')}>
+    <path d="M36,95 L64,95 L65,100 L35,100 Z" fill="${mfill('lower-back')}" stroke="${mstroke('lower-back')}" stroke-width="${msw('lower-back')}"/>
+    <rect x="43" y="69" width="14" height="27" rx="3" fill="${mfill('lower-back')}" stroke="${mstroke('lower-back')}" stroke-width="${msw('lower-back')}"/>
+  </g>
+  <g ${mc('triceps')}>
+    <path d="M18,48 L24,48 L26,82 L20,82 Z" fill="${mfill('triceps')}" stroke="${mstroke('triceps')}" stroke-width="${msw('triceps')}"/>
+    <path d="M76,48 L82,48 L80,82 L74,82 Z" fill="${mfill('triceps')}" stroke="${mstroke('triceps')}" stroke-width="${msw('triceps')}"/>
+  </g>
+  <g ${mc('forearms')}>
+    <path d="M18,83 L25,83 L24,110 L17,108 Z" fill="${mfill('forearms')}" stroke="${mstroke('forearms')}" stroke-width="${msw('forearms')}"/>
+    <path d="M75,83 L82,83 L83,108 L76,110 Z" fill="${mfill('forearms')}" stroke="${mstroke('forearms')}" stroke-width="${msw('forearms')}"/>
+  </g>
+  <g ${mc('glutes')}>
+    <path d="M34,100 L50,100 L51,128 L32,125 Z" fill="${mfill('glutes')}" stroke="${mstroke('glutes')}" stroke-width="${msw('glutes')}"/>
+    <path d="M50,100 L66,100 L68,125 L49,128 Z" fill="${mfill('glutes')}" stroke="${mstroke('glutes')}" stroke-width="${msw('glutes')}"/>
+  </g>
+  <g ${mc('hamstrings')}>
+    <path d="M32,127 L50,130 L50,158 L30,155 Z" fill="${mfill('hamstrings')}" stroke="${mstroke('hamstrings')}" stroke-width="${msw('hamstrings')}"/>
+    <path d="M50,130 L68,127 L70,155 L50,158 Z" fill="${mfill('hamstrings')}" stroke="${mstroke('hamstrings')}" stroke-width="${msw('hamstrings')}"/>
+  </g>
+  <g ${mc('calves')}>
+    <path d="M30,157 L49,157 L48,205 L28,202 Z" fill="${mfill('calves')}" stroke="${mstroke('calves')}" stroke-width="${msw('calves')}"/>
+    <path d="M51,157 L70,157 L72,202 L52,205 Z" fill="${mfill('calves')}" stroke="${mstroke('calves')}" stroke-width="${msw('calves')}"/>
+  </g>
+</svg>`;
+}
+
+// ── MODAL MUSCLE STATE ─────────────────────────────────────────────────────────
+let modalMuscles = [];
+
+function muscleClick(id) {
+  if (modalMuscles.includes(id)) modalMuscles = modalMuscles.filter(m=>m!==id);
+  else modalMuscles.push(id);
+  refreshModalMuscles();
+}
+function toggleModalChip(id) { muscleClick(id); }
+function refreshModalMuscles() {
+  document.getElementById('modal-body-wrap').innerHTML = `
+    <div class="body-figure"><div class="body-label">Front</div>${bodySVG(modalMuscles,'front',true,90)}</div>
+    <div class="body-figure"><div class="body-label">Back</div>${bodySVG(modalMuscles,'back',true,90)}</div>`;
+  document.getElementById('modal-muscle-chips').innerHTML =
+    MUSCLES.map(m=>`<span class="muscle-chip${modalMuscles.includes(m.id)?' sel':''}" onclick="toggleModalChip('${m.id}')">${m.label}</span>`).join('');
+}
+
+// ── TABS ───────────────────────────────────────────────────────────────────────
+let currentTab = 'builder';
+
+function switchTab(tab) {
+  currentTab = tab;
+  ['builder','train','history'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('view-'+t).classList.toggle('active', t===tab);
+  });
+  if (tab==='builder') renderBuilder();
+  if (tab==='train')   renderTrain();
+  if (tab==='history') renderHistory();
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  hideSuggest();
+}
+
+// ── EXERCISE SUGGESTIONS ───────────────────────────────────────────────────────
+function showSuggest(val) {
+  const list = document.getElementById('ex-suggest');
+  if (!val || val.length < 1) { list.style.display = 'none'; return; }
+  const q = val.toLowerCase();
+  const matches = EXERCISE_LIB.filter(e => e.toLowerCase().includes(q)).slice(0, 9);
+  if (!matches.length) { list.style.display = 'none'; return; }
+  list.innerHTML = matches.map(e =>
+    `<li class="suggest-item" onmousedown="pickSuggest(${JSON.stringify(e)})">${e}</li>`
+  ).join('');
+  list.style.display = 'block';
+}
+function hideSuggest() {
+  const list = document.getElementById('ex-suggest');
+  if (list) list.style.display = 'none';
+}
+function pickSuggest(name) {
+  document.getElementById('input-ex-name').value = name;
+  hideSuggest();
+}
+
+// ── BUILDER ────────────────────────────────────────────────────────────────────
+let selRoutineId = null;
+let modalCtx = {};
+
+function renderBuilder() {
+  const el = document.getElementById('view-builder');
+  const routine = routines.find(r=>r.id===selRoutineId);
+
+  el.innerHTML = `
+    <div class="builder-layout">
+      <div class="sidebar">
+        <div class="row mb8">
+          <span style="font-size:.85rem;font-weight:800">My Routines</span>
+          <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="openNewRoutine()">+ New</button>
+        </div>
+        ${routines.length===0 ? `<div style="color:var(--muted);font-size:.8rem;padding:10px 0">No routines yet.</div>` : ''}
+        ${routines.map(r=>`
+          <div class="routine-item${r.id===selRoutineId?' sel':''}" onclick="selRoutine('${r.id}')">
+            <span class="routine-item-name" title="${r.name}">${r.name}</span>
+            <span class="routine-item-meta">${r.days.length}d</span>
+            <button class="icon-btn" onclick="event.stopPropagation();openEditRoutine('${r.id}')" title="Rename">✎</button>
+            <button class="icon-btn del" onclick="event.stopPropagation();delRoutine('${r.id}')" title="Delete">✕</button>
+          </div>`).join('')}
+      </div>
+      <div class="main-panel">
+        ${!routine ? `<div class="empty"><span class="empty-icon">💪</span><div class="empty-text">Select or create a routine to start building.</div></div>` : `
+          <div class="row mb16">
+            <h2 style="font-size:1.15rem;font-weight:900">${routine.name}</h2>
+            <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="openNewDay('${routine.id}')">+ Add Day</button>
+          </div>
+          ${routine.days.length===0 ? `<div style="color:var(--muted);font-size:.85rem">No days yet. Add a training day.</div>` : ''}
+          ${routine.days.map((day,i)=>renderDayCard(routine.id,day,i)).join('')}
+        `}
+      </div>
+    </div>`;
+}
+
+function renderDayCard(rId, day, i) {
+  const muscleLabels = day.muscles.map(m=>MUSCLES.find(x=>x.id===m)?.label||m);
+  return `
+    <div class="card" id="dc-${day.id}">
+      <div class="card-header" onclick="toggleCard('dc-${day.id}')">
+        <div style="width:28px;height:28px;border-radius:8px;background:rgba(45,212,110,.15);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900;color:var(--acc);flex-shrink:0">D${i+1}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:900;font-size:.95rem">${day.name}</div>
+          <div style="color:var(--muted);font-size:.72rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${day.exercises.length} exercise${day.exercises.length!==1?'s':''} · ${muscleLabels.length ? muscleLabels.join(', ') : 'No muscles tagged'}</div>
+        </div>
+        <button class="icon-btn" onclick="event.stopPropagation();openEditDay('${rId}','${day.id}')" title="Edit day">✎</button>
+        <button class="icon-btn del" onclick="event.stopPropagation();delDay('${rId}','${day.id}')" title="Delete day">✕</button>
+        <span class="expand-arrow">▼</span>
+      </div>
+      <div class="card-body">
+        <div style="padding:18px">
+          <div class="sec-lbl">Muscle Groups</div>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;margin-bottom:14px">
+            <div class="body-figure"><div class="body-label">Front</div>${bodySVG(day.muscles,'front',false,88)}</div>
+            <div class="body-figure"><div class="body-label">Back</div>${bodySVG(day.muscles,'back',false,88)}</div>
+            <div class="muscle-chips" style="flex:1;min-width:160px;padding-top:20px">
+              ${MUSCLES.map(m=>`<span class="muscle-chip${day.muscles.includes(m.id)?' sel':''}" onclick="toggleDayMuscle('${rId}','${day.id}','${m.id}')">${m.label}</span>`).join('')}
+            </div>
+          </div>
+          <div class="sec-lbl">Exercises</div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid var(--glass-b);border-radius:var(--r-sm);overflow:hidden;margin-bottom:10px">
+            ${day.exercises.length===0 ? `<div style="padding:14px;color:var(--muted);font-size:.82rem;text-align:center">No exercises yet.</div>` : ''}
+            ${day.exercises.map(ex=>`
+              <div class="ex-row">
+                <div style="flex:1;min-width:0">
+                  <div class="ex-name">${ex.name}</div>
+                  <div class="ex-meta">${ex.sets} sets × ${ex.reps} reps${ex.weight>0?' · '+ex.weight+'lbs':''}${ex.notes?' · '+ex.notes:''}</div>
+                </div>
+                <button class="icon-btn" onclick="openEditExercise('${rId}','${day.id}','${ex.id}')" title="Edit">✎</button>
+                <button class="icon-btn del" onclick="delExercise('${rId}','${day.id}','${ex.id}')" title="Delete">✕</button>
+              </div>`).join('')}
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="openNewExercise('${rId}','${day.id}')">+ Add Exercise</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleCard(id) { document.getElementById(id)?.classList.toggle('open'); }
+function selRoutine(id) { selRoutineId=id; renderBuilder(); }
+
+// ── ROUTINE CRUD ───────────────────────────────────────────────────────────────
+function openNewRoutine() {
+  modalCtx = {};
+  document.getElementById('modal-routine-title').textContent = 'New Routine';
+  document.getElementById('input-routine-name').value = '';
+  openModal('modal-routine');
+  setTimeout(()=>document.getElementById('input-routine-name').focus(), 80);
+}
+function openEditRoutine(id) {
+  const r = routines.find(x=>x.id===id);
+  if (!r) return;
+  modalCtx = { editId: id };
+  document.getElementById('modal-routine-title').textContent = 'Rename Routine';
+  document.getElementById('input-routine-name').value = r.name;
+  openModal('modal-routine');
+  setTimeout(()=>{
+    const inp = document.getElementById('input-routine-name');
+    inp.focus(); inp.select();
+  }, 80);
+}
+function saveRoutine() {
+  const name = document.getElementById('input-routine-name').value.trim();
+  if (!name) return;
+  if (modalCtx.editId) {
+    const r = routines.find(x=>x.id===modalCtx.editId);
+    if (r) r.name = name;
+  } else {
+    const r = { id:uid(), name, days:[] };
+    routines.push(r);
+    selRoutineId = r.id;
+  }
+  persist(LS_R, routines);
+  closeModal('modal-routine'); renderBuilder();
+}
+function delRoutine(id) {
+  if (!confirm('Delete this routine?')) return;
+  routines = routines.filter(r=>r.id!==id);
+  if (selRoutineId===id) selRoutineId = null;
+  persist(LS_R, routines); renderBuilder();
+}
+
+// ── DAY CRUD ───────────────────────────────────────────────────────────────────
+function openNewDay(rId) {
+  modalCtx = { rId }; modalMuscles = [];
+  document.getElementById('modal-day-title').textContent = 'New Training Day';
+  document.getElementById('input-day-name').value = '';
+  refreshModalMuscles();
+  openModal('modal-day');
+  setTimeout(()=>document.getElementById('input-day-name').focus(), 80);
+}
+function openEditDay(rId, dId) {
+  const r = routines.find(x=>x.id===rId);
+  const day = r?.days.find(d=>d.id===dId);
+  if (!day) return;
+  modalCtx = { rId, editId: dId };
+  modalMuscles = [...day.muscles];
+  document.getElementById('modal-day-title').textContent = 'Edit Training Day';
+  document.getElementById('input-day-name').value = day.name;
+  refreshModalMuscles();
+  openModal('modal-day');
+  setTimeout(()=>{
+    const inp = document.getElementById('input-day-name');
+    inp.focus(); inp.select();
+  }, 80);
+}
+function saveDay() {
+  const name = document.getElementById('input-day-name').value.trim();
+  if (!name) return;
+  const r = routines.find(x=>x.id===modalCtx.rId);
+  if (!r) return;
+  if (modalCtx.editId) {
+    const day = r.days.find(d=>d.id===modalCtx.editId);
+    if (day) { day.name = name; day.muscles = [...modalMuscles]; }
+  } else {
+    r.days.push({ id:uid(), name, muscles:[...modalMuscles], exercises:[] });
+  }
+  persist(LS_R, routines); closeModal('modal-day'); renderBuilder();
+}
+function delDay(rId, dId) {
+  if (!confirm('Delete this day?')) return;
+  const r = routines.find(x=>x.id===rId);
+  if (r) r.days = r.days.filter(d=>d.id!==dId);
+  persist(LS_R, routines); renderBuilder();
+}
+function toggleDayMuscle(rId, dId, mId) {
+  const day = routines.find(r=>r.id===rId)?.days.find(d=>d.id===dId);
+  if (!day) return;
+  if (day.muscles.includes(mId)) day.muscles = day.muscles.filter(m=>m!==mId);
+  else day.muscles.push(mId);
+  persist(LS_R, routines);
+  renderBuilder();
+  setTimeout(()=>{ const c=document.getElementById('dc-'+dId); if(c&&!c.classList.contains('open')) c.classList.add('open'); }, 30);
+}
+
+// ── EXERCISE CRUD ──────────────────────────────────────────────────────────────
+function openNewExercise(rId, dId) {
+  modalCtx = { rId, dId };
+  document.getElementById('input-ex-name').value = '';
+  document.getElementById('input-ex-notes').value = '';
+  document.getElementById('input-ex-sets').value = '3';
+  document.getElementById('input-ex-reps').value = '8-12';
+  document.getElementById('input-ex-weight').value = '';
+  document.getElementById('modal-ex-title').textContent = 'Add Exercise';
+  openModal('modal-exercise');
+  setTimeout(()=>document.getElementById('input-ex-name').focus(), 80);
+}
+function openEditExercise(rId, dId, exId) {
+  const day = routines.find(r=>r.id===rId)?.days.find(d=>d.id===dId);
+  const ex  = day?.exercises.find(e=>e.id===exId);
+  if (!ex) return;
+  modalCtx = { rId, dId, editId: exId };
+  document.getElementById('input-ex-name').value   = ex.name;
+  document.getElementById('input-ex-sets').value   = ex.sets;
+  document.getElementById('input-ex-reps').value   = ex.reps;
+  document.getElementById('input-ex-weight').value = ex.weight || '';
+  document.getElementById('input-ex-notes').value  = ex.notes  || '';
+  document.getElementById('modal-ex-title').textContent = 'Edit Exercise';
+  openModal('modal-exercise');
+  setTimeout(()=>{
+    const inp = document.getElementById('input-ex-name');
+    inp.focus(); inp.select();
+  }, 80);
+}
+function saveExercise() {
+  const name   = document.getElementById('input-ex-name').value.trim();
+  if (!name) return;
+  const sets   = parseInt(document.getElementById('input-ex-sets').value)   || 3;
+  const reps   = document.getElementById('input-ex-reps').value.trim()      || '8-12';
+  const weight = parseFloat(document.getElementById('input-ex-weight').value) || 0;
+  const notes  = document.getElementById('input-ex-notes').value.trim();
+  const day    = routines.find(r=>r.id===modalCtx.rId)?.days.find(d=>d.id===modalCtx.dId);
+  if (!day) return;
+  if (modalCtx.editId) {
+    const ex = day.exercises.find(e=>e.id===modalCtx.editId);
+    if (ex) Object.assign(ex, { name, sets, reps, weight, notes });
+  } else {
+    day.exercises.push({ id:uid(), name, sets, reps, weight, notes });
+  }
+  persist(LS_R, routines);
+  closeModal('modal-exercise');
+  renderBuilder();
+  const targetDayId = modalCtx.dId;
+  setTimeout(()=>{ const c=document.getElementById('dc-'+targetDayId); if(c&&!c.classList.contains('open')) c.classList.add('open'); }, 30);
+}
+function delExercise(rId, dId, exId) {
+  const day = routines.find(r=>r.id===rId)?.days.find(d=>d.id===dId);
+  if (!day) return;
+  day.exercises = day.exercises.filter(e=>e.id!==exId);
+  persist(LS_R, routines);
+  renderBuilder();
+  setTimeout(()=>{ const c=document.getElementById('dc-'+dId); if(c&&!c.classList.contains('open')) c.classList.add('open'); }, 30);
+}
+
+// ── TRAIN ──────────────────────────────────────────────────────────────────────
+let activeSession = null, timerInterval = null, sessionSecs = 0;
+
+function renderTrain() {
+  const el = document.getElementById('view-train');
+  if (activeSession) { renderSession(); return; }
+  if (routines.length===0) {
+    el.innerHTML=`<div class="empty"><span class="empty-icon">🏗️</span><div class="empty-text">Build a routine first, then come back here to train.</div></div>`;
+    return;
+  }
+  el.innerHTML=`
+    <h2 style="font-size:1.1rem;font-weight:900;margin-bottom:16px">Start a Session</h2>
+    ${routines.map(r=>`
+      <div class="card" style="margin-bottom:14px">
+        <div style="padding:16px 18px">
+          <div style="font-weight:900;font-size:1rem;margin-bottom:12px">${r.name}</div>
+          ${r.days.length===0?`<div style="color:var(--muted);font-size:.82rem">No days added yet.</div>`:''}
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${r.days.map(d=>`
+              <button class="btn btn-ghost" onclick="startSession('${r.id}','${d.id}')" style="display:flex;align-items:center;gap:10px;padding:10px 14px">
+                <div style="display:flex;gap:4px">
+                  ${bodySVG(d.muscles,'front',false,28)}
+                  ${bodySVG(d.muscles,'back',false,28)}
+                </div>
+                <div style="text-align:left">
+                  <div style="font-weight:800;font-size:.88rem">${d.name}</div>
+                  <div style="color:var(--muted);font-size:.7rem">${d.muscles.slice(0,4).map(m=>MUSCLES.find(x=>x.id===m)?.label||m).join(', ')}${d.muscles.length>4?'…':''}</div>
+                </div>
+              </button>`).join('')}
+          </div>
+        </div>
+      </div>`).join('')}`;
+}
+
+function startSession(rId, dId) {
+  const r = routines.find(x=>x.id===rId);
+  const d = r?.days.find(x=>x.id===dId);
+  if (!d) return;
+  activeSession = {
+    id:uid(), routineId:rId, routineName:r.name, dayId:dId, dayName:d.name,
+    muscles:d.muscles, date:new Date().toISOString(),
+    exercises:d.exercises.map(ex=>({
+      exerciseId:ex.id, name:ex.name, targetSets:ex.sets, targetReps:ex.reps,
+      targetWeight:ex.weight, notes:ex.notes,
+      sets:Array.from({length:ex.sets},()=>({reps:'',weight:ex.weight||'',done:false}))
+    }))
+  };
+  sessionSecs = 0;
+  document.getElementById('timer-bar').style.display = 'flex';
+  timerInterval = setInterval(()=>{
+    sessionSecs++;
+    document.getElementById('timer-display').textContent =
+      String(Math.floor(sessionSecs/60)).padStart(2,'0')+':'+String(sessionSecs%60).padStart(2,'0');
+  }, 1000);
+  switchTab('train');
+}
+
+function renderSession() {
+  const el = document.getElementById('view-train');
+  el.innerHTML=`
+    <div class="row mb16">
+      <div>
+        <div style="font-weight:900;font-size:1.1rem">${activeSession.dayName}</div>
+        <div style="color:var(--muted);font-size:.78rem">${activeSession.routineName}</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:6px">
+        ${bodySVG(activeSession.muscles,'front',false,48)}
+        ${bodySVG(activeSession.muscles,'back',false,48)}
+      </div>
+    </div>
+    ${activeSession.exercises.map((ex,ei)=>`
+      <div class="session-ex">
+        <div class="session-ex-header">
+          <span class="session-ex-name">${ex.name}</span>
+          <span class="session-ex-target">${ex.targetSets}×${ex.targetReps}${ex.targetWeight>0?' · '+ex.targetWeight+'lbs':''}${ex.notes?' · '+ex.notes:''}</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);padding:6px 17px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;gap:10px">
+          <span style="color:var(--muted);font-size:.65rem;width:28px">SET</span>
+          <span style="color:var(--muted);font-size:.65rem;width:68px;text-align:center">WEIGHT</span>
+          <span style="width:16px"></span>
+          <span style="color:var(--muted);font-size:.65rem;width:68px;text-align:center">REPS</span>
+        </div>
+        ${ex.sets.map((set,si)=>`
+          <div class="set-row" id="sr-${ei}-${si}" style="${set.done?'opacity:.55':''}">
+            <span class="set-num">${si+1}</span>
+            <input class="set-input" type="number" min="0" placeholder="lbs" value="${set.weight}" oninput="updSet(${ei},${si},'weight',this.value)">
+            <span class="set-sep">×</span>
+            <input class="set-input" type="number" min="0" placeholder="reps" value="${set.reps}" oninput="updSet(${ei},${si},'reps',this.value)">
+            <button class="set-check${set.done?' done':''}" onclick="togSet(${ei},${si})">${set.done?'✓':''}</button>
+          </div>`).join('')}
+        <div class="set-row">
+          <button class="btn btn-ghost btn-sm" onclick="addSet(${ei})">+ Set</button>
+        </div>
+      </div>`).join('')}
+    <div style="height:80px"></div>`;
+}
+
+function updSet(ei, si, field, val) {
+  if (activeSession) activeSession.exercises[ei].sets[si][field] = val;
+}
+
+function togSet(ei, si) {
+  if (!activeSession) return;
+  const row = document.getElementById(`sr-${ei}-${si}`);
+  if (row) {
+    const ins = row.querySelectorAll('.set-input');
+    activeSession.exercises[ei].sets[si].weight = ins[0]?.value || '';
+    activeSession.exercises[ei].sets[si].reps   = ins[1]?.value || '';
+  }
+  const set = activeSession.exercises[ei].sets[si];
+  set.done = !set.done;
+  if (set.done) startRest();
+  if (row) {
+    row.style.opacity = set.done ? '0.55' : '1';
+    const btn = row.querySelector('.set-check');
+    btn.classList.toggle('done', set.done);
+    btn.textContent = set.done ? '✓' : '';
+  }
+}
+
+function addSet(ei) {
+  if (!activeSession) return;
+  const ex   = activeSession.exercises[ei];
+  const last = ex.sets[ex.sets.length-1] || {};
+  ex.sets.push({ reps:last.reps||'', weight:last.weight||ex.targetWeight||'', done:false });
+  renderSession();
+}
+
+function finishSession() {
+  if (!activeSession || !confirm('Finish this workout?')) return;
+  clearInterval(timerInterval); timerInterval = null;
+  clearInterval(restTimer);     restTimer = null;
+  document.getElementById('timer-bar').style.display = 'none';
+  document.getElementById('rest-main').style.display = 'none';
+  document.getElementById('skip-rest-btn').style.display = 'none';
+  activeSession.duration = sessionSecs;
+  sessions.push(activeSession); persist(LS_S, sessions);
+  activeSession = null; sessionSecs = 0;
+  switchTab('history');
+}
+
+// ── HISTORY ────────────────────────────────────────────────────────────────────
+function renderHistory() {
+  const el = document.getElementById('view-history');
+  if (sessions.length===0) {
+    el.innerHTML=`<div class="empty"><span class="empty-icon">📊</span><div class="empty-text">No sessions yet. Start training to see your history here.</div></div>`;
+    return;
+  }
+  const grouped = {};
+  [...sessions].reverse().forEach(s=>{
+    const key = new Date(s.date).toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric',year:'numeric'});
+    if (!grouped[key]) grouped[key]=[];
+    grouped[key].push(s);
+  });
+  el.innerHTML = Object.entries(grouped).map(([date,ss])=>`
+    <div class="hist-date-label">${date}</div>
+    ${ss.map(s=>`
+      <div class="hist-item">
+        <div class="row">
+          <div style="flex:1">
+            <div class="hist-title">${s.dayName}</div>
+            <div class="hist-meta">${s.routineName} · ${fmtDur(s.duration)} · ${s.exercises.length} exercises</div>
+          </div>
+          <div style="display:flex;gap:4px;opacity:.75">
+            ${bodySVG(s.muscles||[],'front',false,42)}
+            ${bodySVG(s.muscles||[],'back',false,42)}
+          </div>
+        </div>
+        <div class="hist-chips">
+          ${s.exercises.map(ex=>{
+            const done = ex.sets.filter(x=>x.done).length;
+            return `<span class="hist-chip">${ex.name} <span style="opacity:.55">${done}/${ex.sets.length}</span></span>`;
+          }).join('')}
+        </div>
+      </div>`).join('')}
+  `).join('');
+}
+
+function fmtDur(s) {
+  if (!s) return '—';
+  return Math.floor(s/60)+'m '+(s%60)+'s';
+}
+
+// ── KEYBOARD ───────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  const overlay = document.querySelector('.modal-overlay.open');
+  if (!overlay) return;
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+    hideSuggest();
+  }
+  if (e.key === 'Enter' && !e.shiftKey) {
+    const tag = document.activeElement.tagName;
+    if (tag === 'BUTTON') return;
+    const id = overlay.id;
+    if (id === 'modal-routine')  saveRoutine();
+    else if (id === 'modal-day') saveDay();
+    else if (id === 'modal-exercise') saveExercise();
+  }
+});
+
+// ── INIT ───────────────────────────────────────────────────────────────────────
+initRestBtns();
+renderBuilder();
+</script>
+</body>
+</html>
