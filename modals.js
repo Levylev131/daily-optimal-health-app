@@ -157,51 +157,112 @@ function addNewProfile() {
   toast(`Welcome, ${name}! 🎉`);
 }
 
-function showExportModal() {
-  closeDropdown();
+function _buildExportData() {
   const pid = getActiveId();
-  if (!pid) return;
-  const data = { profile: getActiveProfile(), keys: {} };
+  if (!pid) return null;
+  const data = { version: 1, exported: new Date().toISOString(), profile: getActiveProfile(), keys: {} };
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (k.startsWith(`doh_${pid}_`)) data.keys[k] = localStorage.getItem(k);
+    if (k.startsWith(`doh_${pid}_`) || k.startsWith(`ht:${pid}:`)) data.keys[k] = localStorage.getItem(k);
   }
-  const code = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+  return data;
+}
+
+function showExportModal() {
+  closeDropdown();
+  if (!getActiveId()) return;
+  const p = getActiveProfile();
   showModal(`<div class="modal">
     <button class="modal-close" onclick="closeModal()">✕</button>
     <div class="modal-icon">📤</div>
     <div class="modal-title">Export / Import</div>
-    <div class="modal-sub">Copy this code to restore your progress on another device.</div>
-    <textarea class="export-code" id="export-code" readonly>${code}</textarea>
-    <button class="modal-btn" onclick="copyExport()">Copy Code</button>
-    <div class="modal-divider">import on this device</div>
-    <textarea class="export-code" id="import-code" placeholder="Paste your code here..."></textarea>
+    <div class="modal-sub">Back up <strong>${p.name}</strong>'s progress to a file, or restore from a backup.</div>
+    <button class="modal-btn" onclick="downloadExport()">⬇ Download Backup File</button>
+    <button class="modal-btn-sec" id="show-code-btn" onclick="toggleExportCode()">Show Export Code</button>
+    <div id="export-code-wrap" style="display:none;margin-top:4px">
+      <textarea class="export-code" id="export-code" readonly></textarea>
+      <button class="modal-btn-sec" onclick="copyExport()">Copy Code</button>
+    </div>
+    <div class="modal-divider">import</div>
+    <label class="modal-btn-sec" style="cursor:pointer;display:block;text-align:center">
+      📂 Load from File
+      <input type="file" accept=".json" style="display:none" onchange="importFromFile(this)">
+    </label>
+    <div class="modal-divider">or paste export code</div>
+    <textarea class="export-code" id="import-code" placeholder="Paste your export code here..."></textarea>
     <button class="modal-btn-sec" onclick="importData()">Import →</button>
   </div>`);
 }
 
+function toggleExportCode() {
+  const wrap = document.getElementById('export-code-wrap');
+  const btn  = document.getElementById('show-code-btn');
+  if (!wrap) return;
+  if (wrap.style.display === 'none') {
+    const data = _buildExportData();
+    const code = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+    const ta = document.getElementById('export-code');
+    if (ta) ta.value = code;
+    wrap.style.display = 'block';
+    if (btn) btn.textContent = 'Hide Code';
+  } else {
+    wrap.style.display = 'none';
+    if (btn) btn.textContent = 'Show Export Code';
+  }
+}
+
+function downloadExport() {
+  const data = _buildExportData();
+  if (!data) return;
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const name = (data.profile?.name || 'profile').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  a.href     = url;
+  a.download = `doh_backup_${name}_${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Backup downloaded ✓');
+}
+
 function copyExport() {
   const code = document.getElementById('export-code')?.value || '';
-  navigator.clipboard.writeText(code).then(()=>toast('Copied! ✓')).catch(()=>{
-    document.getElementById('export-code').select();
+  if (!code) return;
+  navigator.clipboard.writeText(code).then(() => toast('Copied! ✓')).catch(() => {
+    document.getElementById('export-code')?.select();
     document.execCommand('copy');
     toast('Copied! ✓');
   });
+}
+
+function importFromFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      _applyImport(JSON.parse(e.target.result));
+    } catch { toast('Invalid backup file ✗'); }
+  };
+  reader.readAsText(file);
 }
 
 function importData() {
   const raw = document.getElementById('import-code')?.value.trim() || '';
   if (!raw) return;
   try {
-    const data = JSON.parse(decodeURIComponent(escape(atob(raw))));
-    if (!data.profile || !data.keys) throw new Error('invalid');
-    const profiles = getProfiles();
-    profiles[data.profile.id] = data.profile;
-    localStorage.setItem('doh_profiles', JSON.stringify(profiles));
-    Object.entries(data.keys).forEach(([k,v]) => localStorage.setItem(k,v));
-    switchProfile(data.profile.id);
-    toast(`Welcome back, ${data.profile.name}! ✓`);
+    _applyImport(JSON.parse(decodeURIComponent(escape(atob(raw)))));
   } catch { toast('Invalid code ✗'); }
+}
+
+function _applyImport(data) {
+  if (!data.profile || !data.keys) throw new Error('invalid');
+  const profiles = getProfiles();
+  profiles[data.profile.id] = data.profile;
+  localStorage.setItem('doh_profiles', JSON.stringify(profiles));
+  Object.entries(data.keys).forEach(([k, v]) => localStorage.setItem(k, v));
+  switchProfile(data.profile.id);
+  toast(`Welcome back, ${data.profile.name}! ✓`);
 }
 
 // ─── DANGER ZONE MODALS ───────────────────────────────────────────────────────
