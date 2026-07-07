@@ -633,7 +633,7 @@ function render(filter) {
     if (filter === '4') return p.days_per_week === 4;
     if (filter === '5') return p.days_per_week === 5;
     if (filter === '6') return p.days_per_week === 6;
-    return p.difficulty.includes(filter);
+    return p.difficulty.includes(filter) || p.difficulty === 'All Levels';
   });
   grid.innerHTML = filtered.map(p => renderCard(p)).join('');
 }

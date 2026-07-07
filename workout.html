@@ -291,7 +291,7 @@
 <body>
 
 <div class="top-bar">
-  <button class="back-btn" onclick="history.back()">← Back</button>
+  <button class="back-btn" onclick="history.length > 1 ? history.back() : location.href='index.html'">← Back</button>
   <div class="top-title">🏋️ Workout Builder</div>
   <a href="workout-templates.html" style="color:var(--muted);font-size:.78rem;font-weight:700;text-decoration:none;white-space:nowrap;transition:color .2s" onmouseover="this.style.color='var(--acc)'" onmouseout="this.style.color='var(--muted)'">Programs →</a>
 </div>
@@ -946,7 +946,7 @@ function delExercise(rId,dId,exId){ const day=routines.find(r=>r.id===rId)?.days
 // ── PRESETS ────────────────────────────────────────────────────────────────────
 function renderPresets(){
   const el=document.getElementById('view-presets');
-  const cloned=new Set(load('wob_cloned_presets',[]));
+  const clonedIds=new Set(load(LS_R,[]).filter(r=>r._presetId).map(r=>r._presetId));
   el.innerHTML=`
     <div style="margin-bottom:20px">
       <div style="font-size:1.15rem;font-weight:900;margin-bottom:6px">⭐ Workout Programs</div>
@@ -955,7 +955,7 @@ function renderPresets(){
     <div class="preset-grid">
       ${PRESETS.map(p=>{
         const allMuscles=[...new Set(p.days.flatMap(d=>d.muscles))];
-        const added=cloned.has(p.id);
+        const added=clonedIds.has(p.id);
         return `<div class="preset-card${document.getElementById('pc-'+p.id)?.classList.contains('open')?' open':''}" id="pc-${p.id}">
           <div class="preset-card-header" onclick="togglePreset('${p.id}')">
             <div class="preset-icon">${p.icon}</div>
@@ -1001,8 +1001,9 @@ function togglePreset(id){
 
 function clonePreset(id){
   const p=PRESETS.find(x=>x.id===id); if(!p)return;
+  if(routines.some(r=>r._presetId===id)){showToast('Already in your routines');return;}
   const routine={
-    id:uid(), name:p.name,
+    id:uid(), name:p.name, _presetId:id,
     days:p.days.map(d=>({
       id:uid(), name:d.name, muscles:[...d.muscles],
       exercises:d.exercises.map(ex=>({id:uid(),...ex}))
@@ -1010,7 +1011,6 @@ function clonePreset(id){
   };
   routines.push(routine); persist(LS_R,routines);
   selRoutineId=routine.id;
-  const cloned=load('wob_cloned_presets',[]); cloned.push(id); persist('wob_cloned_presets',cloned);
   showToast('✓ '+p.name+' added to your routines!');
   renderPresets();
 }

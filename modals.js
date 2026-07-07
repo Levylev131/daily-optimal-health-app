@@ -67,16 +67,25 @@ function submitLogin() {
   const profile = createProfile(name);
   localStorage.setItem('doh_active_profile', profile.id);
 
-  // Migrate any guest session task data to the new profile
-  const guestKeys = [];
+  // Migrate guest sessionStorage task data to the new profile
+  const guestSsKeys = [];
   for (let i = 0; i < sessionStorage.length; i++) {
     const k = sessionStorage.key(i);
-    if (k && k.startsWith('ht:guest:')) guestKeys.push(k);
+    if (k && k.startsWith('ht:guest:')) guestSsKeys.push(k);
   }
-  guestKeys.forEach(k => {
-    const newKey = k.replace('ht:guest:', `ht:${profile.id}:`);
-    localStorage.setItem(newKey, sessionStorage.getItem(k));
+  guestSsKeys.forEach(k => {
+    localStorage.setItem(k.replace('ht:guest:', `ht:${profile.id}:`), sessionStorage.getItem(k));
     sessionStorage.removeItem(k);
+  });
+  // Migrate guest localStorage data (XP, streak, task state)
+  const guestLsKeys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('doh_guest_')) guestLsKeys.push(k);
+  }
+  guestLsKeys.forEach(k => {
+    localStorage.setItem(k.replace('doh_guest_', `doh_${profile.id}_`), localStorage.getItem(k));
+    localStorage.removeItem(k);
   });
 
   loadState();
