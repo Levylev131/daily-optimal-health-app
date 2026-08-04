@@ -128,12 +128,13 @@ function getHubCards() {
     {id:'fasting-guide',  icon:'⏳', title:'Fasting Guide',          desc:'16:8, OMAD, 5:2, extended fasts, autophagy, metabolic switching, and fasted cognition — fully explained.',          href:'fasting-guide.html'},
     {id:'abs-guide',      icon:'🔥', title:'Six-Pack & Belly Fat',    desc:'The complete system for visible abs — caloric deficit, upper/lower ab training, TVA, cardio, cortisol, and sleep.',     href:'abs-guide.html'},
     {id:'workout',        icon:'🏋️', title:'Workout Builder',         desc:'Build custom gym routines, tag muscle groups with a body diagram, log sessions, and track your progress over time.',   href:'workout.html'},
+    {id:'running-planner',icon:'🏃', title:'Running Planner',        desc:'Plan runs, log plan vs. actual, draw routes on a map, and track your training. Opens in a new tab (separate app).', href:'../CLAUDE%20CODE%20P!!!/Running%20Workout%20Planner/index.html', external:true},
     {id:'body-map',       icon:'🫀', title:'Body Map',               desc:'Explore your body by region. Tap any area to see health info and tips.',                href:'body-map.html'},
     {id:'blog-reader',    icon:'✍️', title:'Blogs',                  desc:'Write, publish, and browse your posts. Export as clean HTML to share anywhere.',        href:'blog-reader.html'},
     {id:'dashboard',      icon:'📊', title:'Dashboard',              desc:'All your data at a glance — XP, streaks, habits, fasting, workouts, and nutrition.',    href:'dashboard.html'},
-  ].forEach(({id,icon,title,desc,href}) => all.push({ id, section:'tools',
-    inner:`<div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">${icon}</div></div><div class="card-info"><div class="card-title">${title}</div><div class="card-desc">${desc}</div><div class="card-pct">Open →</div></div>`,
-    onclick:`window.location.href='${href}'`
+  ].forEach(({id,icon,title,desc,href,external}) => all.push({ id, section:'tools',
+    inner:`<div class="ring-wrap"><svg viewBox="0 0 50 50"><circle class="r-track" cx="25" cy="25" r="22"/></svg><div class="ring-icon">${icon}</div></div><div class="card-info"><div class="card-title">${title}</div><div class="card-desc">${desc}</div><div class="card-pct">${external?'Open ↗':'Open →'}</div></div>`,
+    onclick: external ? `window.open('${href}','_blank')` : `window.location.href='${href}'`
   }));
   const cs = JSON.parse(localStorage.getItem(storagePrefix()+'cscheds')||'[]');
   cs.forEach(s => {
